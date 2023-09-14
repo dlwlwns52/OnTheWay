@@ -1,0 +1,48 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at
+  # https://dart-lang.github.io/linter/lints/index.html.
+  #
+  # Instead of disabling a lint rule for the entire project in the
+  # section below, it can also be suppressed for a single line of code
+  # or a specific dart file by using the `// ignore: name_of_lint` and
+  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+  # producing the lint.
+  rules:
+    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
+    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    prefer_typing_uninitialized_variables : false
+    prefer_const_constructors : false
+    prefer_const_constructors_in_immutables : false
+    avoid_print : false
+    prefer_const_literals_to_create_immutables : false
+
+#    prefer_typing_uninitialized_variables:
+#      false: 이 규칙은 "초기화되지 않은 변수의 타입을 꼭 적으라"는 것인데, 이 규칙을 비활성화(false)하면 초기화하지 않은 변수의 타입을 적지 않아도 경고가 나지 않습니다.
+#
+#    prefer_const_constructors:
+#      false: 이 규칙은 "가능하면 const를 사용하여 객체를 생성하라"는 것인데, 이 규칙을 비활성화(false)하면 const를 사용하지 않고 객체를 생성해도 경고가 나지 않습니다.
+#
+#    prefer_const_constructors_in_immutables:
+#      false: 이 규칙은 "불변성을 가진 객체를 생성할 때 가능하면 const를 사용하라"는 것인데, 이 규칙을 비활성화(false)하면 불변성을 가진 객체를 const 없이 생성해도 경고가 나지 않습니다.
+#
+#    avoid_print:
+#      false: 이 규칙은 "print 함수를 쓰지 말라"는 것인데, 이 규칙을 비활성화(false)하면 print 함수를 사용해도 경고가 나지 않습니다.
+#
+#    prefer_const_literals_to_create_immutables:
+#      false: 이 규칙은 "불변 객체를 생성할 때 const 리터럴을 사용하라"는 것인데, 이 규칙을 비활성화(false)하면 const 리터럴 없이 불변 객체를 생성해도 경고가 나지 않습니다.
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

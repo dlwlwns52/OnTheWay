@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "752487126906",
+    "project_id": "ontheway-ce8d9",
+    "storage_bucket": "ontheway-ce8d9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:752487126906:android:102121ee4bb20d5bb328c3",
+        "android_client_info": {
+          "package_name": "com.example.ontheway_notebook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "752487126906-5s422pk4c9m2964thccroiv4097dtvj1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_pLfJVx0ShsZW0zNdTSgfPeAd1Uj_OKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "752487126906-5s422pk4c9m2964thccroiv4097dtvj1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
