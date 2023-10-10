@@ -37,6 +37,7 @@ dependencies:
   shared_preferences: ^2.2.0
   flutter_secure_storage: ^8.0.0
   intl: ^0.18.1
+  auto_size_text: ^3.0.0
   # 필요에 따라 버전을 조절하거나 더 최신 버전을 사용해도 좋습니다.
 
   # The following adds the Cupertino Icons font to your application.

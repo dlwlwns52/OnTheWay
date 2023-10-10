@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 
 void main() async {
@@ -18,6 +19,7 @@ Future<String> loadSomeData() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: FutureBuilder(
@@ -40,20 +42,26 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       body: Padding(
         padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.3),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start, // 주 축(수직 방향)의 정렬을 설정합니다.
+          crossAxisAlignment: CrossAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
-            Text(
-              "OnTheWay",
+            AutoSizeText(
+              'OnTheWay',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 80,
                 color: Colors.orange,
               ),
+              maxLines: 1,
             ),
+
             SizedBox(height: 30),
+
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
             ),

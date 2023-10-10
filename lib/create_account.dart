@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'examunivboard.dart';
+import 'UiBoard.dart';
 import 'login_screen.dart';
 
 
@@ -29,6 +29,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String? _usernicknameErrorText; // 닉네임 제한 ( 영문 대소문자 알파벳, 한글 음절, 일반적인 하이픈 기호, 그리고 숫자를 모두 허용)
   String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
   String? _confirmPasswordErrorText; // password 와 동일한가 확인
+  String? _userEmailErrorText; // 이메일 에러 텍스트 확인
   final FocusNode _passwordFocusNode = FocusNode(); // 엔터눌렀을때 아이디 -> 비밀번호
   final FocusNode _confirmPasswordFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호 -> 비밀번호확인
   final FocusNode _emailFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호확인 -> 이메일
@@ -42,8 +43,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _nicknameController.addListener(_onNicknameChanged);
     _passwordController.addListener(_onpasswordChanged);
     _confirmPasswordController.addListener(_confirmPasswordChanged);
-    WidgetsBinding.instance?.addObserver(this); // 생명 주기 관찰자 추가
-    checkEmailVerification();
+    _emailUserController.addListener(_onEmaildChanged);
+    // WidgetsBinding.instance?.addObserver(this); // 생명 주기 관찰자 추가
+    // checkEmailVerification();
   }
 
 
@@ -52,7 +54,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _nicknameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    WidgetsBinding.instance?.removeObserver(this);
+    // WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
@@ -77,6 +79,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
   _onNicknameChanged() {
+    RegExp onlyConsonants = new RegExp(r'^[ㄱ-ㅎ]+$');
+    RegExp onlyVowels = new RegExp(r'^[ㅏ-ㅣ]+$');
+    RegExp onlyNumbers = new RegExp(r'^[0-9]+$');
     String pattern = r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$';
     RegExp regex = new RegExp(pattern);
     String value = _nicknameController.text;
@@ -85,7 +90,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _usernicknameErrorText = '닉네임을 입력해주세요.';
       } else if (!regex.hasMatch(value)) {
         _usernicknameErrorText = '닉네임은 영문, 한글, 숫자만 사용 가능합니다.';
-      } else {
+      } else if(onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)){
+        _usernicknameErrorText = '자음, 모음, 숫자 만으로는 구성될 수 없습니다.';
+      }else {
         _usernicknameErrorText = null;
       }
     });
@@ -118,6 +125,22 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       }
       else {
         _confirmPasswordErrorText = null;
+      }
+    });
+  }
+
+  _onEmaildChanged() {
+    String pattern = r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$";
+    RegExp regex = new RegExp(pattern);
+    String value = _emailUserController.text;
+    setState(() {
+      if (value == null || value.trim().isEmpty) {
+        _userEmailErrorText = '아이디를 입력해주세요.';
+      }
+      else if (!regex.hasMatch(value)) {
+        _userEmailErrorText = "영문/숫자만 가능합니다.";
+      } else {
+        _userEmailErrorText = null;
       }
     });
   }
@@ -218,6 +241,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               color: Colors.orange,
                             ),
                           ),
+                          errorText: _userEmailErrorText,
                         ),
                         controller: _emailUserController,
                       ),
@@ -278,6 +302,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               Container(
                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
                 child: TextFormField(
+                  // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
                   controller: _passwordController,
                   focusNode: _passwordFocusNode,
                   style: TextStyle(
@@ -321,6 +346,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               Container(
                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
                 child: TextFormField(
+                  // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
                   controller: _confirmPasswordController,
                   focusNode: _confirmPasswordFocusNode,
                   style: TextStyle(
@@ -411,7 +437,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       onPressed: () async {
                         // 유효성 검사 수행
                         if (_validateFields()) {
-                          // 모든 유효성 검사가 통과됐을 때 수행될 코드
+                          bool emailAvailable = await _checkEmailAvailability();
+                          if(!emailAvailable) return; // 이메일이 이미 사용 중이면 진행 중단
 
                           final rootContext = context;
 
@@ -432,7 +459,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   onPressed: () async {
                                     Navigator.of(context).pop();  // 다이어로그 닫기
 
-                                    String nickname = _nicknameController.text;;
+                                    String nickname = _nicknameController.text;
                                     String password = _passwordController.text;
                                     String email = _emailUserController.text + "@" + _dropdownValue!;
                                     try {
@@ -444,7 +471,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                       String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
                                       final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-                                      await usersCollection.add({
+                                      await usersCollection.doc(nickname).set({
                                         'nickname': nickname,
                                         'email': email,
                                         'joined_date': formattedDate,
@@ -460,7 +487,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         rootContext,
                                         MaterialPageRoute(builder: (context) => LoginScreen()),
                                       );
-
                                     } catch (e) {
                                       print("회원가입 실패: $e");
                                     }
@@ -492,7 +518,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       // Firestore에서 같은 닉네임이 있는지 확인
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc('users')
+          .doc(nickname)
           .get();
 
       // 중복된 이름
@@ -560,14 +586,46 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     }
   }
 
-  bool _nicknameValidateFields(){
 
-    if(_nicknameController.text.trim().isEmpty){
+  Future<bool> _checkEmailAvailability() async {
+    final email = _emailUserController.text.trim() + "@" + _dropdownValue!;
+
+    try {
+      // 이 코드에서 await는 FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get() 작업이 완료될 때까지 다음 코드로 넘어가지 않게 합니다. 이 get() 메서드는 네트워크를 통해 Firebase의 Firestore 데이터베이스에서 데이터를 가져오는 작업이므로, 이 작업이 얼마나 걸릴지 확실하지 않습니다.
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('현재 존재하는 이메일 입니다.')),
+        );
+        return false;
+      }
+      return true;
+    } catch (e) {
+      print('이메일 확인 오류: $e');
+      return false;
+    }
+  }
+
+  bool _nicknameValidateFields(){
+    RegExp onlyConsonants = RegExp(r'^[ㄱ-ㅎ]+$');
+    RegExp onlyVowels = RegExp(r'^[ㅏ-ㅣ]+$');
+    RegExp onlyNumbers = RegExp(r'^[0-9]+$');
+
+    if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('닉네임을 입력해주세요.')),
       );
       return false;
-    } else if(!RegExp(r'^[a-zA-Zㄱ-ㅎ가-힣-0-9]+$').hasMatch(_nicknameController.text)) {
+    } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.')),
+      );
+      return false;
+    } else if (!RegExp(r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$').hasMatch(_nicknameController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('닉네임은 영문, 한글, 숫자만 사용 가능합니다.')),
       );
@@ -588,7 +646,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     String email = _emailUserController.text + "@" + _dropdownValue!;
 
     // 이메일 주소 형식 검사
-    if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
+    if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text )) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.')),
       );
@@ -638,17 +696,26 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   bool _validateFields() {
 
-    if (_passwordController.text.trim().isEmpty) {
+    if (_emailUserController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이메일을 입력해주세요.')),
+    );
+      return false;
+    }
+    else if (_passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호를 입력해주세요.')),
       );
       return false;
-    } else if (!RegExp(r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$').hasMatch(_passwordController.text)) {
+    }
+
+    else if (!RegExp(r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$').hasMatch(_passwordController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호는 8~16자의 문자, 숫자, 적어도 한개의 특수기호를 사용해야 합니다.')),
       );
       return false;
     }
+
 
     if (_confirmPasswordController.text != _passwordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -657,12 +724,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       return false;
     }
 
-    if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_emailUserController.text + "@" + _dropdownValue!)) {
+
+    if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.')),
       );
       return false;
     }
+
 
     if (_dropdownValue == '학교 메일 선택') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -670,7 +739,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
       return false;
     }
-
     return true;
   }
 

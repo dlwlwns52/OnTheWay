@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'create_account.dart';
-import 'examunivboard.dart';
+import 'UiBoard.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,8 +13,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  final FocusNode _EmailToPasswordFocusNode = FocusNode(); // 엔터 눌렀을 때 이메일 -> 비밀번호
+  final FocusNode _PasswordToLoginFocusNode = FocusNode(); // 엔터 눌렀을 때 비밀번호 -> 로그인
+
+  @override
+  void dispose(){
+    _EmailToPasswordFocusNode.dispose();
+    _PasswordToLoginFocusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.orange,
       body: Center(  // Center 위젯 추가
@@ -37,10 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderSide: BorderSide(color: Colors.orange), // 경계 색상 설정
                     ),
                   ),
+                  onFieldSubmitted: (value) { // 'next' 버튼이 클릭되면
+                    FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode); // 이메일 필드 -> 비밀번호 필드
+                  },
                 ),
                 SizedBox(height: 20), // 필드 사이에 간격 추가
                 TextFormField(
                   // 비밀번호를 입력받는 필드
+                  focusNode: _EmailToPasswordFocusNode,
                   controller: passwordController,
                   decoration: InputDecoration(
                     labelText: '비밀번호:', // 레이블 텍스트 설정
@@ -48,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderSide: BorderSide(color: Colors.orange), // 경계 색상 설정
                     ),
                   ),
-                  obscureText: true, // 비밀번호를 별표로 표시
+                  // obscureText: true, // 비밀번호를 별표로 표시
+                  onFieldSubmitted: (value) => _login(), // 비밀번호 필드 -> 로그인
                 ),
                 SizedBox(height: 10),
 
@@ -97,32 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity, // 버튼의 가로 길이를 최대로 설정
                   child: TextButton(
                     child: Text("로그인"),
-                    onPressed: () async {
-
-                      final FirebaseAuth _auth = FirebaseAuth.instance;
-                      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-                        email: emailController.text,
-                        password: passwordController.text,
-                      );
-
-                      // 로그인 성공
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => BoardPage()),
-                      );
-
-                      // 로그인 성공 메시지 표시
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('로그인이 완료되었습니다.')),
-                      );
-
-                      // 사용자에게 에러 메시지를 표시
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('이메일과 비밀번호를 확인해주세요.')),
-                      );
-
-                  },
-
+                    onPressed: _login,
                     style: TextButton.styleFrom(
                       primary: Colors.white, // 글자 색상
                       backgroundColor: Colors.orange, // 버튼 색상
@@ -138,4 +129,61 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  void _login() async{
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+
+    if(emailController.text.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이메일을 입력해주세요.'))
+      );
+      return;
+    }
+
+    if(passwordController.text.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("비밀번호를 입력해주세요"))
+      );
+      return;
+    }
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      if (userCredential.user != null) {
+        // 로그인 성공
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BoardPage()),
+        );
+        // 로그인 성공 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인이 완료되었습니다.')),
+        );
+      }
+    } catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'user-not-found':
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.')),
+            );
+            break;
+          case 'wrong-password':
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("비밀번호가 틀렸습니다.")),
+            );
+            break;
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('알 수 없는 오류가 발생했습니다. 잠시 뒤에 다시 시도해주세요.')),
+        );
+      }
+    }
+  }
+
 }
