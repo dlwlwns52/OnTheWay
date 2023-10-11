@@ -11,7 +11,6 @@ class _BoardPageState extends State<BoardPage> {
     '게시글 1',
     '게시글 2',
     '게시글 3',
-    '게시글 4',
   ];  // 샘플 데이터
 
   @override
