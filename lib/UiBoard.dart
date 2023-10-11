@@ -18,6 +18,7 @@ class _BoardPageState extends State<BoardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.orange,
         title: Text('게시판'),
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -27,7 +28,7 @@ class _BoardPageState extends State<BoardPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.person),
             onPressed: () {
               // 게시글 작성 로직
             },
@@ -46,26 +47,6 @@ class _BoardPageState extends State<BoardPage> {
           ListTile(
             title: Text('Icons.money'),
             leading: Icon(Icons.money),
-          ),
-          ListTile(
-            title: Text('Icons.attach_money'),
-            leading: Icon(Icons.attach_money),
-          ),
-          ListTile(
-            title: Text('Icons.euro_symbol'),
-            leading: Icon(Icons.euro_symbol),
-          ),
-          ListTile(
-            title: Text('Icons.monetization_on'),
-            leading: Icon(Icons.monetization_on),
-          ),
-          ListTile(
-            title: Text('Icons.money_off'),
-            leading: Icon(Icons.money_off),
-          ),
-          ListTile(
-            title: Text('Icons.money_off_csred_outlined'),
-            leading: Icon(Icons.money_off_csred_outlined),
           ),
         ],
       ),
