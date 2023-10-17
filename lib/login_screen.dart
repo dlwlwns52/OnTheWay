@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final FocusNode _EmailToPasswordFocusNode = FocusNode(); // 엔터 눌렀을 때 이메일 -> 비밀번호
   final FocusNode _PasswordToLoginFocusNode = FocusNode(); // 엔터 눌렀을 때 비밀번호 -> 로그인
+  bool isLoginPressed = false; // 엔터키로 넘어갈 때 로그인 버튼이 눌렸는지 여부
 
   @override
   void dispose(){
@@ -52,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode); // 이메일 필드 -> 비밀번호 필드
                   },
                 ),
-                SizedBox(height: 20), // 필드 사이에 간격 추가
+                SizedBox(height: 20), // 필드 사이에 간격 추가정
                 TextFormField(
                   // 비밀번호를 입력받는 필드
                   focusNode: _EmailToPasswordFocusNode,
@@ -64,7 +65,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   // obscureText: true, // 비밀번호를 별표로 표시
-                  onFieldSubmitted: (value) => _login(), // 비밀번호 필드 -> 로그인
+                  // onFieldSubmitted: (value) => _login(), // 비밀번호 필드 -> 로그인
+                  onFieldSubmitted: (value){
+                    setState(() {
+                      isLoginPressed = true; // 엔터키로 로그인 시도
+                    });
+                    _login();
+                  },
                 ),
                 SizedBox(height: 10),
 
@@ -116,10 +123,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _login,
                     style: TextButton.styleFrom(
                       primary: Colors.white, // 글자 색상
-                      backgroundColor: Colors.orange, // 버튼 색상
+                      backgroundColor: Colors.grey, // 버튼 색상
                       onSurface: Colors.grey, // 버튼 disabled일 때의 색상
-                      side: BorderSide(color: Colors.orange, width: 2), // 경계선 설정
-                    ),
+                      side: BorderSide(color: Colors.grey, width: 2), // 경계선 설정
+                    ).copyWith(
+                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states){
+                            if (isLoginPressed || states.contains(MaterialState.pressed)){
+                              return Colors.orange;
+                            }
+                            return Colors.grey;
+                          }
+                      ),
+                      side:  MaterialStateProperty.resolveWith<BorderSide>(
+                          (Set<MaterialState> states) {
+                            if (isLoginPressed || states.contains(MaterialState.pressed)) {
+                              return BorderSide(color: Colors.orange, width: 2);
+                            }
+                            return BorderSide(color: Colors.grey, width: 2);
+                          }
+                      )
+                    )
                   ),
                 ),
               ],
@@ -137,6 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일을 입력해주세요.'))
       );
+      setState(() {
+        isLoginPressed = false;
+      });
       return;
     }
 
@@ -144,6 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("비밀번호를 입력해주세요"))
       );
+      setState(() {
+        isLoginPressed = false;
+      });
       return;
     }
 
@@ -167,6 +197,11 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
       if (e is FirebaseAuthException) {
         switch (e.code) {
+          case 'invalid-email':
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("유효하지 않은 이메일 형식입니다.")),
+            );
+
           case 'user-not-found':
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.')),
@@ -184,6 +219,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
+    setState(() {
+      isLoginPressed = false; // 로그인 시도 종료시 다시 상태를 false로 바꿈
+    });
   }
 
 }
