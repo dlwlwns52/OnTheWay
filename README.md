@@ -1,16 +1,7 @@
-# ontheway_notebook
+# 온더웨이!
 
-A new Flutter project.
+대학생을 중심으로한 '부탁 및 배려 문화 형성'
 
-## Getting Started
+## 231106 본격적 시작
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+이거는 나중에 꾸미자 귀찮다
