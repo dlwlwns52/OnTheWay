@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
