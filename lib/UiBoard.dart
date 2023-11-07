@@ -72,7 +72,7 @@ class _BoardPageState extends State<BoardPage> {
                 onPressed: (){
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
+                        content: Text("상대방이d 있는 위치 입니다.", textAlign: TextAlign.center,),
                         // behavior: SnackBarBehavior.floating,
                         duration: Duration(seconds: 1),
                       ),
