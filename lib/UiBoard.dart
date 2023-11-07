@@ -18,7 +18,7 @@ class _BoardPageState extends State<BoardPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
-        title: Text('게시판'),
+        title: Text('게시v판'),
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
