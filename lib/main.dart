@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'UiBoard.dart';
 import 'login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +31,8 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return LoadingScreen(); // 로딩 중일 때는 LoadingScreen을 표시
           } else {
-            return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
+            // return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
+            return BoardPage();
           }
         },
       ),
