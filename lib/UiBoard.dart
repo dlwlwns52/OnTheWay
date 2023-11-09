@@ -72,7 +72,7 @@ class _BoardPageState extends State<BoardPage> {
                 onPressed: (){
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("상대방이d 있는 위치 입니다.", textAlign: TextAlign.center,),
+                        content: Text("상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
                         // behavior: SnackBarBehavior.floating,
                         duration: Duration(seconds: 1),
                       ),
@@ -123,19 +123,50 @@ class _BoardPageState extends State<BoardPage> {
                     // 스트림에 데이터가 있으면, 데이터를 리스트뷰로 보여줍니다.
                     final posts = snapshot.data!;
 
-
                     return ListView(
                       children: posts.map((doc) {
                         // 문서들을 순회하면서 각각의 문서를 카드 형태로 보여줍니다.
                         Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
                         return Card(
-                          // 카드 위젯을 사용하여 각 게시글을 스타일링합니다.
-                          child: ListTile(
-                            title: Text(data['title'] ?? '제목 없음'), // 데이터의 'title' 필드를 보여주며, 없으면 '제목 없음'으로 표시합니다.
-                            subtitle: Text(data['content'] ?? '내용 없음'), // 데이터의 'content' 필드를 부제목으로 보여줍니다.
-                            onTap: () {
-                              // 리스트 타일을 탭했을 때 수행할 동작을 정의합니다. (상세보기 로직이 들어갈 자리)
-                            },
+                          child: Container(
+                            height: 100,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  // 왼쪽 컬럼에 Padding 추가
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 8.0), // 오른쪽에만 패딩을 추가합니다.
+                                    child: Text(
+                                      data['title'] ?? '제목 없음',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  // 가운데 컬럼은 그대로 둡니다.
+                                  child: Text(
+                                    data['content'] ?? '내용 없음',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Expanded(
+                                  // 오른쪽 컬럼에 Padding 추가
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: 8.0), // 왼쪽에만 패딩을 추가합니다.
+                                    child: Text(
+                                      data['content2'] ?? '추가 내용 없음',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           ),
                         );
                       }).toList(), // map 함수로 생성된 Iterable을 List로 변환합니다.
@@ -168,14 +199,15 @@ class _NewPostScreenState extends State<NewPostScreen> {
   // 사용자 입력을 관리하기 위한 컨트롤러들입니다.
   final TextEditingController _titleController = TextEditingController(); // 제목 입력 필드를 위한 컨트롤러입니다.
   final TextEditingController _contentController = TextEditingController(); // 내용 입력 필드를 위한 컨트롤러입니다.
-
+  final TextEditingController _content2Controller = TextEditingController();
   // 게시물을 업로드하는 함수입니다.
   Future<void> _uploadPost() async {
     try {
       // Firestore의 'posts' 컬렉션에 새 문서를 추가합니다. 문서에는 입력받은 제목, 내용, 현재 날짜가 포함됩니다.
       await FirebaseFirestore.instance.collection('posts').add({
-        'title': _titleController.text, // 제목 필드
-        'content': _contentController.text, // 내용 필드
+        'my_location': _titleController.text, // 제목 필드
+        'store': _contentController.text, // 내용 필드
+        'cost': _content2Controller.text, // 새로운 필드 추가
         'date': DateTime.now(), // 현재 날짜와 시간
       });
       // 성공적으로 업로드 후 이전 화면으로 돌아갑니다.
@@ -195,29 +227,47 @@ class _NewPostScreenState extends State<NewPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('새 게시물 작성'), // 앱 바의 타이틀을 '새 게시물 작성'으로 설정합니다.
+        title: Text('게시물 작성'), // 앱 바의 타이틀을 '새 게시물 작성'으로 설정합니다.
+        backgroundColor: Colors.orange,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0), // 전체 패딩을 설정합니다.
         child: Column(
           // 세로로 위젯들을 나열하기 위한 컬럼 위젯입니다.
           children: <Widget>[
+
             TextField(
               controller: _titleController, // 제목을 입력받기 위한 텍스트 필드입니다.
               decoration: InputDecoration(
-                labelText: '제목', // 라벨을 '제목'으로 설정합니다.
+                labelText: '본인 위치', // 라벨을 '제목'으로 설정합니다.
               ),
             ),
+
             SizedBox(height: 8.0), // 위젯 사이의 간격을 주기 위한 SizedBox입니다.
+
             TextField(
               controller: _contentController, // 내용을 입력받기 위한 텍스트 필드입니다.
               decoration: InputDecoration(
-                labelText: '내용', // 라벨을 '내용'으로 설정합니다.
+                labelText: '주문 시킬 가게', // 라벨을 '내용'으로 설정합니다.
               ),
-              maxLines: 10, // 최대 10줄까지 입력 가능하도록 설정합니다.
             ),
+
             SizedBox(height: 16.0), // 위젯 사이의 간격을 주기 위한 SizedBox입니다.
+
+            TextField(
+
+              controller: _content2Controller, // 내용을 입력받기 위한 텍스트 필드입니다.
+              decoration: InputDecoration(
+                labelText: '비용', // 라벨을 '내용'으로 설정합니다.
+              ),
+            ),
+
+              SizedBox(height: 16.0,),
+
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange
+              ),
               child: Text('게시하기'), // 버튼의 텍스트를 '게시하기'로 설정합니다.
               onPressed: _uploadPost, // 버튼이 눌렸을 때 _uploadPost 함수를 실행합니다.
             ),
