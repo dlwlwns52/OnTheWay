@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'UiBoard.dart';
+import 'Board/UiBoard.dart';
 import 'login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
