@@ -15,8 +15,6 @@ class BoardPage extends StatefulWidget {
 class _BoardPageState extends State<BoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  // PostManager 인스턴스 생성
-  final postManager = PostManager();
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
   Stream<List<DocumentSnapshot>> getPosts() {
@@ -134,7 +132,7 @@ class _BoardPageState extends State<BoardPage> {
                         Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
                         return GestureDetector(
                         onTap: (){
-                          postManager.showPostDetailsOrEditDeleteDialog(context, doc);
+                          // _showPostDetailsOrEditDeleteDialog(doc);
                         },
                         child: Card(
                           child: Container(
