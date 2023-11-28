@@ -15,6 +15,8 @@ class BoardPage extends StatefulWidget {
 class _BoardPageState extends State<BoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  // PostManager 인스턴스 생성
+  final postManager = PostManager();
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
   Stream<List<DocumentSnapshot>> getPosts() {
@@ -74,11 +76,11 @@ class _BoardPageState extends State<BoardPage> {
                 icon: Icon(Icons.home),
                 onPressed: (){
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
-                        // behavior: SnackBarBehavior.floating,
-                        duration: Duration(seconds: 1),
-                      ),
+                    SnackBar(
+                      content: Text("상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
+                      // behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 1),
+                    ),
                   );
                 },
               ),
@@ -91,8 +93,8 @@ class _BoardPageState extends State<BoardPage> {
                       content: Text("가게 위치 입니다.", textAlign: TextAlign.center,),
                       // behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 1),
-                      ),
-                    );
+                    ),
+                  );
                 },
               ),
 
@@ -112,84 +114,83 @@ class _BoardPageState extends State<BoardPage> {
           ),
 
           Flexible(
-              child: StreamBuilder<List<DocumentSnapshot>>(
-                stream: getPosts(), // getPosts 함수로부터 게시글 목록 스트림을 가져옵니다.
-                builder: (context, snapshot) {
-                  // 스트림의 상태에 따라 다른 위젯을 반환합니다.
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    // 데이터를 기다리는 중이라면 로딩 인디케이터를 보여줍니다.
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    // 스트림에서 오류가 발생하면 오류 메시지를 보여줍니다.
-                    return Center(child: Text('오류가 발생했습니다.'));
-                  } else if (snapshot.hasData) {
-                    // 스트림에 데이터가 있으면, 데이터를 리스트뷰로 보여줍니다.
-                    final posts = snapshot.data!;
+            child: StreamBuilder<List<DocumentSnapshot>>(
+              stream: getPosts(), // getPosts 함수로부터 게시글 목록 스트림을 가져옵니다.
+              builder: (context, snapshot) {
+                // 스트림의 상태에 따라 다른 위젯을 반환합니다.
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // 데이터를 기다리는 중이라면 로딩 인디케이터를 보여줍니다.
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  // 스트림에서 오류가 발생하면 오류 메시지를 보여줍니다.
+                  return Center(child: Text('오류가 발생했습니다.'));
+                } else if (snapshot.hasData) {
+                  // 스트림에 데이터가 있으면, 데이터를 리스트뷰로 보여줍니다.
+                  final posts = snapshot.data!;
 
-                    return ListView(
-                      children: posts.map((doc) {
-                        // 문서들을 순회하면서 각각의 문서를 카드 형태로 보여줍니다.
-                        Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
-                        return GestureDetector(
-                        onTap: (){
-                          // _showPostDetailsOrEditDeleteDialog(doc);
-                        },
-                        child: Card(
-                          child: Container(
-                            height: 100,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  // 왼쪽 컬럼에 Padding 추가
-                                  child: Padding(
-                                    padding: EdgeInsets.only(right: 8.0), // 오른쪽에만 패딩을 추가합니다.
-                                    child: Text(
-                                      data['my_location'] ?? '제목 없음',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  return ListView(
+                    children: posts.map((doc) {
+                      // 문서들을 순회하면서 각각의 문서를 카드 형태로 보여줍니다.
+                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
+                      return InkWell(
+                          onTap: (){
+                            postManager.showPostDetailsOrEditDeleteDialog(context, doc);
+                          },
+                          child: Card(
+                            child: Container(
+                              height: 100,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      // 왼쪽 컬럼에 Padding 추가
+                                      child: Padding(
+                                        padding: EdgeInsets.only(right: 8.0), // 오른쪽에만 패딩을 추가합니다.
+                                        child: Text(
+                                          data['my_location'] ?? '제목 없음',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                Expanded(
-                                  // 가운데 컬럼은 그대로 둡니다.
-                                  child: Text(
-                                    data['store'] ?? '내용 없음',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 20.0)
-                                  ),
-                                ),
-                                Expanded(
-                                  // 오른쪽 컬럼에 Padding 추가
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 8.0), // 왼쪽에만 패딩을 추가합니다.
-                                    child: Text(
-                                      data['cost'] ?? '추가 내용 없음',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                    Expanded(
+                                      // 가운데 컬럼은 그대로 둡니다.
+                                      child: Text(
+                                          data['store'] ?? '내용 없음',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 20.0)
+                                      ),
                                     ),
-                                  ),
+                                    Expanded(
+                                      // 오른쪽 컬럼에 Padding 추가
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 8.0), // 왼쪽에만 패딩을 추가합니다.
+                                        child: Text(
+                                          data['cost'] ?? '추가 내용 없음',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                          ),
-                        )
-                        );
-                      }).toList(), // map 함수로 생성된 Iterable을 List로 변환합니다.
-                    );
-                  }
-                  else {
-                    // 스트림에 데이터가 없으면 '게시글이 없습니다' 메시지를 보여줍니다.
-                    return Center(child: Text('게시글이 없습니다.'));
-                  }
-                },
-             ),
-           ),
+                          )
+                      );
+                    }).toList(), // map 함수로 생성된 Iterable을 List로 변환합니다.
+                  );
+                }
+                else {
+                  // 스트림에 데이터가 없으면 '게시글이 없습니다' 메시지를 보여줍니다.
+                  return Center(child: Text('게시글이 없습니다.'));
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 }
-

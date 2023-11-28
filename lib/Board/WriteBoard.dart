@@ -5,8 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // 새 게시글을 작성하는 화면을 위한 StatefulWidget입니다.
 class NewPostScreen extends StatefulWidget {
+  final DocumentSnapshot? post;
+
+  NewPostScreen({this.post});
+
   @override
-  _NewPostScreenState createState() => _NewPostScreenState(); // 상태 객체를 생성합니다.
+  _NewPostScreenState createState() => _NewPostScreenState();
 }
 
 // NewPostScreen의 상태를 관리하는 클래스입니다.
@@ -51,6 +55,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
       );
     }
   }
+
 
   // 위젯을 빌드하는 메소드입니다.
   @override
@@ -127,5 +132,17 @@ class _NewPostScreenState extends State<NewPostScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.post != null) {
+      // widget.post에서 데이터를 사용하여 필드를 초기화
+      _locationController.text = widget.post!['my_location'] ?? '';
+      _storeController.text = widget.post!['store'] ?? '';
+      _costController.text = widget.post!['cost'] ?? '';
+      _RequestController.text = widget.post!['Request'] ?? '';
+    }
   }
 }
