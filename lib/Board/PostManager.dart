@@ -12,7 +12,7 @@ class PostManager { // 필요한 상태나 컨트롤러를 정의합니다.
       context: context,
       builder: (context) {
         return AlertDialog( // 사용자에게 선택 옵션을 제공하는 경고 대화 상자 반환
-          title: Text('선택하세요'),
+          title: Text('선택하세요',textAlign: TextAlign.center,),
           content: Text('이 게시물을 삭제하거나 수정하시겠습니까?'),
           actions: <Widget>[
 
@@ -39,6 +39,12 @@ class PostManager { // 필요한 상태나 컨트롤러를 정의합니다.
               onPressed: () {
                 _deletePost(doc.id); // '삭제' 버튼 클릭 시 게시물 삭제 메서드 실행
                 Navigator.of(context).pop(); // 대화 상자 닫기
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("게시물이 삭제되었습니다.",textAlign: TextAlign.center,),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
               },
             ),
           ],
@@ -84,8 +90,8 @@ class PostManager { // 필요한 상태나 컨트롤러를 정의합니다.
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('주문 시킬 내역 및 요청사항'),
-            content: Text(doc['Request'] ?? '요청사항 없음'),
+            title: Text('주문 시킬 내역 및 요청사항' ,textAlign: TextAlign.center,),
+            content: Text(doc['Request'] ?? '요청사항 없음', textAlign: TextAlign.left,),
             actions: <Widget>[
               OutlinedButton(
                 child: Text('닫기'),
