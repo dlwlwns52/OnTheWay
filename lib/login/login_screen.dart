@@ -159,7 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if(emailController.text.isEmpty){
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일을 입력해주세요.'))
+          SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
       );
       setState(() {
         isLoginPressed = false;
@@ -169,7 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if(passwordController.text.isEmpty){
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("비밀번호를 입력해주세요"))
+          SnackBar(content: Text("비밀번호를 입력해주세요", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
       );
       setState(() {
         isLoginPressed = false;
@@ -191,7 +195,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         // 로그인 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인이 완료되었습니다.')),
+          SnackBar(content: Text('로그인이 완료되었습니다.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
         );
       }
     } catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
@@ -199,23 +205,31 @@ class _LoginScreenState extends State<LoginScreen> {
         switch (e.code) {
           case 'invalid-email':
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("유효하지 않은 이메일 형식입니다.")),
+              SnackBar(content: Text("유효하지 않은 이메일 형식입니다.", textAlign: TextAlign.center,),
+                duration: Duration(seconds: 1),
+              ),
             );
 
           case 'user-not-found':
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.')),
+              SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.', textAlign: TextAlign.center,),
+                duration: Duration(seconds: 1),
+              ),
             );
             break;
           case 'wrong-password':
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("비밀번호가 틀렸습니다.")),
+              SnackBar(content: Text("비밀번호가 틀렸습니다.", textAlign: TextAlign.center,),
+                duration: Duration(seconds: 1),
+              ),
             );
             break;
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('알 수 없는 오류가 발생했습니다. 잠시 뒤에 다시 시도해주세요.')),
+          SnackBar(content: Text('알 수 없는 오류가 발생했습니다. 잠시 뒤에 다시 시도해주세요.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
         );
       }
     }

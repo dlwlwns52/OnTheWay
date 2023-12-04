@@ -599,7 +599,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
       if (snapshot.docs.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('현재 존재하는 이메일 입니다.')),
+          SnackBar(content: Text('현재 존재하는 이메일 입니다.', textAlign: TextAlign.center,),
+            // behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 1),
+          ),
         );
         return false;
       }
@@ -617,17 +620,23 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('닉네임을 입력해주세요.')),
+        SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.')),
+        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     } else if (!RegExp(r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$').hasMatch(_nicknameController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('닉네임은 영문, 한글, 숫자만 사용 가능합니다.')),
+        SnackBar(content: Text('닉네임은 영문, 한글, 숫자만 사용 가능합니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }
@@ -648,7 +657,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     // 이메일 주소 형식 검사
     if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text )) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.')),
+        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
@@ -656,7 +667,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     // 선택되지 않은 학교 메일 처리
     if (_dropdownValue == '학교 메일 선택') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('학교 메일을 선택해주세요.')),
+        SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
@@ -682,13 +695,17 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       await storage.write(key: 'email', value: email);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('회원가입 이메일이 전송되었습니다. 확인 후 인증해주세요.')),
+        SnackBar(content: Text('회원가입 이메일이 전송되었습니다. 확인 후 인증해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
     } catch (e) {
       // 오류 처리
       print("오류 원인: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이메일 전송에 실패했습니다. 다시 시도해주세요.')),
+        SnackBar(content: Text('이메일 전송에 실패했습니다. 다시 시도해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
     }
   }
@@ -698,20 +715,26 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     if (_emailUserController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이메일을 입력해주세요.')),
+        SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
     );
       return false;
     }
     else if (_passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호를 입력해주세요.')),
+        SnackBar(content: Text('비밀번호를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }
 
     else if (!RegExp(r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$').hasMatch(_passwordController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호는 8~16자의 문자, 숫자, 적어도 한개의 특수기호를 사용해야 합니다.')),
+        SnackBar(content: Text('비밀번호는 8~16자의 문자, 숫자, 적어도 한개의 특수기호를 사용해야 합니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }
@@ -719,7 +742,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     if (_confirmPasswordController.text != _passwordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+        SnackBar(content: Text('비밀번호가 일치하지 않습니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }
@@ -727,7 +752,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.')),
+        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }
@@ -735,7 +762,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     if (_dropdownValue == '학교 메일 선택') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('학교 메일을 선택해주세요.')),
+        SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
       );
       return false;
     }

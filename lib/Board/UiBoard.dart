@@ -25,6 +25,11 @@ class _BoardPageState extends State<BoardPage> {
     });
   }
 
+  //현재 로그인한 사용자의 이메일을 반환하는 메서드
+  String? currentUserEmail() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.email;
+  }
 
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
@@ -132,7 +137,7 @@ class _BoardPageState extends State<BoardPage> {
                     children: posts.map((doc) {
                       // 문서들을 순회하면서 각각의 문서를 카드 형태로 보여줍니다.
                       Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
-                      return InkWell(
+                      return GestureDetector(
                           onTap: (){
                             postManager.showPostDetailsOrEditDeleteDialog(context, doc);
                           },
