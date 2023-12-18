@@ -18,6 +18,8 @@ class _BoardPageState extends State<BoardPage> {
   // PostManager 인스턴스 생성
   final postManager = PostManager();
 
+
+
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
   Stream<List<DocumentSnapshot>> getPosts() {
     return firestore.collection('posts').snapshots().map((snapshot) {
@@ -25,11 +27,13 @@ class _BoardPageState extends State<BoardPage> {
     });
   }
 
-  //현재 로그인한 사용자의 이메일을 반환하는 메서드
+
+  // 현재 로그인한 사용자의 이메일을 반환하는 메서드
   String? currentUserEmail() {
     final user = FirebaseAuth.instance.currentUser;
     return user?.email;
   }
+
 
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
@@ -118,78 +122,95 @@ class _BoardPageState extends State<BoardPage> {
             ],
           ),
 
-          Flexible(
-            child: StreamBuilder<List<DocumentSnapshot>>(
-              stream: getPosts(), // getPosts 함수로부터 게시글 목록 스트림을 가져옵니다.
-              builder: (context, snapshot) {
-                // 스트림의 상태에 따라 다른 위젯을 반환합니다.
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // 데이터를 기다리는 중이라면 로딩 인디케이터를 보여줍니다.
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  // 스트림에서 오류가 발생하면 오류 메시지를 보여줍니다.
-                  return Center(child: Text('오류가 발생했습니다.'));
-                } else if (snapshot.hasData) {
-                  // 스트림에 데이터가 있으면, 데이터를 리스트뷰로 보여줍니다.
-                  final posts = snapshot.data!;
+          Flexible( // Flexible 위젯을 사용하여 자식 위젯이 화면 공간을 유연하게 확장할 수 있도록 함
+            child: StreamBuilder<List<DocumentSnapshot>>( // Firestore 데이터 스트림을 사용하여 게시물 목록을 갱신하는 위젯
+              stream: getPosts(), // getPosts() 함수로부터 Firestore 데이터 스트림을 얻어옴
+              builder: (context, snapshot) { // 스트림의 상태에 따라 화면을 동적으로 구성하는 빌더 함수
+                if (snapshot.connectionState == ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
+                  return Center(child: CircularProgressIndicator()); // 로딩 중을 나타내는 화면을 반환
+                } else if (snapshot.hasError) { // 데이터 로딩 중에 오류가 발생한 경우
+                  return Center(child: Text('오류가 발생했습니다.')); // 오류 메시지를 표시
+                } else if (snapshot.hasData) { // 데이터가 로딩되었고, 데이터가 있는 경우
+                  final posts = snapshot.data!; // Firestore에서 가져온 게시물 목록
+                  final myEmail = currentUserEmail(); // 현재 사용자의 이메일을 가져옴
 
-                  return ListView(
-                    children: posts.map((doc) {
-                      // 문서들을 순회하면서 각각의 문서를 카드 형태로 보여줍니다.
-                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // 문서의 데이터를 맵으로 변환합니다.
-                      return GestureDetector(
-                          onTap: (){
-                            postManager.showPostDetailsOrEditDeleteDialog(context, doc);
-                          },
-                          child: Card(
-                            child: Container(
-                              height: 100,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      // 왼쪽 컬럼에 Padding 추가
-                                      child: Padding(
-                                        padding: EdgeInsets.only(right: 8.0), // 오른쪽에만 패딩을 추가합니다.
+                  // 게시물 목록을 사용자 이메일을 기준으로 정렬
+                  posts.sort((a, b) {
+                    Map<String, dynamic> dataA = a.data() as Map<String, dynamic>;
+                    Map<String, dynamic> dataB = b.data() as Map<String, dynamic>;
+                    bool isMyPostA = dataA['user_email'] == myEmail;
+                    bool isMyPostB = dataB['user_email'] == myEmail;
+                    if (isMyPostA && !isMyPostB) return -1;
+                    if (!isMyPostA && isMyPostB) return 1;
+                    return 0;
+                  });
+
+                  return ListView.builder( // 게시물 목록을 스크롤 가능한 리스트뷰로 표시
+                    itemCount: posts.length, // 아이템 개수는 게시물 목록의 길이
+                    itemBuilder: (context, index) { // 각 아이템을 생성하는 함수 정의
+                      DocumentSnapshot doc = posts[index]; // 현재 아이템에 대한 Firestore 문서
+                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Firestore 문서 데이터 가져옴
+                      bool isMyPost = data['user_email'] == myEmail; // 현재 아이템이 내 게시물인지 여부
+                      bool nextPostIsMine = false;
+
+                      if (index + 1 < posts.length) { // 다음 아이템이 있는 경우
+                        Map<String, dynamic> nextData = posts[index + 1].data() as Map<String, dynamic>; // 다음 아이템의 데이터
+                        nextPostIsMine = nextData['user_email'] == myEmail; // 다음 아이템이 내 게시물인지 여부
+                      }
+
+                      return Column(
+                        children: <Widget>[
+                          InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
+                            onTap: () {
+                              postManager.showPostDetailsOrEditDeleteDialog(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                            },
+                            child: Card( // 정보를 담는 카드 위젯
+                              color: isMyPost ? Colors.orange[100]  : Colors.white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
+                              child: Container(
+                                height: 100, // 카드의 높이 설정
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0), // 내부 패딩 설정
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
                                         child: Text(
-                                          data['my_location'] ?? '제목 없음',
+                                          data['my_location'] ?? '제목 없음', // 위치 정보 또는 '제목 없음' 표시
                                           textAlign: TextAlign.center,
                                           style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      // 가운데 컬럼은 그대로 둡니다.
-                                      child: Text(
-                                          data['store'] ?? '내용 없음',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0)
-                                      ),
-                                    ),
-                                    Expanded(
-                                      // 오른쪽 컬럼에 Padding 추가
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 8.0), // 왼쪽에만 패딩을 추가합니다.
+                                      Expanded(
                                         child: Text(
-                                          data['cost'] ?? '추가 내용 없음',
+                                          data['store'] ?? '내용 없음', // 가게 정보 또는 '내용 없음' 표시
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 20.0),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          data['cost'] ?? '추가 내용 없음', // 비용 정보 또는 '추가 내용 없음' 표시
                                           textAlign: TextAlign.center,
                                           style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          )
+                          ),
+                          // 현재 게시물이 내 게시물이고 다음 게시물이 내 게시물이 아닐 때만 구분선을 추가
+                          if (isMyPost && !nextPostIsMine)
+                            Divider(
+                              color: Colors.orange[50], // 구분선의 색상 설정
+                              thickness: 3.0, // 구분선의 두께 설정
+                            ),
+                        ],
                       );
-                    }).toList(), // map 함수로 생성된 Iterable을 List로 변환합니다.
+                    },
                   );
-                }
-                else {
-                  // 스트림에 데이터가 없으면 '게시글이 없습니다' 메시지를 보여줍니다.
-                  return Center(child: Text('게시글이 없습니다.'));
+                } else { // 데이터가 로딩되지 않았거나 비어 있는 경우
+                  return Center(child: Text('게시글이 없습니다.')); // '게시글이 없습니다.' 메시지를 표시
                 }
               },
             ),
@@ -197,5 +218,6 @@ class _BoardPageState extends State<BoardPage> {
         ],
       ),
     );
+
   }
 }

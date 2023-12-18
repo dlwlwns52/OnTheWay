@@ -36,54 +36,63 @@ class _NewPostScreenState extends State<NewPostScreen> {
   }
 
   // 게시물을 업로드하는 함수입니다.
+  // 게시물을 업로드하는 함수입니다.
   Future<void> _uploadPost() async {
-
     // 위치 필드가 비어있는지 확인
-    if(_locationController.text.isEmpty){
+    if (_locationController.text.isEmpty) {
       _showSnackBar("\'본인 위치\' 칸을 입력해주세요.");
       return;
     }
-    
-    if (_storeController.text.isEmpty){
+
+    if (_storeController.text.isEmpty) {
       _showSnackBar("\'주문 시킬 가게\' 칸을 입력해주세요.");
       return;
     }
 
-    if (_costController.text.isEmpty){
+    if (_costController.text.isEmpty) {
       _showSnackBar("\'비용\' 칸을 입력해주세요.");
       return;
     }
 
-    if (_RequestController.text.isEmpty){
+    if (_RequestController.text.isEmpty) {
       _showSnackBar("\'요청 사항\' 칸을 입력해주세요.");
       return;
     }
 
     try {
-      // 현재 로그인된 사용자의 이메일을 가져옵니다.
+      FirebaseFirestore db = FirebaseFirestore.instance;
       String? email = getUserEmail();
 
-      // 문서 이름을 'my_location' 필드와 'user_email' 필드로 설정
-      String documentName = "${_locationController.text}_${email ?? 'unknown'}";
+      // 현재 사용자가 작성한 동일한 제목의 게시물이 있는지 확인합니다.
+      QuerySnapshot existingPosts = await db
+          .collection('posts')
+          .where('my_location', isEqualTo: _locationController.text)
+          .where('user_email', isEqualTo: email)
+          .get();
 
-      await FirebaseFirestore.instance.collection('posts').doc(documentName).set({
-        'my_location': _locationController.text, // 제목 필드
-        'store': _storeController.text, // 내용 필드
-        'cost': _costController.text, // 새로운 필드 추가
-        'user_email': email, // 사용자 이메일 필드 추가
-        'Request' : _RequestController.text,
-        'date': DateTime.now(), // 현재 날짜와 시간
-      });
-      // 성공적으로 업로드 후 이전 화면으로 돌아갑니다.
-      Navigator.of(context).pop();
+      if (existingPosts.docs.isNotEmpty && widget.post == null) {
+        // 동일한 제목의 게시물이 이미 존재합니다.
+        _showSnackBar("동일한 제목의 게시물이 이미 존재합니다.");
+      } else {
+        // 새 게시물 추가 또는 기존 게시물 수정
+        String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
+
+        await db.collection('posts').doc(documentName).set({
+          'my_location': _locationController.text,
+          'store': _storeController.text,
+          'cost': _costController.text,
+          'user_email': email,
+          'Request': _RequestController.text,
+          'date': DateTime.now(),
+        });
+
+        Navigator.of(context).pop();
+      }
     } catch (e) {
-      // 오류 발생 시 사용자에게 알립니다.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('게시물 업로드에 실패했습니다.'),
-        duration: Duration(seconds: 1),), // 스낵바로 오류 메시지를 보여줍니다.
-      );
+      _showSnackBar("게시물 업로드에 실패했습니다.");
     }
   }
+
 
 
   //스낵바를 표시하는 함수
@@ -105,7 +114,6 @@ class _NewPostScreenState extends State<NewPostScreen> {
         title: Text('게시물 작성'), // 앱 바의 타이틀을 '새 게시물 작성'으로 설정합니다.
         backgroundColor: Colors.orange,
       ),
-
         body: SafeArea( // SafeArea 추가
           child: SingleChildScrollView( // SingleChildScrollView 추가
             child: Padding(
