@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import '../Board/UiBoard.dart';
-import 'login_screen.dart';
+import '../login/LoginScreen.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -22,6 +22,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   TextEditingController _passwordController = TextEditingController();  // 비밀번호 컨트롤러 추가
   TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인 컨트롤러 추가
   TextEditingController _emailUserController = TextEditingController();
+  final FocusNode _buttonFocusNode = FocusNode();// 게시하기 버튼을 위한 FocusNode 추가
 
   bool _isNicknameAvailable = false; // 입력 필드 활성화 여부 설정
   String _buttonText = '중복확인';
@@ -377,10 +378,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     return '비밀번호가 일치합니다.';
                   },
                   textInputAction: TextInputAction.next, // 'next' 버튼을 표시
-                  onFieldSubmitted: (value) { // 'next' 버튼이 클릭되면
-                    FocusScope.of(context).requestFocus(_emailFocusNode); // 이메일 필드로 포커스 이동
-                  },
+                    onFieldSubmitted: (value){
+                      FocusScope.of(context).requestFocus(_buttonFocusNode);
+                    }
                 ),
+
               ),
 
               SizedBox(height: 30),
@@ -425,6 +427,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   child: FractionallySizedBox(
                     widthFactor: 0.5, // Set the width as a fraction (0.8 means 80% of the available width)
                     child: ElevatedButton(
+                      focusNode: _buttonFocusNode,
                       style: ButtonStyle(
                         alignment: Alignment.center,
                         backgroundColor: MaterialStateProperty.all(Colors.orange),

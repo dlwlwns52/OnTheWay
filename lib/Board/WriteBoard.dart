@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 // 새 게시글을 작성하는 화면을 위한 StatefulWidget입니다.
 class NewPostScreen extends StatefulWidget {
   final DocumentSnapshot? post;
-
   NewPostScreen({this.post});
 
   @override
@@ -36,25 +35,25 @@ class _NewPostScreenState extends State<NewPostScreen> {
   }
 
   // 게시물을 업로드하는 함수입니다.
-  // 게시물을 업로드하는 함수입니다.
   Future<void> _uploadPost() async {
+
     // 위치 필드가 비어있는지 확인
-    if (_locationController.text.isEmpty) {
+    if(_locationController.text.isEmpty){
       _showSnackBar("\'본인 위치\' 칸을 입력해주세요.");
       return;
     }
 
-    if (_storeController.text.isEmpty) {
+    if (_storeController.text.isEmpty){
       _showSnackBar("\'주문 시킬 가게\' 칸을 입력해주세요.");
       return;
     }
 
-    if (_costController.text.isEmpty) {
+    if (_costController.text.isEmpty){
       _showSnackBar("\'비용\' 칸을 입력해주세요.");
       return;
     }
 
-    if (_RequestController.text.isEmpty) {
+    if (_RequestController.text.isEmpty){
       _showSnackBar("\'요청 사항\' 칸을 입력해주세요.");
       return;
     }
@@ -63,20 +62,18 @@ class _NewPostScreenState extends State<NewPostScreen> {
       FirebaseFirestore db = FirebaseFirestore.instance;
       String? email = getUserEmail();
 
-      // 현재 사용자가 작성한 동일한 제목의 게시물이 있는지 확인합니다.
+      // 파이어스토어 컬렉션 'posts' 에서 이메일과 제목 찾아옴
       QuerySnapshot existingPosts = await db
           .collection('posts')
           .where('my_location', isEqualTo: _locationController.text)
           .where('user_email', isEqualTo: email)
           .get();
 
-      if (existingPosts.docs.isNotEmpty && widget.post == null) {
-        // 동일한 제목의 게시물이 이미 존재합니다.
-        _showSnackBar("동일한 제목의 게시물이 이미 존재합니다.");
-      } else {
+      if (existingPosts.docs.isNotEmpty && widget.post == null){
+        _showSnackBar('동일한 제목의 게시물이 이미 존재합니다.');
+      }else {
         // 새 게시물 추가 또는 기존 게시물 수정
         String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
-
         await db.collection('posts').doc(documentName).set({
           'my_location': _locationController.text,
           'store': _storeController.text,
@@ -92,7 +89,6 @@ class _NewPostScreenState extends State<NewPostScreen> {
       _showSnackBar("게시물 업로드에 실패했습니다.");
     }
   }
-
 
 
   //스낵바를 표시하는 함수
