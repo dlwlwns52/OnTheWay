@@ -95,10 +95,10 @@ class PostManager {
   }
 
 
-  void showPostDetailsOrEditDeleteDialog(BuildContext context,
-      DocumentSnapshot doc) {
+  void helpAndExit(BuildContext context, DocumentSnapshot doc) {
     String? userEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일 가져오기
     bool isMyPost = userEmail == doc['user_email']; // 현재 게시물이 로그인한 사용자의 것인지 확인
+
 
     if (isMyPost) {
       _showEditDeleteDialog(context, doc); // 수정 및 삭제 옵션 제공
@@ -124,6 +124,21 @@ class PostManager {
               ),
             ),
             actions: <Widget>[
+
+              ElevatedButton( //'도와주기' 버튼
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.orangeAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
+                  ),
+                ),
+                child: Text('도와주기'),
+                onPressed: () {
+                  helpPost(doc); // 도와주기 기능 실행
+                  Navigator.of(context).pop(); // 대화 상자 닫기
+                },
+              ),
+
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   primary: Colors.orangeAccent, // 버튼 색상 변경
@@ -136,19 +151,6 @@ class PostManager {
                   Navigator.of(context).pop(); // 대화 상자 닫기
                 },
               ),
-              // ElevatedButton(
-              //   style: ElevatedButton.styleFrom(
-              //     primary: Colors.blue, // '도와주기' 버튼 색상 변경
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
-              //     ),
-              //   ),
-              //   child: Text('도와주기'),
-              //   onPressed: () {
-              //     helpPost(doc); // 도와주기 기능 실행
-              //     Navigator.of(context).pop(); // 대화 상자 닫기
-              //   },
-              // ),
             ],
           );
         },
@@ -156,19 +158,20 @@ class PostManager {
     }
   }
 
-  // void helpPost(DocumentSnapshot doc) async {
-  //   String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
-  //   String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
-  //
-  //   // Firebase Firestore에 '도와주기' 액션을 기록하거나, 작성자에게 알림 보내기
-  //   FirebaseFirestore.instance.collection('helpActions').add({
-  //     'post_id': doc.id,
-  //     'helper_email': helperEmail,
-  //     'owner_email': postOwnerEmail,
-  //     'timestamp': DateTime.now(),
-  //   });
-// 기타 필요한 메서드들...
+
+  void helpPost(DocumentSnapshot doc) async {
+    String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
+    String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
+
+    // Firebase Firestore에 '도와주기' 액션을 기록하거나, 작성자에게 알림 보내기
+    FirebaseFirestore.instance.collection('helpActions').add({
+      'post_id': doc.id,
+      'helper_email': helperEmail,
+      'owner_email': postOwnerEmail,
+      'timestamp': DateTime.now(),
+    });
   }
+
 
 
   String? getUserEmail() {
@@ -178,5 +181,5 @@ class PostManager {
   }
 
 
-// }
+}
 

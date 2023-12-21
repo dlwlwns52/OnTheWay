@@ -556,7 +556,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         // 사용 가능한 이름
         setState(() {
           _buttonText = '완료';
-          _buttonColor = Colors.green;
+          _buttonColor = Colors.orangeAccent;
           _isNicknameAvailable = true;
         });
 

@@ -162,7 +162,7 @@ class _BoardPageState extends State<BoardPage> {
                         children: <Widget>[
                           InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
                             onTap: () {
-                              postManager.showPostDetailsOrEditDeleteDialog(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                             },
                             child: Card( // 정보를 담는 카드 위젯
                               color: isMyPost ? Colors.orange[100]  : Colors.white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
@@ -183,7 +183,7 @@ class _BoardPageState extends State<BoardPage> {
                                         child: Text(
                                           data['store'] ?? '내용 없음', // 가게 정보 또는 '내용 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0),
+                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                       Expanded(
