@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ontheway_notebook/Board/WriteBoard.dart';
+import 'package:ontheway_notebook/NaverBoard/NaverWriteBoard.dart';
 
 
-class PostManager {
+class NaverPostManager {
 
   // 필요한 상태나 컨트롤러를 정의합니다.
   void _showEditDeleteDialog(BuildContext context, DocumentSnapshot doc) {
@@ -74,7 +74,7 @@ class PostManager {
     // 게시물 수정 화면으로 이동하는 메서드 정의
     Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
       MaterialPageRoute(
-        builder: (context) => NewPostScreen(post: doc),
+        builder: (context) => NaverNewPostScreen(post: doc),
       ),
     ).then((_) {
       // 화면이 닫힌 후에 이 부분이 실행됩니다.

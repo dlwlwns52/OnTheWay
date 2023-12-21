@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ontheway_notebook/Board/PostManager.dart';
+import 'package:ontheway_notebook/NaverBoard/NaverPostManager.dart';
 
 class MyPostsScreen extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String? userEmail = PostManager().getUserEmail(); // 현재 로그인한 사용자의 이메일
+    String? userEmail = NaverPostManager().getUserEmail(); // 현재 로그인한 사용자의 이메일
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +21,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('helpActions')
+            .collection('Naver_helpActions')
             .where('owner_email', isEqualTo: userEmail)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {

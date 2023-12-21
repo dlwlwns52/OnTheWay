@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Board/UiBoard.dart';
+import 'NaverBoard/NaverUiBoard.dart';
 import 'login/LoginScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
@@ -31,11 +32,19 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return LoadingScreen(); // 로딩 중일 때는 LoadingScreen을 표시
           } else {
-            // return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
-            return BoardPage();
+            return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
+            // return BoardPage();
+
           }
         },
       ),
+      routes: {
+        '/naverBoard': (context) => NaverBoardPage(),
+        // '/hanbatBoard': (context) => HanbatBoardScreen(),
+        // '/yahooBoard': (context) => YahooBoardScreen(),
+        // '/defaultBoard': (context) => DefaultBoardScreen(),
+        // 기타 라우트 추가 가능
+      },
     );
   }
 }

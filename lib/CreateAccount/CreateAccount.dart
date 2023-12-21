@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import '../Board/UiBoard.dart';
 import '../login/LoginScreen.dart';
+import 'NavigateToBoard.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -130,15 +131,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
   _onEmaildChanged() {
-    String pattern = r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$";
+    String pattern = r"^[a-zA-Z0-9]+$";// 영문과 또는 숫자를 포함해야 함
     RegExp regex = new RegExp(pattern);
     String value = _emailUserController.text;
     setState(() {
       if (value == null || value.trim().isEmpty) {
         _userEmailErrorText = '아이디를 입력해주세요.';
-      }
-      else if (!regex.hasMatch(value)) {
-        _userEmailErrorText = "영문/숫자만 가능합니다.";
+      } else if (!regex.hasMatch(value)) {
+        _userEmailErrorText = "영문과 숫자만 가능합니다.";
       } else {
         _userEmailErrorText = null;
       }
@@ -264,6 +264,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                 'naver.com',
                                 'edu.hanbat.ac.kr',
                                 'yahoo.com',
+                                'aaa.com',
                                 // Add more domains here
                               ]
                                   .map((String domain) => SimpleDialogOption(
@@ -481,14 +482,19 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
                                       // // 스낵바로 알림
                                       ScaffoldMessenger.of(rootContext).showSnackBar(
-                                        SnackBar(content: Text('회원가입이 완료되었습니다.')),
+                                        SnackBar(
+                                          content: Text(
+                                            '회원가입이 완료되었습니다.', textAlign: TextAlign.center,),
+                                          duration: Duration(seconds: 1),
+                                        ),
                                       );
 
-                                      // BoardPage로 이동
+                                      // login 화면으로 이동
                                       Navigator.pushReplacement(
                                         rootContext,
                                         MaterialPageRoute(builder: (context) => LoginScreen()),
                                       );
+
                                     } catch (e) {
                                       print("회원가입 실패: $e");
                                     }
@@ -511,6 +517,15 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     );
   }
 
+
+  //위치 변경 조정
+  // 회원가입 로직을 처리하는 메서드 내에서 이메일 검증 후 navigateToBoard를 호출
+  void createAccountAndNavigate() {
+    String email = '${_emailUserController.text}@$_dropdownValue';
+    // 회원가입 로직...
+    // 성공적으로 회원가입이 되면, NavigateToBoard의 navigate 메소드를 호출
+    NavigateToBoard(context).navigate(email);
+  }
 
 
   void _checkNicknameAvailability() async {
@@ -657,14 +672,16 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     String email = _emailUserController.text + "@" + _dropdownValue!;
 
     // 이메일 주소 형식 검사
-    if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text )) {
+    if (!RegExp(r"^[a-zA-Z0-9]+$").hasMatch(_emailUserController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
+        SnackBar(
+          content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );
       return;
     }
+
 
     // 선택되지 않은 학교 메일 처리
     if (_dropdownValue == '학교 메일 선택') {
@@ -745,16 +762,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     if (_confirmPasswordController.text != _passwordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호가 일치하지 않습니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-
-
-    if (!RegExp(r"^(?=.*[a-zA-Z])[a-zA-Z0-9]+$").hasMatch(_emailUserController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );

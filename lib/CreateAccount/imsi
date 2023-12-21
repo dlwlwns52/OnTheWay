@@ -485,7 +485,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         SnackBar(content: Text('회원가입이 완료되었습니다.')),
                                       );
 
-                                      // BoardPage로 이동
+                                      // login 화면으로 이동
                                       Navigator.pushReplacement(
                                         rootContext,
                                         MaterialPageRoute(builder: (context) => LoginScreen()),

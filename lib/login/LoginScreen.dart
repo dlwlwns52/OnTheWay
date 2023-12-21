@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../CreateAccount/CreateAccount.dart';
+import 'package:ontheway_notebook/CreateAccount/CreateAccount.dart';
 import '../Board/UiBoard.dart';
+import '../NaverBoard/NaverUiBoard.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -187,13 +188,41 @@ class _LoginScreenState extends State<LoginScreen> {
         password: passwordController.text,
       );
 
-      if (userCredential.user != null) {
-        // 로그인 성공
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => BoardPage()),
-        );
-        // 로그인 성공 메시지 표시
+      // if (userCredential.user != null) {
+      //   // 로그인 성공
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => BoardPage()),
+      //   );
+
+        if (userCredential.user != null) {
+          // 로그인 성공
+          String email = userCredential.user!.email!;
+          String domain = email.split('@').last; // 이메일에서 도메인 추출
+
+          switch (domain.toLowerCase()) {
+            case 'naver.com':
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NaverBoardPage()),
+              );
+              break;
+            // case 'hanbat.ac.kr':
+            //   Navigator.pushReplacement(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+            //   );
+            //   break;
+          // 다른 도메인에 대한 처리...
+            default:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => BoardPage()),
+              );
+              break;
+        }
+
+      // 로그인 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('로그인이 완료되었습니다.', textAlign: TextAlign.center,),
             duration: Duration(seconds: 1),
@@ -237,5 +266,4 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoginPressed = false; // 로그인 시도 종료시 다시 상태를 false로 바꿈
     });
   }
-
 }
