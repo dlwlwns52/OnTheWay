@@ -86,7 +86,7 @@ class NaverPostManager {
   void _deletePost(String docId) async {
     // [게시물 삭제 로직]
     try {
-      await FirebaseFirestore.instance.collection('posts').doc(docId).delete();
+      await FirebaseFirestore.instance.collection('naver_posts').doc(docId).delete();
     }
     catch (e) {
       print('게시물 삭제 중 오류 발생: $e'); // 오류 발생 시 콘솔에 오류 메시지 출력
@@ -135,8 +135,8 @@ class NaverPostManager {
                 ),
                 child: Text('도와주기'),
                 onPressed: () {
-                  helpPost(doc); // 도와주기 기능 실행
-                  Navigator.of(context).pop(); // 대화 상자 닫기
+                  helpPost(context, doc); // 도와주기 기능 실행
+                  // Navigator.of(context).pop(); // 대화 상자 닫기
                 },
               ),
 
@@ -160,18 +160,50 @@ class NaverPostManager {
   }
 
 
-  void helpPost(DocumentSnapshot doc) async {
+  Future<String> getNickname(String email) async {
+    var userDocument = await FirebaseFirestore.instance.collection('users').doc(email).get();
+    return userDocument.data()?['nickname'] ?? '';
+  }
+
+  void helpPost(BuildContext context, DocumentSnapshot doc) async {
     String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
     String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
 
-    // Firebase Firestore에 '도와주기' 액션을 기록하거나, 작성자에게 알림 보내기
-    FirebaseFirestore.instance.collection('helpActions').add({
-      'post_id': doc.id,
-      'helper_email': helperEmail,
-      'owner_email': postOwnerEmail,
-      'timestamp': DateTime.now(),
-    });
+    try {
+      // 도와주는 사람과 게시물 작성자의 닉네임을 가져옵니다.
+      String helperNickname = await getNickname(helperEmail!);
+      String ownerNickname = await getNickname(postOwnerEmail);
+
+      // 문서 이름을 만듭니다. 예: "helperNickname_ownerNickname"
+      String documentName = "${helperNickname}_${ownerNickname}";
+
+      // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
+      await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
+        'post_id': doc.id,
+        'helper_email': helperEmail,
+        'owner_email': postOwnerEmail,
+        'timestamp': DateTime.now(),
+      });
+
+      // 성공 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 성공적으로 제공하였습니다."),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // 오류 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 제공하는 데 실패하였습니다: $e"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
+
+
 
 
 

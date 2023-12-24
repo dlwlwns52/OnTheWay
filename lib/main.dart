@@ -32,8 +32,8 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return LoadingScreen(); // 로딩 중일 때는 LoadingScreen을 표시
           } else {
-            return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
-            // return BoardPage();
+            // return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
+            return NaverBoardPage();
 
           }
         },

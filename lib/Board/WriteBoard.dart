@@ -84,6 +84,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
         });
 
         Navigator.of(context).pop();
+
       }
     } catch (e) {
       _showSnackBar("게시물 업로드에 실패했습니다.");

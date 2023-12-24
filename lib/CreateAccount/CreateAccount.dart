@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import '../Board/UiBoard.dart';
 import '../login/LoginScreen.dart';
-import 'NavigateToBoard.dart';
+import '../login/NavigateToBoard.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -692,7 +692,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
       return;
     }
-
 
     ActionCodeSettings actionCodeSettings = ActionCodeSettings(
       url: 'https://onthewayljj.page.link/c8Ci',

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ontheway_notebook/Board/WriteBoard.dart';
 
@@ -134,9 +135,10 @@ class PostManager {
                   ),
                 ),
                 child: Text('도와주기'),
+
                 onPressed: () {
-                  helpPost(doc); // 도와주기 기능 실행
-                  Navigator.of(context).pop(); // 대화 상자 닫기
+                  helpPost(context, doc); // 도와주기 기능 실행
+                  // Navigator.of(context).pop(); // 대화 상자 닫기
                 },
               ),
 
@@ -160,18 +162,66 @@ class PostManager {
   }
 
 
-  void helpPost(DocumentSnapshot doc) async {
+  // void helpPost(DocumentSnapshot doc) async {
+  //   String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
+  //   String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
+  //
+  //   // Firebase Firestore에 '도와주기' 액션을 기록하거나, 작성자에게 알림 보내기
+  //       String documentName = "hi";
+  //       FirebaseFirestore db = FirebaseFirestore.instance;
+  //       // 문서 이름을 지정하여 Firestore에 '도와주기' 액션을 기록합니다.
+  //       await db.collection('helpActions').doc(documentName).set({
+  //         'post_id': doc.id,
+  //         'helper_email': helperEmail,
+  //         'owner_email': postOwnerEmail,
+  //         'timestamp': DateTime.now(),
+  //       });
+  //
+  // }
+
+  Future<String> getNickname(String email) async {
+    var userDocument = await FirebaseFirestore.instance.collection('users').doc(email).get();
+    return userDocument.data()?['nickname'] ?? '';
+  }
+
+  void helpPost(BuildContext context, DocumentSnapshot doc) async {
     String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
     String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
 
-    // Firebase Firestore에 '도와주기' 액션을 기록하거나, 작성자에게 알림 보내기
-    FirebaseFirestore.instance.collection('helpActions').add({
-      'post_id': doc.id,
-      'helper_email': helperEmail,
-      'owner_email': postOwnerEmail,
-      'timestamp': DateTime.now(),
-    });
+    try {
+      // 도와주는 사람과 게시물 작성자의 닉네임을 가져옵니다.
+      String helperNickname = await getNickname(helperEmail!);
+      String ownerNickname = await getNickname(postOwnerEmail);
+
+      // 문서 이름을 만듭니다. 예: "helperNickname_ownerNickname"
+      String documentName = "${helperNickname}_${ownerNickname}";
+
+      // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
+      await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
+        'post_id': doc.id,
+        'helper_email': helperEmail,
+        'owner_email': postOwnerEmail,
+        'timestamp': DateTime.now(),
+      });
+
+      // 성공 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 성공적으로 제공하였습니다."),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // 오류 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 제공하는 데 실패하였습니다: $e"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
+
 
 
 
