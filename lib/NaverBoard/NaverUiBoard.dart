@@ -42,7 +42,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
 
       appBar: AppBar(
         backgroundColor: Colors.orange, // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('네이버 게시판'), // 앱 바의 타이틀을 '게시판'으로 설정합니다.
+        title: Text('네이버 게시판', style: TextStyle(fontWeight: FontWeight.bold ),), // 앱 바의 타이틀을 '게시판'으로 설정합니다.
         centerTitle: true,
 
         leading: IconButton(
@@ -165,7 +165,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                               postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                             },
                             child: Card( // 정보를 담는 카드 위젯
-                              color: isMyPost ? Colors.orange[100]  : Colors.white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
+                              color: isMyPost ? Colors.orange[100]: Colors.white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
                               child: Container(
                                 height: 100, // 카드의 높이 설정
                                 child: Padding(

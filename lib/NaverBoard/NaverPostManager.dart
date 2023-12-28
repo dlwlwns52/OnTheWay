@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +5,9 @@ import 'package:ontheway_notebook/NaverBoard/NaverWriteBoard.dart';
 
 
 class NaverPostManager {
+
+  FirebaseFirestore db = FirebaseFirestore.instance;
+
 
   // 필요한 상태나 컨트롤러를 정의합니다.
   void _showEditDeleteDialog(BuildContext context, DocumentSnapshot doc) {
@@ -52,7 +54,10 @@ class NaverPostManager {
                 // ),
               ),
               onPressed: () {
-                _deletePost(doc.id); // '삭제' 버튼 클릭 시 게시물 삭제 메서드 실행
+                String postStore = doc['store']; // 게시물의 'store' 값을 가져옵니다.
+                String? postOwnerEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일을 가져옵니다.
+
+                _deletePost(doc.id, postStore, postOwnerEmail!);// '삭제' 버튼 클릭 시 게시물 삭제 메서드 실행
                 Navigator.of(context).pop(); // 대화 상자 닫기
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -69,7 +74,6 @@ class NaverPostManager {
     );
   }
 
-
   void _navigateToEditPostScreen(BuildContext context, DocumentSnapshot doc) {
     // 게시물 수정 화면으로 이동하는 메서드 정의
     Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
@@ -83,17 +87,25 @@ class NaverPostManager {
   }
 
 
-  void _deletePost(String docId) async {
-    // [게시물 삭제 로직]
+  void _deletePost(String docId,String postStore, String postOwnerEmail) async {
     try {
+      print(postStore);
+      print(postOwnerEmail);
+      // 'naverUserHelpStatus' 컬렉션에서 문서 이름 생성
+      String documentName = createDocumentName(postStore, postOwnerEmail);
+      print(documentName);
+      // 'naverUserHelpStatus' 컬렉션에서 해당 문서 삭제
+      await FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).delete();
+
+      // 게시물 삭제
       await FirebaseFirestore.instance.collection('naver_posts').doc(docId).delete();
-    }
-    catch (e) {
-      print('게시물 삭제 중 오류 발생: $e'); // 오류 발생 시 콘솔에 오류 메시지 출력
-      // 여기에 사용자에게 오류 발생을 알리는 UI 로직을 추가할 수 있습니다.
-      // 예: 오류 메시지를 화면에 표시하거나, 사용자에게 알림을 보내는 등
+
+    } catch (e) {
+      print('게시물 삭제 중 오류 발생: $e');
+      // 오류 발생시 UI 로직 추가...
     }
   }
+
 
 
   void helpAndExit(BuildContext context, DocumentSnapshot doc) {
@@ -136,7 +148,6 @@ class NaverPostManager {
                 child: Text('도와주기'),
                 onPressed: () {
                   helpPost(context, doc); // 도와주기 기능 실행
-                  // Navigator.of(context).pop(); // 대화 상자 닫기
                 },
               ),
 
@@ -159,60 +170,152 @@ class NaverPostManager {
     }
   }
 
-
-  Future<String> getNickname(String email) async {
-    var userDocument = await FirebaseFirestore.instance.collection('users').doc(email).get();
-    return userDocument.data()?['nickname'] ?? '';
-  }
-
-  void helpPost(BuildContext context, DocumentSnapshot doc) async {
-    String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
-    String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
-
-    try {
-      // 도와주는 사람과 게시물 작성자의 닉네임을 가져옵니다.
-      String helperNickname = await getNickname(helperEmail!);
-      String ownerNickname = await getNickname(postOwnerEmail);
-
-      // 문서 이름을 만듭니다. 예: "helperNickname_ownerNickname"
-      String documentName = "${helperNickname}_${ownerNickname}";
-
-      // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
-      await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
-        'post_id': doc.id,
-        'helper_email': helperEmail,
-        'owner_email': postOwnerEmail,
-        'timestamp': DateTime.now(),
-      });
-
-      // 성공 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("도움을 성공적으로 제공하였습니다."),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      // 오류 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("도움을 제공하는 데 실패하였습니다: $e"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-
-
-
-
   String? getUserEmail() {
     // 현재 로그인한 사용자의 이메일 반환하는 메서드 정의
     final user = FirebaseAuth.instance.currentUser; // 현재 로그인한 사용자 정보 가져오기
     return user?.email; // 사용자의 이메일 반환
   }
 
+
+  void helpPost(BuildContext context, DocumentSnapshot doc) async {
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
+      // currentUser가 null인 경우, 즉 사용자가 로그인하지 않았다면, 오류 메시지를 표시하고 함수를 종료합니다.
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("로그인이 필요합니다."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      // String userId = currentUser.uid; // 현재 사용자의 UID
+      String docId = doc.id; // 게시물의 고유 ID
+      String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
+      String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
+      // 'naver_posts' 컬렉션에서 해당 게시물의 'store' 값을 가져옵니다.
+      DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
+      String postStore = postDoc['store']; // 게시물의 'store' 필드
+
+      // 현재 시간을 기반으로 타임스탬프 생성
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+
+      // 'naverUserHelpStatus' 컬렉션에서 특정 문서(도와주기 상태)를 가져옵니다.
+      // 문서 이름은 postStore와 postOwnerEmail을 결합하여 생성됩니다.
+      Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
+
+      // 가져온 문서에서 docId를 키로 하는 상태를 확인합니다.
+      // 문서가 없거나 해당 키가 없으면 기본값을 사용합니다.
+      var postStatus = helpStatus[helperEmail] ?? {'clickCount': 0, 'lastClickedTime': DateTime(1970)};
+
+      int clickCount = postStatus['clickCount']; // 클릭 횟수를 가져옵니다.
+      // lastClickedTime을 가져오기 위한 초기화
+      DateTime lastClickedTime;
+
+      // postStatus에서 lastClickedTime이 Timestamp 형식인지 확인합니다.
+      // Timestamp 형식이면 DateTime으로 변환하고, 아니면 기본값을 사용합니다.
+      if (postStatus['lastClickedTime'] is Timestamp) {
+        lastClickedTime = (postStatus['lastClickedTime'] as Timestamp).toDate();
+      } else {
+        lastClickedTime = postStatus['lastClickedTime'] ?? DateTime(1970);
+      }
+
+// 현재 시간을 가져옵니다.
+      DateTime now = DateTime.now();
+
+// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.
+      if (clickCount >= 2) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("도와주기 요청 횟수 초과입니다.", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+// 만약 마지막 '도와주기' 요청 이후 5초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다.
+      if (now.difference(lastClickedTime).inSeconds < 5) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+
+      updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
+
+      // 문서 이름을 만듭니다. 예: "postStore_helperEmail_timestamp"
+      String documentName = "${postStore}_${helperEmail}_$timestamp";
+
+      // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
+      await FirebaseFirestore.instance.collection('naver_helpActions').doc(documentName).set({
+        'post_id': doc.id,
+        'helper_email': helperEmail,
+        'owner_email': postOwnerEmail,
+        'timestamp': DateTime.now(),
+      });
+
+      // 대화상자를 닫고 스낵바 표시
+      Navigator.of(context).pop();
+      // 성공 메시지 표시
+      await ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 성공적으로 제공하였습니다.",textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      ).closed;
+
+
+    } catch (e) {
+      // 오류 메시지 표시
+      // 대화상자를 닫고 스낵바 표시
+      Navigator.of(context).pop();
+      await ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("도움을 제공하는 데 실패하였습니다: $e",textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      ).closed;
+    }
+  }
+
+// 'naverUserHelpStatus' 컬렉션에서 특정 문서를 조회하는 메서드입니다.
+// 조회에 성공하면 문서의 데이터를 Map 형태로 반환하고, 없으면 빈 Map을 반환합니다.
+  Future<Map<String, dynamic>> getUserHelpClickStatus(String postStore, String? postOwnerEmail) async {
+    String documentName = createDocumentName(postStore, postOwnerEmail);
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).get();
+    if (userDoc.exists) {
+      return userDoc.data() as Map<String, dynamic>;
+    }
+    return {};
+  }
+
+// 'naverUserHelpStatus' 컬렉션에 사용자의 '도와주기' 상태를 업데이트하는 함수
+  void updateHelpClickStatus(String postStore, String postOwnerEmail, String helperEmail) {
+    // 문서 이름은 게시물을 올린 사용자의 이메일과 스토어 이름을 결합하여 생성합니다.
+    String documentName = createDocumentName(postStore, postOwnerEmail);
+
+    // 문서에 '도와주기'를 누른 사용자의 이메일을 키로 하여 클릭 카운트와 마지막 클릭 시간을 저장합니다.
+    FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).set({
+      helperEmail: { // 키
+        'clickCount': FieldValue.increment(1),
+        'lastClickedTime': FieldValue.serverTimestamp(),
+      }
+    }, SetOptions(merge: true));
+  }
+
+
+  String createDocumentName(String postStore, String? postOwnerEmail) {
+    return "${postStore}_${postOwnerEmail}";
+  }
 
 }
 
