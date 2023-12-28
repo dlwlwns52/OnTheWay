@@ -387,136 +387,97 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
               SizedBox(height: 30),
 
-
-              // Container(
-              //   padding: const EdgeInsets.fromLTRB(1, 1, 10, 10),
-              //   child: FractionallySizedBox(
-              //     widthFactor: 0.8, // Set the width as a fraction (0.8 means 80% of the available width)
-              //     child: ElevatedButton(
-              //       style: ButtonStyle(
-              //         alignment: Alignment.center,
-              //         backgroundColor: MaterialStateProperty.all(Colors.orange),
-              //       ),
-              //       child: Text(
-              //         '이메일 인증하기',
-              //         textAlign: TextAlign.center,
-              //         style: TextStyle(color: Colors.black87),
-              //       ),
-              //       onPressed: () async {
-              //         // await sendSignInWithEmailLink();
-              //       },
-              //
-              //     ),
-              //   ),
-              // ),
-              //
-              // Text(
-              //   isEmailVerified
-              //       ? '이메일이 인증되었습니다.'
-              //       : '이메일 인증이 필요합니다.',
-              //   style: TextStyle(
-              //     color: isEmailVerified ? Colors.green : Colors.red,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              // ),
-
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(1, 30, 10, 1),
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5, // Set the width as a fraction (0.8 means 80% of the available width)
-                    child: ElevatedButton(
-                      focusNode: _buttonFocusNode,
-                      style: ButtonStyle(
-                        alignment: Alignment.center,
-                        backgroundColor: MaterialStateProperty.all(Colors.orange),
-                      ),
-                      child: Text(
-                        '회원가입',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                      onPressed: () async {
-                        // 유효성 검사 수행
-                        if (_validateFields()) {
-                          bool emailAvailable = await _checkEmailAvailability();
-                          if(!emailAvailable) return; // 이메일이 이미 사용 중이면 진행 중단
-
-                          final rootContext = context;
-
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text('회원가입 완료'),
-                              content: Text('회원가입을 완료 하시겠습니까?'),
-                              actions: [
-                                TextButton(
-                                  child: Text('취소'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();  // 다이어로그 닫기
-                                  },
-                                ),
-                                TextButton(
-                                  child: Text('확인'),
-                                  onPressed: () async {
-                                    Navigator.of(context).pop();  // 다이어로그 닫기
-
-                                    String nickname = _nicknameController.text;
-                                    String password = _passwordController.text;
-                                    String email = _emailUserController.text + "@" + _dropdownValue!;
-                                    try {
-                                      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                        email: email,
-                                        password: password,
-                                      );
-                                      DateTime now = DateTime.now();
-                                      String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-
-                                      final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-                                      await usersCollection.doc(nickname).set({
-                                        'nickname': nickname,
-                                        'email': email,
-                                        'joined_date': formattedDate,
-                                      });
-
-                                      // // 스낵바로 알림
-                                      ScaffoldMessenger.of(rootContext).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '회원가입이 완료되었습니다.', textAlign: TextAlign.center,),
-                                          duration: Duration(seconds: 1),
-                                        ),
-                                      );
-
-                                      // login 화면으로 이동
-                                      Navigator.pushReplacement(
-                                        rootContext,
-                                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                                      );
-
-                                    } catch (e) {
-                                      print("회원가입 실패: $e");
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
-                    ),
-
-                  ),
-                ),
-              ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          margin: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.orange,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: ElevatedButton(
+            onPressed: () async {
+              if (_validateFields()) {
+                bool emailAvailable = await _checkEmailAvailability();
+                if (!emailAvailable) return;
+
+                final rootContext = context;
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)), // 모서리를 둥글게 처리
+                    title: Text('회원가입 완료', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold),),
+                    content: Text('회원가입을 완료 하시겠습니까?', textAlign: TextAlign.center),
+                    actions: [
+                      TextButton(
+                        child: Text('확인', style: TextStyle(color: Colors.black),),
+                        onPressed: () async {
+                          Navigator.of(context).pop();  // 다이어로그 닫기
+
+                          String nickname = _nicknameController.text;
+                          String password = _passwordController.text;
+                          String email = _emailUserController.text + "@" + _dropdownValue!;
+                          try {
+                            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                              email: email,
+                              password: password,
+                            );
+                            DateTime now = DateTime.now();
+                            String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+
+                            final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+                            await usersCollection.doc(nickname).set({
+                              'nickname': nickname,
+                              'email': email,
+                              'joined_date': formattedDate,
+                            });
+
+                            // // 스낵바로 알림
+                            ScaffoldMessenger.of(rootContext).showSnackBar(
+                              SnackBar(content: Text('회원가입이 완료되었습니다.', textAlign: TextAlign.center,)),
+                            );
+
+                            // BoardPage로 이동
+                            Navigator.pushReplacement(
+                              rootContext,
+                              MaterialPageRoute(builder: (context) => LoginScreen()),
+                            );
+                          } catch (e) {
+                            print("회원가입 실패: $e");
+                          }
+                        },
+                      ),
+
+                      TextButton(
+                        child: Text('취소', style: TextStyle(color: Colors.black), ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+
+                    ],
+                  ),
+                );
+              }
+            },
+
+            child: Text(
+              '회원가입',
+              style: TextStyle(fontSize: 18, color: Colors.black),
+            ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.transparent,
+              shadowColor: Colors.transparent,
+            ),
           ),
         ),
       ),
     );
   }
-
 
   //위치 변경 조정
   // 회원가입 로직을 처리하는 메서드 내에서 이메일 검증 후 navigateToBoard를 호출

@@ -15,9 +15,9 @@ class NaverBoardPage extends StatefulWidget {
 class _NaverBoardPageState extends State<NaverBoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   // PostManager 인스턴스 생성
   final postManager = NaverPostManager();
-
 
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
@@ -41,8 +41,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Colors.orange, // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('네이버 게시판', style: TextStyle(fontWeight: FontWeight.bold ),), // 앱 바의 타이틀을 '게시판'으로 설정합니다.
+        backgroundColor: Colors.orange,
+        // 앱 바의 배경색을 오렌지색으로 설정합니다.
+        title: Text('네이버 게시판', style: TextStyle(fontWeight: FontWeight.bold),),
+        // 앱 바의 타이틀을 '게시판'으로 설정합니다.
         centerTitle: true,
 
         leading: IconButton(
@@ -50,28 +52,30 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           onPressed: () {
             // 아이콘 버튼이 눌렸을 때 수행할 동작을 정의합니다.
             Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => LoginScreen())); // 로그인 화면으로 이동합니다.
+                context, MaterialPageRoute(
+                builder: (context) => LoginScreen())); // 로그인 화면으로 이동합니다.
           },
         ),
 
-        actions: [
-          IconButton(
-            icon: Icon(Icons.create), // '생성' 아이콘을 설정합니다.
-            onPressed: () {
-              // 아이콘 버튼이 눌렸을 때 새 게시글 작성 화면으로 이동합니다.
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NaverNewPostScreen()), // NewPostScreen 위젯으로 이동합니다.
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.person),
-            onPressed: (){
-              // 본인 확인 클래스 생성시 그 클래스로 이동하는 코드 추가
-            },
-          )
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.create), // '생성' 아이콘을 설정합니다.
+        //     onPressed: () {
+        //       // 아이콘 버튼이 눌렸을 때 새 게시글 작성 화면으로 이동합니다.
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) =>
+        //             NaverNewPostScreen()), // NewPostScreen 위젯으로 이동합니다.
+        //       );
+        //     },
+        //   ),
+        //   IconButton(
+        //     icon: Icon(Icons.person),
+        //     onPressed: () {
+        //       // 본인 확인 클래스 생성시 그 클래스로 이동하는 코드 추가
+        //     },
+        //   )
+        // ],
       ),
 
 //게시판 몸통
@@ -83,10 +87,11 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
             children: <Widget>[
               IconButton(
                 icon: Icon(Icons.home),
-                onPressed: (){
+                onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
+                      content: Text(
+                        "상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
                       // behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 1),
                     ),
@@ -96,7 +101,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
 
               IconButton(
                 icon: Icon(Icons.store),
-                onPressed: (){
+                onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("가게 위치 입니다.", textAlign: TextAlign.center,),
@@ -109,7 +114,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
 
               IconButton(
                 icon: Icon(Icons.monetization_on),
-                onPressed: (){
+                onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("도움 비용입니다.", textAlign: TextAlign.center,),
@@ -123,11 +128,14 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           ),
 
           Flexible( // Flexible 위젯을 사용하여 자식 위젯이 화면 공간을 유연하게 확장할 수 있도록 함
-            child: StreamBuilder<List<DocumentSnapshot>>( // Firestore 데이터 스트림을 사용하여 게시물 목록을 갱신하는 위젯
+            child: StreamBuilder<List<
+                DocumentSnapshot>>( // Firestore 데이터 스트림을 사용하여 게시물 목록을 갱신하는 위젯
               stream: getPosts(), // getPosts() 함수로부터 Firestore 데이터 스트림을 얻어옴
               builder: (context, snapshot) { // 스트림의 상태에 따라 화면을 동적으로 구성하는 빌더 함수
-                if (snapshot.connectionState == ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
-                  return Center(child: CircularProgressIndicator()); // 로딩 중을 나타내는 화면을 반환
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
+                  return Center(
+                      child: CircularProgressIndicator()); // 로딩 중을 나타내는 화면을 반환
                 } else if (snapshot.hasError) { // 데이터 로딩 중에 오류가 발생한 경우
                   return Center(child: Text('오류가 발생했습니다.')); // 오류 메시지를 표시
                 } else if (snapshot.hasData) { // 데이터가 로딩되었고, 데이터가 있는 경우
@@ -136,8 +144,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
 
                   // 게시물 목록을 사용자 이메일을 기준으로 정렬
                   posts.sort((a, b) {
-                    Map<String, dynamic> dataA = a.data() as Map<String, dynamic>;
-                    Map<String, dynamic> dataB = b.data() as Map<String, dynamic>;
+                    Map<String, dynamic> dataA = a.data() as Map<String,
+                        dynamic>;
+                    Map<String, dynamic> dataB = b.data() as Map<String,
+                        dynamic>;
                     bool isMyPostA = dataA['user_email'] == myEmail;
                     bool isMyPostB = dataB['user_email'] == myEmail;
                     if (isMyPostA && !isMyPostB) return -1;
@@ -149,48 +159,62 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                     itemCount: posts.length, // 아이템 개수는 게시물 목록의 길이
                     itemBuilder: (context, index) { // 각 아이템을 생성하는 함수 정의
                       DocumentSnapshot doc = posts[index]; // 현재 아이템에 대한 Firestore 문서
-                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Firestore 문서 데이터 가져옴
-                      bool isMyPost = data['user_email'] == myEmail; // 현재 아이템이 내 게시물인지 여부
+                      Map<String, dynamic> data = doc.data() as Map<
+                          String,
+                          dynamic>; // Firestore 문서 데이터 가져옴
+                      bool isMyPost = data['user_email'] ==
+                          myEmail; // 현재 아이템이 내 게시물인지 여부
                       bool nextPostIsMine = false;
 
                       if (index + 1 < posts.length) { // 다음 아이템이 있는 경우
-                        Map<String, dynamic> nextData = posts[index + 1].data() as Map<String, dynamic>; // 다음 아이템의 데이터
-                        nextPostIsMine = nextData['user_email'] == myEmail; // 다음 아이템이 내 게시물인지 여부
+                        Map<String, dynamic> nextData = posts[index + 1]
+                            .data() as Map<String, dynamic>; // 다음 아이템의 데이터
+                        nextPostIsMine = nextData['user_email'] ==
+                            myEmail; // 다음 아이템이 내 게시물인지 여부
                       }
 
                       return Column(
                         children: <Widget>[
                           InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
                             onTap: () {
-                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                              postManager.helpAndExit(context,
+                                  doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                             },
                             child: Card( // 정보를 담는 카드 위젯
-                              color: isMyPost ? Colors.orange[100]: Colors.white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
+                              color: isMyPost ? Colors.orange[100] : Colors
+                                  .white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
                               child: Container(
                                 height: 100, // 카드의 높이 설정
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0), // 내부 패딩 설정
+                                  padding: const EdgeInsets.all(8.0),
+                                  // 내부 패딩 설정
                                   child: Row(
                                     children: <Widget>[
                                       Expanded(
                                         child: Text(
-                                          data['my_location'] ?? '제목 없음', // 위치 정보 또는 '제목 없음' 표시
+                                          data['my_location'] ?? '제목 없음',
+                                          // 위치 정보 또는 '제목 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 20.0,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                       Expanded(
                                         child: Text(
-                                          data['store'] ?? '내용 없음', // 가게 정보 또는 '내용 없음' 표시
+                                          data['store'] ?? '내용 없음',
+                                          // 가게 정보 또는 '내용 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 20.0,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                       Expanded(
                                         child: Text(
-                                          data['cost'] ?? '추가 내용 없음', // 비용 정보 또는 '추가 내용 없음' 표시
+                                          data['cost'] ?? '추가 내용 없음',
+                                          // 비용 정보 또는 '추가 내용 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 20.0,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                     ],
@@ -210,14 +234,39 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                     },
                   );
                 } else { // 데이터가 로딩되지 않았거나 비어 있는 경우
-                  return Center(child: Text('게시글이 없습니다.')); // '게시글이 없습니다.' 메시지를 표시
+                  return Center(
+                      child: Text('게시글이 없습니다.')); // '게시글이 없습니다.' 메시지를 표시
                 }
               },
             ),
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.create, color: Colors.black,),
+            label: '새 게시글',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: Colors.black,),
+            label: '프로필',
+          ),
+        ],
+        selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
+        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
+            );
+          } else if (index == 1) {
+            // 본인 확인 클래스로 이동하는 코드
+          }
+        },
+        selectedLabelStyle: TextStyle(color: Colors.orange), // 선택된 항목의 텍스트 색상 설정
+      ),
     );
-
   }
 }

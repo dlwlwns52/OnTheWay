@@ -97,15 +97,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     TextButton(
-                      child: Text('이메일 찾기'),
+                      child: Text('이메일 찾기',style: TextStyle(color: Colors.black),),
                       onPressed: () {},
                     ),
                     TextButton(
-                      child: Text('비밀번호 찾기'),
+                      child: Text('비밀번호 찾기',style: TextStyle(color: Colors.black),),
                       onPressed: () {},
                     ),
                     TextButton(
-                      child: Text('회원가입'),
+                      child: Text('회원가입',style: TextStyle(color: Colors.black),),
                       onPressed: () {
                         Navigator.push(
                             context,
