@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ontheway_notebook/NaverBoard/NaverWriteBoard.dart';
+import 'package:OnTheWay/NaverBoard/NaverWriteBoard.dart';
 
 
 class NaverPostManager {
@@ -192,9 +192,8 @@ class NaverPostManager {
         return;
       }
 
-      // String userId = currentUser.uid; // 현재 사용자의 UID
-      String docId = doc.id; // 게시물의 고유 ID
       String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
+
       String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
       // 'naver_posts' 컬렉션에서 해당 게시물의 'store' 값을 가져옵니다.
       DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
@@ -231,7 +230,7 @@ class NaverPostManager {
       if (clickCount >= 2) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("도와주기 요청 횟수 초과입니다.", textAlign: TextAlign.center,),
+            content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
             duration: Duration(seconds: 2),
           ),
         );
@@ -250,15 +249,35 @@ class NaverPostManager {
       }
 
 
+      // 도와주기 버튼 누른 사람 닉네임 users 컬렉션에서 조회한 후 변수에 저ㄹ장!
+      // Firestore의 'users' 컬렉션에서 helperEmail에 해당하는 사용자 문서를 조회합니다.
+      final usersCollection = FirebaseFirestore.instance.collection('users');
+      final userDoc = await usersCollection.where('email', isEqualTo: helperEmail).get();
+
+      // 사용자 문서가 존재하면 닉네임을 가져옵니다.
+      String helperNickname = '';
+      if (userDoc.docs.isNotEmpty) {
+        helperNickname = userDoc.docs.first.data()['nickname'];
+      } else {
+        // 사용자 문서가 없다면 에러 처리를 합니다.
+        // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
+        print('User document not found for email: $helperEmail');
+        return;
+      }
+
+
+
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 
       // 문서 이름을 만듭니다. 예: "postStore_helperEmail_timestamp"
       String documentName = "${postStore}_${helperEmail}_$timestamp";
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
-      await FirebaseFirestore.instance.collection('naver_helpActions').doc(documentName).set({
+      await FirebaseFirestore.instance.collection('helpActions').doc("naver_" + documentName).set({
+        'University' : "naver",
         'post_id': doc.id,
         'helper_email': helperEmail,
+        'helper_email_nickname' : helperNickname,
         'owner_email': postOwnerEmail,
         'timestamp': DateTime.now(),
       });

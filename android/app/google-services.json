@@ -1,36 +1,27 @@
 {
   "project_info": {
-    "project_number": "752487126906",
-    "project_id": "ontheway-ce8d9",
-    "storage_bucket": "ontheway-ce8d9.appspot.com"
+    "project_number": "40009619030",
+    "firebase_url": "https://ontheway-b2bdf-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ontheway-b2bdf",
+    "storage_bucket": "ontheway-b2bdf.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:752487126906:android:102121ee4bb20d5bb328c3",
+        "mobilesdk_app_id": "1:40009619030:android:856c131e330324fadc8df7",
         "android_client_info": {
-          "package_name": "com.example.ontheway_notebook"
+          "package_name": "com.example.OnTheWay"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "752487126906-5s422pk4c9m2964thccroiv4097dtvj1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB_pLfJVx0ShsZW0zNdTSgfPeAd1Uj_OKU"
+          "current_key": "AIzaSyA_B7xJvnpvPcXqMit_rBQQPfIPsJqX9OM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "752487126906-5s422pk4c9m2964thccroiv4097dtvj1.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

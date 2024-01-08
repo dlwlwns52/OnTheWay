@@ -1,4 +1,4 @@
-name: ontheway_notebook
+name: OnTheWay
 description: A new Flutter project.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -34,6 +34,7 @@ dependencies:
   firebase_auth: "^4.7.2"
   firebase_dynamic_links: ^5.3.4
   cloud_firestore: ^4.13.6
+  firebase_messaging: ^14.7.10
   flutter_form_builder: ^9.1.1
   shared_preferences: ^2.2.0
   flutter_secure_storage: ^8.0.0

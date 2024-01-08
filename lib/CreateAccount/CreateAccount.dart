@@ -1,4 +1,4 @@
-import'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
@@ -502,7 +502,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       // 중복된 이름
       if (snapshot.exists && snapshot.data()?['nickname'] == nickname) {
         setState(() {
-          _buttonText = '다시';
+          _buttonText = '중복확인';
           _buttonColor = Colors.red;
           _isNicknameAvailable = false;
         });
@@ -657,7 +657,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     ActionCodeSettings actionCodeSettings = ActionCodeSettings(
       url: 'https://onthewayljj.page.link/c8Ci',
       handleCodeInApp: true,
-      androidPackageName: 'com.example.ontheway',
+      androidPackageName: 'com.example.OnTheWay',
       androidInstallApp: true,
       androidMinimumVersion: '12',
     );
@@ -720,6 +720,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
     if (_confirmPasswordController.text != _passwordController.text) {
+      print("2");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호가 일치하지 않습니다.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),

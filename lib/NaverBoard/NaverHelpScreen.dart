@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ontheway_notebook/NaverBoard/NaverPostManager.dart';
+import 'package:OnTheWay/NaverBoard/NaverPostManager.dart';
 
 class NaverHelpScreen extends StatefulWidget {
   @override

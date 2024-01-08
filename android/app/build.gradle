@@ -29,8 +29,9 @@ apply plugin : "kotlin-android"
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    namespace "com.example.ontheway_notebook"
+    namespace "com.example.OnTheWay"
     compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ontheway_notebook/CreateAccount/CreateAccount.dart';
+import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 
 class NavigateToBoard {
   final BuildContext context;

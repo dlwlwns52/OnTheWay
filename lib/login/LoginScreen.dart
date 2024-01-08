@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:ontheway_notebook/CreateAccount/CreateAccount.dart';
+import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import '../Board/UiBoard.dart';
 import '../NaverBoard/NaverUiBoard.dart';
 
@@ -231,28 +231,39 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
       if (e is FirebaseAuthException) {
+        print("FirebaseAuthException 코드: ${e.code}"); // 에러 코드 출력
         switch (e.code) {
           case 'invalid-email':
+            print(1);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("유효하지 않은 이메일 형식입니다.", textAlign: TextAlign.center,),
                 duration: Duration(seconds: 1),
               ),
             );
 
-          case 'user-not-found':
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.', textAlign: TextAlign.center,),
-                duration: Duration(seconds: 1),
-              ),
+          case "INVALID_LOGIN_CREDENTIALS":
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('로그인 정보가 정확하지 않습니다. \n 이메일과 비밀번호를 확인해주세요.', textAlign: TextAlign.center,),
+                  duration: Duration(seconds: 2),
+                ),
             );
-            break;
-          case 'wrong-password':
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("비밀번호가 틀렸습니다.", textAlign: TextAlign.center,),
-                duration: Duration(seconds: 1),
-              ),
-            );
-            break;
+
+
+          // case 'user-not-found':
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.', textAlign: TextAlign.center,),
+          //       duration: Duration(seconds: 1),
+          //     ),
+          //   );
+          //   break;
+          // case 'wrong-password':
+          //   print(2);
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(content: Text("비밀번호가 틀렸습니다.", textAlign: TextAlign.center,),
+          //       duration: Duration(seconds: 1),
+          //     ),
+          //   );
+          //   break;
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

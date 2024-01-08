@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ontheway_notebook/Board/PostManager.dart';
+import 'package:OnTheWay/Board/PostManager.dart';
 
 class MyPostsScreen extends StatefulWidget {
   @override

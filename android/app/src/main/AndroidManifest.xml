@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="ontheway_notebook"
+        android:label="OnTheWay"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -18,7 +18,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:host="onthewaynotebook.page.link"
+                    android:host="OnTheWay.page.link"
                     android:scheme="https"/>
             </intent-filter>
 
@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:host="onthewaynotebook.firebaseapp.com"
+                    android:host="OnTheWay.firebaseapp.com"
                     android:scheme="https"/>
             </intent-filter>
 

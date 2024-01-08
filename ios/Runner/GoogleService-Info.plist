@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyBJEWAqkmyqDqbl1V6_HnFAw8yaODjBsH0</string>
+	<string>AIzaSyCZcMQnBpaOSwvUV0yIKmkri0eKStcOqh8</string>
 	<key>GCM_SENDER_ID</key>
-	<string>752487126906</string>
+	<string>40009619030</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.onthewayNotebook</string>
 	<key>PROJECT_ID</key>
-	<string>ontheway-ce8d9</string>
+	<string>ontheway-b2bdf</string>
 	<key>STORAGE_BUCKET</key>
-	<string>ontheway-ce8d9.appspot.com</string>
+	<string>ontheway-b2bdf.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:752487126906:ios:91cf807c43b5d240b328c3</string>
+	<string>1:40009619030:ios:4d57185586ac9759dc8df7</string>
 </dict>
 </plist>

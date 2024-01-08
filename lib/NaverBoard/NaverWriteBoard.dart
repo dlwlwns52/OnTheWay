@@ -175,7 +175,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
           ),
           child: ElevatedButton.icon(
             onPressed: _uploadPost,
-            icon: Icon(Icons.upload), // 버튼 아이콘
+            icon: Icon(Icons.send), // 버튼 아이콘
             label: Text(
               '게시하기',
               style: TextStyle(fontSize: 18),
