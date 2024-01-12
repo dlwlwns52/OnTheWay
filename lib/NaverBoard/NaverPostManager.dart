@@ -226,8 +226,8 @@ class NaverPostManager {
 // 현재 시간을 가져옵니다.
       DateTime now = DateTime.now();
 
-// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.
-      if (clickCount >= 2) {
+// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다. // 현재는 100번 test용
+      if (clickCount >= 100) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
@@ -271,9 +271,10 @@ class NaverPostManager {
 
       // 문서 이름을 만듭니다. 예: "postStore_helperEmail_timestamp"
       String documentName = "${postStore}_${helperEmail}_$timestamp";
+      // String documentName = "${postStore}_${helperEmail}";
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
-      await FirebaseFirestore.instance.collection('helpActions').doc("naver_" + documentName).set({
+      await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
         'University' : "naver",
         'post_id': doc.id,
         'helper_email': helperEmail,

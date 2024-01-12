@@ -56,26 +56,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                 builder: (context) => LoginScreen())); // 로그인 화면으로 이동합니다.
           },
         ),
-
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.create), // '생성' 아이콘을 설정합니다.
-        //     onPressed: () {
-        //       // 아이콘 버튼이 눌렸을 때 새 게시글 작성 화면으로 이동합니다.
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) =>
-        //             NaverNewPostScreen()), // NewPostScreen 위젯으로 이동합니다.
-        //       );
-        //     },
-        //   ),
-        //   IconButton(
-        //     icon: Icon(Icons.person),
-        //     onPressed: () {
-        //       // 본인 확인 클래스 생성시 그 클래스로 이동하는 코드 추가
-        //     },
-        //   )
-        // ],
       ),
 
 //게시판 몸통
