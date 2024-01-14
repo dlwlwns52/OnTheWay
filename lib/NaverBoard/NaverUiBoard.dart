@@ -4,6 +4,8 @@ import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
+import 'NaverAlarm.dart'; // NaverAlarm 클래스를 임포트합니다.
+
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
 class NaverBoardPage extends StatefulWidget {
@@ -15,9 +17,12 @@ class NaverBoardPage extends StatefulWidget {
 class _NaverBoardPageState extends State<NaverBoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   // PostManager 인스턴스 생성
   final postManager = NaverPostManager();
+
+  // final naverAlarm = NaverAlarm(); // NaverAlarm 인스턴스를 생성합니다.
+  final naverAlarm;
+  _NaverBoardPageState() : naverAlarm = NaverAlarm(FirebaseAuth.instance.currentUser?.email ?? '');
 
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
@@ -43,7 +48,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
       appBar: AppBar(
         backgroundColor: Colors.orange,
         // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('네이버 게시판', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold),),
         // 앱 바의 타이틀을 '게시판'으로 설정합니다.
         centerTitle: true,
 
@@ -56,7 +61,50 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                 builder: (context) => LoginScreen())); // 로그인 화면으로 이동합니다.
           },
         ),
-      ),
+        actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 10.0), // 오른쪽 패딩을 줄여 아이콘을 왼쪽으로 이동
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.notifications),
+                      onPressed: () {
+                        // 알림 화면으로 이동하는 로직을 구현하거나 필요한 동작을 수행합니다.
+                        setState(() {
+                          naverAlarm.resetNotificationCount(); // 알림 수를 초기화합니다.
+                        });
+                      },
+                    ),
+                    if (naverAlarm.getNotificationCount() > 0)
+                      Positioned(
+                        right: 11,
+                        top: 11,
+                        child: Container(
+                          padding: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: BoxConstraints(
+                            minWidth: 14,
+                            minHeight: 14,
+                          ),
+                          child: Text(
+                            '${naverAlarm.getNotificationCount()}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
 
 //게시판 몸통
       body: Column(

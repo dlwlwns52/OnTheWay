@@ -288,7 +288,7 @@ class NaverPostManager {
       // 성공 메시지 표시
       await ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("도움을 성공적으로 제공하였습니다.",textAlign: TextAlign.center,),
+          content: Text("'도와주기'요청이 전송됐습니다.",textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       ).closed;
@@ -300,7 +300,7 @@ class NaverPostManager {
       Navigator.of(context).pop();
       await ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("도움을 제공하는 데 실패하였습니다: $e",textAlign: TextAlign.center,),
+          content: Text("도와주기'요청이 전송이 실패하였습니다: $e",textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       ).closed;
