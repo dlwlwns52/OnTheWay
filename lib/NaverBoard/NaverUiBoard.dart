@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
+import 'NaverAlarmUi.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import 'NaverAlarm.dart'; // NaverAlarm 클래스를 임포트합니다.
@@ -21,9 +22,16 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   final postManager = NaverPostManager();
 
   // final naverAlarm = NaverAlarm(); // NaverAlarm 인스턴스를 생성합니다.
-  final naverAlarm;
-  _NaverBoardPageState() : naverAlarm = NaverAlarm(FirebaseAuth.instance.currentUser?.email ?? '');
+  late NaverAlarm naverAlarm;
 
+  @override
+  void initState() {
+    super.initState();
+    naverAlarm = NaverAlarm(
+      FirebaseAuth.instance.currentUser?.email ?? '',
+          () => setState(() {}),
+    );
+  }
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
   Stream<List<DocumentSnapshot>> getPosts() {
@@ -70,7 +78,12 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                     IconButton(
                       icon: Icon(Icons.notifications),
                       onPressed: () {
-                        // 알림 화면으로 이동하는 로직을 구현하거나 필요한 동작을 수행합니다.
+                        // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => NotificationScreen(),
+                          ),
+                        );
                         setState(() {
                           naverAlarm.resetNotificationCount(); // 알림 수를 초기화합니다.
                         });

@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'Board/UiBoard.dart';
 import 'NaverBoard/NaverUiBoard.dart';
@@ -6,10 +7,19 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 // import 'firebase_options.dart';
+import 'package:OnTheWay/NaverBoard/NaverAlarm.dart';
+
+Future<void> backgroundMessageHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("Handling a background message: ${message.messageId}");
+  // 백그라운드에서 수신된 메시지를 처리하는 로직
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
   runApp(MyApp());
 }
 
