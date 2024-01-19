@@ -3,6 +3,8 @@ import Flutter
 import Firebase
 import UserNotifications
 import FirebaseMessaging
+import FirebaseCore //Cannot find 'FirebaseApp' in scope  에러로 추가
+
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -33,12 +35,12 @@ import FirebaseMessaging
     
     // 아래 부분은 iOS 기기에서 APNs 토큰을 받았을 때 토큰을 출력하는 부분입니다.
     // 주석 처리하거나 제거하여 토큰 출력을 중지할 수 있습니다.
-    /*
-    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print("Device Token: \(token)")
-    }
-    */
+//
+//    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+//        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+//        print("Device Token: \(token)")
+//    }
+
     
     // 원격 알림을 수신했을 때 호출되는 메서드로, 알림을 처리하는 로직을 추가할 수 있습니다.
     override func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],

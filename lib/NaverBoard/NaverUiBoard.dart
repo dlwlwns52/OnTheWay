@@ -56,12 +56,12 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
       appBar: AppBar(
         backgroundColor: Colors.orange,
         // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold), ),
         // 앱 바의 타이틀을 '게시판'으로 설정합니다.
         centerTitle: true,
 
         leading: IconButton(
-          icon: Icon(Icons.arrow_back), // 뒤로 가기 아이콘을 설정합니다.
+          icon: Icon(Icons.arrow_back_ios_new), // 뒤로 가기 아이콘을 설정합니다.
           onPressed: () {
             // 아이콘 버튼이 눌렸을 때 수행할 동작을 정의합니다.
             Navigator.pushReplacement(
@@ -81,7 +81,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                         // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => NotificationScreen(),
+                            builder: (context) => NaverAlarmUi(),
                           ),
                         );
                         setState(() {

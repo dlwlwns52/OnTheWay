@@ -1,62 +1,23 @@
-// import 'package:firebase_messaging/firebase_messaging.dart';
-//
-// class NaverAlarm {
-//   int notificationCount = 0; // 알림 수
-//   String currentUserEmail; // 현재 로그인한 사용자의 이메일
-//   Function onNotificationCountChanged;
-//
-//   // 알림 리스너를 초기화하고 설정하는 생성자
-//   NaverAlarm(this.currentUserEmail, this.onNotificationCountChanged) {
-//     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message)  {
-//       // 알림 수를 증가시킵니다.
-//       if (message.data['ownerEmail'] == currentUserEmail) {// 현재 사용자가 알림의 대상 사용자인 경우
-//         increaseNotificationCount();// 알림 수를 증가시킵니다.
-//
-//       }
-//     });
-//
-//   }
-//
-//
-//   // 알림 수를 증가시키는 메서드
-//   void increaseNotificationCount() {
-//     notificationCount += 1;
-//     if (onNotificationCountChanged != null) {
-//       onNotificationCountChanged();
-//     }
-//   }
-//
-//   void resetNotificationCount() {
-//     notificationCount = 0;
-//     if (onNotificationCountChanged != null) {
-//       onNotificationCountChanged();
-//     }
-//   }
-//
-//   // 현재 알림 수를 가져오는 메서드
-//   int getNotificationCount() {
-//     return notificationCount;
-//   }
-// }
-
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-class NaverAlarm {
+class NaverAlarm  {
   int notificationCount = 0;
   String currentUserEmail;
   VoidCallback onNotificationCountChanged;
 
   NaverAlarm(this.currentUserEmail, this.onNotificationCountChanged) {
-    // 사용자가 앱을 백그라운드나 종료 상태에서 시작할 때 호출
+    // 사용자가 앱을 백그라운드나 종료 상태에서 시작할 때 호출 9840
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleMessage(message);
+      print(1);
     });
 
-    // 앱이 포그라운드에 있을 때 호출
+    // 앱이 포그라운드에 있을 때 호출 // -> 이거왜안되지
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _handleMessage(message);
+      print(2);
+      // print(FirebaseMessaging.onMessage);
     });
 
     // 백그라운드 메시지 처리 (별도의 Isolate에서 실행)
@@ -84,6 +45,7 @@ class NaverAlarm {
     return notificationCount;
   }
 }
+
 
 // 백그라운드 메시지 처리를 위한 핸들러
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
