@@ -435,7 +435,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               'email': email,
                               'joined_date': formattedDate,
                             });
-                            await getTokenAndSave();
+                            // await getTokenAndSave();
 
                             // // 스낵바로 알림
                             ScaffoldMessenger.of(rootContext).showSnackBar(
@@ -447,7 +447,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               rootContext,
                               MaterialPageRoute(builder: (context) => LoginScreen()),
                             );
-                          } catch (e) {
+                          }
+                          catch (e) {
                             print("회원가입 실패: $e");
                           }
                         },
@@ -742,29 +743,29 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     return true;
   }
 
-  Future<void> saveTokenToDatabase(String? token) async {
-    // 사용자가 로그인한 경우에만 토큰을 저장합니다.
-    String nickname = _nicknameController.text;
-    print(nickname);
-    String? userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
-
-    // Firestore 인스턴스를 가져옵니다.
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    // Firestore의 'users' 컬렉션에 토큰을 저장합니다.
-    await firestore.collection('users').doc(nickname).set({
-      'token': token,
-    }, SetOptions(merge: true));
-  }
-
-  Future<void> getTokenAndSave() async {
-    // FCM 토큰을 가져옵니다.
-    String? token = await FirebaseMessaging.instance.getToken();
-
-    // 토큰을 Firestore에 저장합니다.
-    await saveTokenToDatabase(token);
-  }
+  // Future<void> saveTokenToDatabase(String? token) async {
+  //   // 사용자가 로그인한 경우에만 토큰을 저장합니다.
+  //   String nickname = _nicknameController.text;
+  //   print(nickname);
+  //   String? userId = FirebaseAuth.instance.currentUser?.uid;
+  //   if (userId == null) return;
+  //
+  //   // Firestore 인스턴스를 가져옵니다.
+  //   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //
+  //   // Firestore의 'users' 컬렉션에 토큰을 저장합니다.
+  //   await firestore.collection('users').doc(nickname).set({
+  //     'token': token,
+  //   }, SetOptions(merge: true));
+  // }
+  //
+  // Future<void> getTokenAndSave() async {
+  //   // FCM 토큰을 가져옵니다.
+  //   String? token = await FirebaseMessaging.instance.getToken();
+  //
+  //   // 토큰을 Firestore에 저장합니다.
+  //   await saveTokenToDatabase(token);
+  // }
 
 
 }

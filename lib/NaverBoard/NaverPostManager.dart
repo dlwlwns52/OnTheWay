@@ -185,7 +185,7 @@ class NaverPostManager {
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("로그인이 필요합니다."),
+            content: Text("로그인이 필요합니다.", textAlign: TextAlign.center,),
             duration: Duration(seconds: 2),
           ),
         );
@@ -264,8 +264,6 @@ class NaverPostManager {
         print('User document not found for email: $helperEmail');
         return;
       }
-
-
 
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 

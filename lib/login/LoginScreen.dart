@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
@@ -31,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: Colors.orange,
+      backgroundColor: Color(0xFFFF8B13),
       body: Center(  // Center 위젯 추가
         child: Container(
           padding: const EdgeInsets.all(20.0),
@@ -159,7 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async{
     final FirebaseAuth _auth = FirebaseAuth.instance;
-
     if(emailController.text.isEmpty){
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
@@ -199,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (userCredential.user != null) {
           // 로그인 성공
+          await getTokenAndSave(userCredential.user!.email); // 사용자의 이메일을 인자로 넘겨 토큰 저장
           String email = userCredential.user!.email!;
           String domain = email.split('@').last; // 이메일에서 도메인 추출
 
@@ -250,22 +251,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
             );
 
-
-          // case 'user-not-found':
-          //   ScaffoldMessenger.of(context).showSnackBar(
-          //     SnackBar(content: Text('해당 이메일의 계정이 존재하지 않습니다.', textAlign: TextAlign.center,),
-          //       duration: Duration(seconds: 1),
-          //     ),
-          //   );
-          //   break;
-          // case 'wrong-password':
-          //   print(2);
-          //   ScaffoldMessenger.of(context).showSnackBar(
-          //     SnackBar(content: Text("비밀번호가 틀렸습니다.", textAlign: TextAlign.center,),
-          //       duration: Duration(seconds: 1),
-          //     ),
-          //   );
-          //   break;
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -279,4 +264,34 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoginPressed = false; // 로그인 시도 종료시 다시 상태를 false로 바꿈
     });
   }
+
+  Future<void> saveTokenToDatabase(String? token, String? email) async {
+    if (email == null) return; // 이메일이 null인 경우 함수 종료
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Firestore의 'users' 컬렉션에서 이메일로 사용자 문서를 조회합니다.
+    QuerySnapshot querySnapshot = await firestore.collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+      String userId = querySnapshot.docs.first.id;
+
+      // 해당 사용자 문서에 토큰을 저장합니다.
+      await firestore.collection('users').doc(userId).set({
+        'token': token,
+      }, SetOptions(merge: true));
+    } else {
+      print('No user found with email: $email');
+    }
+  }
+
+  Future<void> getTokenAndSave(String? email) async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    await saveTokenToDatabase(token, email);
+  }
 }
+
+

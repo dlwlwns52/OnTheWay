@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
-import 'NaverAlarmUi.dart';
+import '../Alarm/AlarmUi.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
-import 'NaverAlarm.dart'; // NaverAlarm 클래스를 임포트합니다.
+import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
 
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
@@ -21,15 +21,15 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   // PostManager 인스턴스 생성
   final postManager = NaverPostManager();
 
-  // final naverAlarm = NaverAlarm(); // NaverAlarm 인스턴스를 생성합니다.
-  late NaverAlarm naverAlarm;
+  // final Alarm = Alarm(); // NaverAlarm 인스턴스를 생성합니다.
+  late Alarm alarm;
 
   @override
   void initState() {
     super.initState();
-    naverAlarm = NaverAlarm(
+    alarm = Alarm(
       FirebaseAuth.instance.currentUser?.email ?? '',
-          () => setState(() {}),
+          () => setState(() {}),context,
     );
   }
 
@@ -41,7 +41,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   }
 
 
-  // 현재 로그인한 사용자의 이메일을 반환하는 메서드
+  // 현재 로그인한 사용자의 이메일을 반환하는 메서드로그인이 필요합니다
   String? currentUserEmail() {
     final user = FirebaseAuth.instance.currentUser;
     return user?.email;
@@ -54,7 +54,9 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: Color(0xFFFF8B13),
+        // backgroundColor: Colors.deepOrange,
+
         // 앱 바의 배경색을 오렌지색으로 설정합니다.
         title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold), ),
         // 앱 바의 타이틀을 '게시판'으로 설정합니다.
@@ -81,15 +83,15 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                         // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => NaverAlarmUi(),
+                            builder: (context) => AlarmUi(),
                           ),
                         );
                         setState(() {
-                          naverAlarm.resetNotificationCount(); // 알림 수를 초기화합니다.
+                          alarm.resetNotificationCount(); // 알림 수를 초기화합니다.
                         });
                       },
                     ),
-                    if (naverAlarm.getNotificationCount() > 0)
+                    if (alarm.getNotificationCount() > 0)
                       Positioned(
                         right: 11,
                         top: 11,
@@ -104,7 +106,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                             minHeight: 14,
                           ),
                           child: Text(
-                            '${naverAlarm.getNotificationCount()}',
+                            '${alarm.getNotificationCount()}',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 8,

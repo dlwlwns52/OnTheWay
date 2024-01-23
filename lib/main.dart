@@ -1,13 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'Board/UiBoard.dart';
+import 'Alarm/AlarmUi.dart';
 import 'NaverBoard/NaverUiBoard.dart';
-import 'login/LoginScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-// import 'firebase_options.dart';
-import 'package:OnTheWay/NaverBoard/NaverAlarm.dart';
+import 'package:OnTheWay/Alarm/Alarm.dart';
 
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -20,6 +17,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+
   runApp(MyApp());
 }
 
@@ -28,7 +26,23 @@ Future<String> loadSomeData() async {
   return 'Some data';
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data['screen'] == 'AlarmUi') {
+        // `Navigator`를 사용하여 `AlarmUi` 화면으로 이동합니다.
+        // 이 예제에서는 `AlarmUi` 클래스를 직접 구현해야 합니다.
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => AlarmUi()));
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -70,16 +84,19 @@ class LoadingScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start, // 주 축(수직 방향)의 정렬을 설정합니다.
           crossAxisAlignment: CrossAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
-            AutoSizeText(
-              'OnTheWay',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 80,
-                color: Colors.orange,
+            Center(
+              child: AutoSizeText(
+                'OnTheWay',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 60,
+                  color: Color(0xFFFF8B13),
+                ),
+                maxLines: 1,
               ),
-              maxLines: 1,
             ),
+
 
             SizedBox(height: 30),
 
