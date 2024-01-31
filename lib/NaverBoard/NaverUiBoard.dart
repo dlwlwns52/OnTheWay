@@ -288,6 +288,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
+            icon: Icon(Icons.forum_rounded, color: Colors.black),
+            label: '채팅',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.create, color: Colors.black,),
             label: '새 게시글',
           ),
@@ -299,7 +303,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
         unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
         onTap: (index) {
-          if (index == 0) {
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => NaverNewPostScreen()),

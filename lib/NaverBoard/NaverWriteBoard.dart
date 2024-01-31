@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+
+import '../Map/MapScreen.dart';
 
 class NaverNewPostScreen extends StatefulWidget {
   final DocumentSnapshot? post;
@@ -17,6 +20,26 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
   final TextEditingController _costController = TextEditingController();
   final TextEditingController _requestController = TextEditingController();
   final FocusNode _buttonFocusNode = FocusNode();
+
+  //위치
+  String? _selectedLocation;
+
+  void _chooseLocation() async {
+    // MapScreen으로부터 반환된 위치를 받습니다.
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MapScreen()),
+    );
+
+    // 반환된 위치를 변수에 저장합니다.
+    if (result != null) {
+      setState(() {
+        // LatLng 객체를 문자열 형태로 저장
+        _selectedLocation = "${result.latitude},${result.longitude}";
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -70,6 +93,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
         String documentName =
             widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
         await db.collection('naver_posts').doc(documentName).set({
+          'kakaomap_location': _selectedLocation ?? '위치 미설정',
           'my_location': _locationController.text,
           'store': _storeController.text,
           'cost': _costController.text,
@@ -81,6 +105,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
+      print(e);
       _showSnackBar("게시물 업로드에 실패했습니다.");
     }
   }
@@ -102,7 +127,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('게시물 작성'),
-        backgroundColor: Colors.orange,
+        backgroundColor:Color(0xFFFF8B13),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -119,6 +144,12 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   textInputAction: TextInputAction.next,
                   maxLines: null,
                   maxLength: 20,
+                ),
+                SizedBox(height: 8.0),
+                // 본인 위치 설정 버튼
+                ElevatedButton(
+                  onPressed: _chooseLocation,  // 버튼 클릭 시 _chooseLocation 함수 호출
+                  child: Text('본인 위치 설정'),
                 ),
                 SizedBox(height: 8.0),
                 TextField(
@@ -201,4 +232,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       _requestController.text = widget.post!['Request'] ?? '';
     }
   }
+
+
 }

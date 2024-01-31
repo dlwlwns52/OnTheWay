@@ -153,16 +153,27 @@ class _NotificationScreenState extends State<AlarmUi> {
   }
 
   //아이콘 배경 색상
+  // Color _getColorFromName(String name) {
+  //   final int hash = name.hashCode;
+  //   final List<Color> colors = [
+  //     Color(0xFF80B3FF),    // 보라색
+  //     Color(0xFF9EDDFF),
+  //     // Color(0xFF687EFF),
+  //     Colors.purple[200] ?? Colors.blue,         // 파란색
+  //     // Colors.blue[300] ?? Colors.orange,                           // 오렌지색
+  //   ];
+  //   return colors[hash % colors.length]; // 해시값을 색상 배열 길이로 나눈 나머지를 인덱스로 사용
+  // }
   Color _getColorFromName(String name) {
-    final int hash = name.hashCode;
+    final int nameLength = name.length;
     final List<Color> colors = [
       Color(0xFF80B3FF),    // 보라색
-      Color(0xFF9EDDFF),
-      // Color(0xFF687EFF),
-      Colors.purple[200] ?? Colors.blue,         // 파란색
-      // Colors.blue[300] ?? Colors.orange,                           // 오렌지색
+      // Color(0xFF9EDDFF),
+      Color(0xFF687EFF),    // 파란색
+      Color(0xFFFF8B13),    // 오렌지색
     ];
-    return colors[hash % colors.length]; // 해시값을 색상 배열 길이로 나눈 나머지를 인덱스로 사용
+
+    return colors[(nameLength ) % colors.length];
   }
 
   //수락 또는 거절 버튼 구현

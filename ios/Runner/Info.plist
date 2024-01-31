@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
+    <key>KAKAO_APP_KEY</key>
+    <string>69a96da745eed8af5198d8de5d72a2eb</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>가게위치 및 현재 위치를 표시하기 위해 위치 정보가 필요합니다.</string>
+    <key>NSAppTransportSecurity</key>
+      <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
+      </dict>
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

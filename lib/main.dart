@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'Alarm/AlarmUi.dart';
 import 'NaverBoard/NaverUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,6 +19,7 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
 
+  AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100');
   runApp(MyApp());
 }
 
