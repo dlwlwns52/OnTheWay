@@ -22,12 +22,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
   final TextEditingController _requestController = TextEditingController();
   final FocusNode _buttonFocusNode = FocusNode();
 
-  //위치 관련 변수
-  String? _currentSelectedLocation; //위치 저장
+  //위치
+  String? _currentSelectedLocation;
   String? _storeSelectedLocation;
-  bool currentLocationSet = false; //버튼 활성화
-  bool storeLocationSet = false;
-
 
   //현재위치 받는 메소드
   void _currentChooseLocation() async {
@@ -42,7 +39,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       setState(() {
         // LatLng 객체를 문자열 형태로 저장
         _currentSelectedLocation = "${result.latitude},${result.longitude}";
-        currentLocationSet = true;
       });
     }
   }
@@ -60,7 +56,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       setState(() {
         // LatLng 객체를 문자열 형태로 저장
         _storeSelectedLocation = "${result.latitude},${result.longitude}";
-        storeLocationSet = true;
       });
     }
   }
@@ -99,16 +94,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
 
     if (_requestController.text.isEmpty) {
       _showSnackBar("\'요청 사항\' 칸을 입력해주세요.");
-      return;
-    }
-
-    if(currentLocationSet == false){
-      _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
-      return;
-    }
-
-    if(storeLocationSet == false){
-      _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
       return;
     }
 
@@ -172,17 +157,15 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
             child: Column(
               children: <Widget>[
                 //본인 위치 입력
-                TextFormField(
+                TextField(
                   controller: _locationController,
                   decoration: InputDecoration(
                     labelText: '본인 위치',
-                    // contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
                   maxLength: 20,
-                  onFieldSubmitted: (value) => _currentChooseLocation(),
                 ),
 
                 // 본인 위치 지도로 설정 버튼
@@ -198,7 +181,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: currentLocationSet ? Colors.orange : Colors.grey, // 버튼 배경색
+                    primary: Colors.orange, // 버튼 배경색
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0), // 버튼 모서리 둥글게
                     ),
@@ -208,17 +191,16 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
 
                 SizedBox(height: 8.0),
 
-               //주문 시킬 가게 입력
-                TextFormField(
+                //주문 시킬 가게 입력
+                TextField(
                   controller: _storeController,
                   decoration: InputDecoration(
                     labelText: '주문 시킬 가게',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
                   maxLength: 20,
-                  onFieldSubmitted: (value) => _storeChooseLocation(),
                 ),
 
                 //가게 위치 지도로 설정 버튼
@@ -234,7 +216,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: storeLocationSet ? Colors.orange : Colors.grey, // 버튼 배경색
+                    primary: Colors.orange, // 버튼 배경색
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0), // 버튼 모서리 둥글게
                     ),
@@ -244,11 +226,11 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
 
                 SizedBox(height: 16.0),
 
-                TextFormField(
+                TextField(
                   controller: _costController,
                   decoration: InputDecoration(
                     labelText: '비용',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
@@ -257,11 +239,11 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
 
                 SizedBox(height: 16.0),
 
-                TextFormField(
+                TextField(
                   controller: _requestController,
                   decoration: InputDecoration(
                     labelText: '요청사항',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                    contentPadding: EdgeInsets.all(3),
                     alignLabelWithHint: true,
                   ),
                   keyboardType: TextInputType.multiline,
@@ -269,7 +251,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   minLines: 7,
                   maxLines: null,
                   maxLength: 100,
-                  onFieldSubmitted: (value) => _uploadPost(), // 요청사항 -> 게시하기
+                  onSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_buttonFocusNode);
+                  },
                 ),
               ],
             ),
@@ -293,10 +277,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
               '게시하기',
               style: TextStyle(fontSize: 18),
             ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.transparent, // 버튼 색상 투명하게 설정
-              shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
-            ),
           ),
         ),
       ),
@@ -314,6 +294,4 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       _requestController.text = widget.post!['Request'] ?? '';
     }
   }
-
-
 }
