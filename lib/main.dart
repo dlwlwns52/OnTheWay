@@ -18,8 +18,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
-
   AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100');
+
   runApp(MyApp());
 }
 

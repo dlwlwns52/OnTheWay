@@ -36,6 +36,12 @@ dependencies:
   location: ^5.0.3
   http: ^1.0.0
 
+#  tmap_ui_sdk:
+#    git:
+#      url: https://github.com/TmapSDK/TmapUI_FlutterSDK.git
+#      ref: 1.0.0
+
+
   firebase_core: ^2.21.0
   firebase_auth: "^4.7.2"
   firebase_dynamic_links: ^5.3.4

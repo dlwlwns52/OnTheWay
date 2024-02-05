@@ -634,7 +634,7 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.24):
     - BoringSSL-GRPC/Interface (= 0.0.24)
   - BoringSSL-GRPC/Interface (0.0.24)
-  - cloud_firestore (4.13.6):
+  - cloud_firestore (4.14.0):
     - Firebase/Firestore (= 10.18.0)
     - firebase_core
     - Flutter
@@ -656,7 +656,7 @@ PODS:
   - Firebase/Messaging (10.18.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 10.18.0)
-  - firebase_auth (4.15.3):
+  - firebase_auth (4.16.0):
     - Firebase/Auth (= 10.18.0)
     - firebase_core
     - Flutter
@@ -820,7 +820,7 @@ PODS:
     - BoringSSL-GRPC (= 0.0.24)
     - gRPC-Core/Interface (= 1.49.1)
   - gRPC-Core/Interface (1.49.1)
-  - GTMSessionFetcher/Core (3.2.0)
+  - GTMSessionFetcher/Core (3.3.1)
   - kakao_map_plugin (0.0.1):
     - Flutter
   - leveldb-library (1.22.2)
@@ -855,7 +855,7 @@ DEPENDENCIES:
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
-  trunk:
+  https://github.com/CocoaPods/Specs.git:
     - abseil
     - BoringSSL-GRPC
     - Firebase
@@ -910,45 +910,45 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
-  abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
-  cloud_firestore: c29d4c2e96fe31374d9dab458a99d7a488d3a735
-  Firebase: 414ad272f8d02dfbf12662a9d43f4bba9bec2a06
-  firebase_auth: df44e14f8a93e8a9869d91695bd3f8e53d2c9f5a
+  abseil: c582bbf59f009606334bfd042bfeda8fd9abde35
+  BoringSSL-GRPC: 0c327029bf8f7a84e693992771dbf3b717b0aab1
+  cloud_firestore: 73eece22ce25a0565238c283ee9990f1618d8063
+  Firebase: a2b5a817e7ce9479d63eef3c06675ff4275ae3da
+  firebase_auth: 8e9ec02991ca4659111cc671c84d0c010b6bfb26
   firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
   firebase_dynamic_links: b626a11f5eb02033981ae377377c3f297eb4c1b0
   firebase_messaging: 90e8a6db84b6e1e876cebce4f30f01dc495e7014
-  FirebaseAppCheckInterop: e81bdb1cdb82f8e0cef353ba5018a8402682032c
-  FirebaseAuth: 12314b438fa76048540c8fb86d6cfc9e08595176
-  FirebaseAuthInterop: 6142981334978f7942ff0e8a6f8966c3b3c8ff37
-  FirebaseCore: 2322423314d92f946219c8791674d2f3345b598f
-  FirebaseCoreExtension: 0659f035b88c5a7a15a9763c48c2e6ca8c0a2977
-  FirebaseCoreInternal: efeeb171ac02d623bdaefe121539939821e10811
-  FirebaseDynamicLinks: c37307441c53838d66a9650dabca9e0459502527
-  FirebaseFirestore: 171bcbb57a1a348dd171a0d5e382c03ef85a77bb
-  FirebaseFirestoreInternal: 0dc0762afd68192e9d45c31d3dd3017accc84333
-  FirebaseFunctions: b2565df59e28f00e070ff066bd61c2ce4da0e735
-  FirebaseInstallations: 558b1da7d65afeb996fd5c814332f013234ece4e
-  FirebaseMessaging: 9bc34a98d2e0237e1b121915120d4d48ddcf301e
-  FirebaseMessagingInterop: ffbbd63321f6a1e21dc724d382c22805c95671a0
-  FirebaseSharedSwift: 2fbf73618288b7a36b2014b957745dcdd781389e
+  FirebaseAppCheckInterop: c880b20a442d7fd38913cd5bc562dcfcd9546a8a
+  FirebaseAuth: 9ac726f4196627081a1f08d1d8d8016a1f78a6aa
+  FirebaseAuthInterop: c4f19d9715162454ad47337e7ae0e0499e8089e6
+  FirebaseCore: d95af5ccf5d44add00c8cbb288b66e54939edfd3
+  FirebaseCoreExtension: 688bc79ce3ba55070f397ed70680745165985dbf
+  FirebaseCoreInternal: 606d81ab677c3a49a11a8203c97bb303ec27d047
+  FirebaseDynamicLinks: 4d39ad1b60f62e96fb16740314d8a709820c43a0
+  FirebaseFirestore: 5259c03d0b2bd9c095494c49b2af1000c39cea63
+  FirebaseFirestoreInternal: da1d86b1a6ee43a12a7e927026c146b1064c492e
+  FirebaseFunctions: 09c953a99dc9a6708c80c04574d2b9b576caf839
+  FirebaseInstallations: 0f059e0af5383c026c0aa63571c3e2b68c34f41e
+  FirebaseMessaging: f79cd2cf4eba0395a10323bfcac7eb255c0b683a
+  FirebaseMessagingInterop: dff975454108d2c0d0342a3b8ca223e068986dfd
+  FirebaseSharedSwift: 3f72cf3bc88ad6046489fad331bd3ededceb6f8b
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
+  flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
-  GoogleDataTransport: 57c22343ab29bc686febbf7cbb13bad167c2d8fe
-  GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
-  "gRPC-C++": 2df8cba576898bdacd29f0266d5236fa0e26ba6a
-  gRPC-Core: a21a60aefc08c68c247b439a9ef97174b0c54f96
-  GTMSessionFetcher: 41b9ef0b4c08a6db4b7eb51a21ae5183ec99a2c8
+  GoogleDataTransport: 5ec98b67578176aa2e93364c062bdb054eae7b2b
+  GoogleUtilities: 46c61d544f749bd588f732e8bb771a64a3642275
+  "gRPC-C++": 70ff5ce90b5e9b3a78007e782e3bd35b9e205750
+  gRPC-Core: 66b975d5755d1a200a6cb8582af28bdb26c45b20
+  GTMSessionFetcher: ef60dfdc6d1b50c5fa3b772e9594cb5e3a46294a
   kakao_map_plugin: 232bc2486ea3ffb5d44c49eac1bcc6dde1a7f0ee
-  leveldb-library: f03246171cce0484482ec291f88b6d563699ee06
+  leveldb-library: 486edecd9620db16583b5097672b7ab66282ae26
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
-  nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
-  RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
-  shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
+  nanopb: cb11ceb72fb26479ce40633984e31e74705eab0f
+  PromisesObjC: 4c8eeaef508e2e5842316da811187b4242aa6e43
+  RecaptchaInterop: 563d7bb483401b6e26134db3924b8b62ffae3891
+  shared_preferences_foundation: b4c3b4cddf1c21f02770737f147a3f5da9d39695
   webview_flutter_wkwebview: 4f3e50f7273d31e5500066ed267e3ae4309c5ae4
 
-PODFILE CHECKSUM: 7ca9488510a5a2125effdaaca5812de053835471
+PODFILE CHECKSUM: 9e32663d35196a067a1956b2071410adc23f7309
 
-COCOAPODS: 1.14.2
+COCOAPODS: 1.15.0

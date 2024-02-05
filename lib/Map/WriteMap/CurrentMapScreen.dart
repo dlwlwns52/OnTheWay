@@ -45,41 +45,65 @@ class _MapScreenState extends State<CurrentMapScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFFF8B13),
-        title: Text('본인 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: Text('현재 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
       ),
 
-      body: KakaoMap(
-        onMapCreated: (controller) {
-          _mapController = controller; // Kakao Map Controller 생성 및 할당
-        },
-        markers: markers.toList(), // 마커 리스트 설정
-        center: currentSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정
-        onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
-          if (markerDragType == MarkerDragType.end) {
-            markerPosition = latLng;
-          }
-        },
-      ),
-
-      //현재위치 아이콘
-      floatingActionButton: Container(
-        width: 80, // 원하는 너비 조절
-        height: 80, // 원하는 높이 조절
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white, // 배경색상을 흰색으로 설정
-        ),
-        child: FloatingActionButton(
-          onPressed: _moveToCurrentLocation,
-          tooltip: '현재 위치로 이동',
-          backgroundColor: Colors.white,
-          child: Icon(
-            Icons.my_location,
-            size: 40, // 아이콘 크기 조절
-            color: Colors.black,
+      body: Stack(
+        children : [
+          KakaoMap(
+            onMapCreated: (controller) {
+              _mapController = controller; // Kakao Map Controller 생성 및 할당
+            },
+            markers: markers.toList(), // 마커 리스트 설정
+            center: currentSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정
+            onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
+              if (markerDragType == MarkerDragType.end) {
+                markerPosition = latLng;
+              }
+            },
           ),
-        ),
+
+          //현재위치 아이콘
+          Positioned(
+            right: 20,
+            bottom: 40,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black26, blurRadius: 5)
+                    ],
+                  ),
+                  child: Text(
+                    '위치 설정',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  width: 80.0, // 원하는 버튼의 너비
+                  height: 80.0, // 원하는 버튼의 높이
+                  child: FloatingActionButton(
+                    onPressed: _moveToCurrentLocation,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.my_location,
+                      size: 60, // 아이콘 크기 조절
+                      color: Colors.black,), // 아이콘 크기
+                    tooltip: '설정된 위치로 이동',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+
 
 
       //바텀바 ui

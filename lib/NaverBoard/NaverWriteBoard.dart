@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
-import '../Map/CurrentMapScreen.dart';
-import '../Map/StoreMapScreen.dart';
+import '../Map/WriteMap/CurrentMapScreen.dart';
+import '../Map/WriteMap/StoreMapScreen.dart';
 
 class NaverNewPostScreen extends StatefulWidget {
   final DocumentSnapshot? post;
@@ -269,7 +269,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   minLines: 7,
                   maxLines: null,
                   maxLength: 100,
-                  onFieldSubmitted: (value) => _uploadPost(), // 요청사항 -> 게시하기
+                  // onFieldSubmitted: (value) => _uploadPost(), // 요청사항 -> 게시하기
                 ),
               ],
             ),
@@ -304,6 +304,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
     );
   }
 
+  //게시물 수정하기 누를때 전 정보를 불러옴
   @override
   void initState() {
     super.initState();
@@ -312,8 +313,18 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       _storeController.text = widget.post!['store'] ?? '';
       _costController.text = widget.post!['cost'] ?? '';
       _requestController.text = widget.post!['Request'] ?? '';
+      _storeSelectedLocation = widget.post!['store_location'] ?? '';
+      _currentSelectedLocation = widget.post!['current_location'] ?? '';
+      // 위치 정보가 있다면 변수들을 true로 설정합니다.
+      if (_storeSelectedLocation != null && _storeSelectedLocation!.isNotEmpty) {
+        storeLocationSet = true;
+      }
+      if (_currentSelectedLocation != null && _currentSelectedLocation!.isNotEmpty) {
+        currentLocationSet = true;
+      }
+
+
     }
   }
-
 
 }

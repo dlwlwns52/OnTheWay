@@ -1,8 +1,9 @@
+import 'package:OnTheWay/Map/WriteMap/CurrentMapScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
 
-import 'RouteMapScreen.dart';
+import '../RouteMapScreen.dart';
 
 
 class StoreMapScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _MapScreenState extends State<StoreMapScreen> {
     var location = new Location();
     var currentLocation = await location.getLocation(); // 현재 위치 정보 가져오기
     LatLng newCenter = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+    print(newCenter);
 
     setState(() {
       storeSelectedLocation = newCenter; // 선택된 위치 업데이트
@@ -50,7 +52,9 @@ class _MapScreenState extends State<StoreMapScreen> {
         title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
       ),
 
-      body: KakaoMap(
+      body: Stack(
+          children : [
+            KakaoMap(
         onMapCreated: (controller) {
           _mapController = controller; // Kakao Map Controller 생성 및 할당
         },
@@ -64,23 +68,44 @@ class _MapScreenState extends State<StoreMapScreen> {
       ),
 
       //현재위치 아이콘
-      floatingActionButton: Container(
-        width: 80, // 원하는 너비 조절
-        height: 80, // 원하는 높이 조절
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white, // 배경색상을 흰색으로 설정
-        ),
-        child: FloatingActionButton(
-          onPressed: _moveToCurrentLocation,
-          tooltip: '현재 위치로 이동',
-          backgroundColor: Colors.white,
-          child: Icon(
-            Icons.my_location,
-            size: 40, // 아이콘 크기 조절
-            color: Colors.black,
-          ),
-        ),
+            Positioned(
+              right: 20,
+              bottom: 40,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black26, blurRadius: 5)
+                      ],
+                    ),
+                    child: Text(
+                      '위치 설정',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    width: 80.0, // 원하는 버튼의 너비
+                    height: 80.0, // 원하는 버튼의 높이
+                    child: FloatingActionButton(
+                      onPressed: _moveToCurrentLocation,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.my_location,
+                        size: 60, // 아이콘 크기 조절
+                        color: Colors.black,), // 아이콘 크기
+                      tooltip: '설정된 위치로 이동',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
 
 
@@ -99,7 +124,7 @@ class _MapScreenState extends State<StoreMapScreen> {
               // 현재위치 설정을 안했을때
               if (storeSelectedLocation == null) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('가게 위치를 선택해주세요.', textAlign: TextAlign.center,),
+                  content: Text('현재 위치를 선택해주세요.', textAlign: TextAlign.center,),
                   duration: Duration(seconds: 2),
                 ));
                 return;
@@ -138,44 +163,3 @@ class _MapScreenState extends State<StoreMapScreen> {
   }
 }
 
-//       //바텀바 ui
-//       bottomNavigationBar: BottomAppBar(
-//         child: Container(
-//           margin: EdgeInsets.all(16.0),
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               ElevatedButton.icon(
-//                 onPressed: () => Navigator.of(context).push(
-//                   MaterialPageRoute(
-//                     builder: (context) => RouteMapScreen(), // 경로 표시 화면으로 이동
-//                   ),
-//                 ),
-//                 icon: Icon(Icons.map),
-//                 label: Text("경로 표시"),
-//                 style: ElevatedButton.styleFrom(
-//                   primary: Colors.orange,
-//                 ),
-//               ),
-//               ElevatedButton(
-//                 onPressed: () {
-//                   // 기존 '저장하기' 버튼 코드...
-//                 },
-//                 child: Row(
-//                   children: [
-//                     Icon(Icons.pin_drop),
-//                     SizedBox(width: 8.0),
-//                     Text('저장하기', style: TextStyle(fontSize: 18)),
-//                   ],
-//                 ),
-//                 style: ElevatedButton.styleFrom(
-//                   primary: Color(0xFFFF8B13),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

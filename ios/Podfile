@@ -1,5 +1,79 @@
+# # TmapUISDK를 위한 소스 추가
+# source 'https://github.com/TmapSDK/iosSDK.git' # TmapSDK의 iOS SDK를 위한 소스 리포지토리를 지정합니다.
+# source 'https://github.com/CocoaPods/Specs.git' # CocoaPods의 기본 스펙 리포지토리를 지정합니다.
+
+# # Uncomment this line to define a global platform for your project
+# platform :ios, '13.0'  # 프로젝트에 대한 iOS 플랫폼의 최소 버전을 13.0으로 설정합니다.
+
+# # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+# ENV['COCOAPODS_DISABLE_STATS'] = 'true' # CocoaPods의 통계 수집 기능을 비활성화합니다.
+
+# project 'Runner', {
+#   'Debug' => :debug,
+#   'Profile' => :release,
+#   'Release' => :release,
+# } # 프로젝트의 빌드 설정을 정의합니다.
+
+# def flutter_root
+#   # Flutter 관련 설정 파일 경로를 찾고, 없으면 오류를 발생시킵니다.
+#   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+#   unless File.exist?(generated_xcode_build_settings_path)
+#     raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+#   end
+
+#   # Flutter 루트 디렉토리 경로를 반환합니다.
+#   File.foreach(generated_xcode_build_settings_path) do |line|
+#     matches = line.match(/FLUTTER_ROOT\=(.*)/)
+#     return matches[1].strip if matches
+#   end
+#   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+# end
+
+# require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root) # Flutter의 Podfile 헬퍼 스크립트를 포함합니다.
+
+# flutter_ios_podfile_setup # Flutter iOS Podfile 설정을 수행합니다.
+
+# target 'Runner' do
+#   use_frameworks!
+#   use_modular_headers!
+
+#   # 모든 iOS Pods를 설치합니다.
+#   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+#   # Firebase Functions 종속성을 추가합니다.
+#   pod 'Firebase/Functions'
+
+#   target 'RunnerTests' do
+#     inherit! :search_paths # 상위 타겟의 검색 경로를 상속합니다.
+#   end
+# end
+
+# post_install do |installer|
+#   installer.pods_project.targets.each do |target|
+#     flutter_additional_ios_build_settings(target)
+
+#     target.build_configurations.each do |config|
+#       # 빌드 설정을 정의합니다.
+#       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+#       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'PERMISSION_LOCATION=1']
+#     end
+#   end
+
+#   installer.generated_projects.each do |project| 
+#     project.targets.each do |target|
+#       target.build_configurations.each do |config|
+#         # iOS 배포 대상 버전 및 아키텍처 설정을 정의합니다.
+#         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+#         config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+#       end
+#     end
+#   end
+# end
+
+
+#tmap 설정전
 # Uncomment this line to define a global platform for your project
-platform :ios, '12.0'  # 11.0에서 12.0으로 변경
+# platform :ios, '12.0'  # 11.0에서 12.0으로 변경
+platform :ios, '13.0'  # 12.0에서 13.0으로 변경 //tmap
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

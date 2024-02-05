@@ -30,9 +30,6 @@ class NaverPostManager {
               ),
               child: Text(
                 '수정',
-                // style: TextStyle(
-                //   color: Colors.orange
-                // ),
               ),
               onPressed: () {
                 _navigateToEditPostScreen(
@@ -49,9 +46,6 @@ class NaverPostManager {
               ),
               child: Text(
                 '삭제',
-                // style: TextStyle(
-                //   color: Colors.orange
-                // ),
               ),
               onPressed: () {
                 String postStore = doc['store']; // 게시물의 'store' 값을 가져옵니다.
@@ -336,4 +330,10 @@ class NaverPostManager {
   }
 
 }
+
+
+
+
+
+
 

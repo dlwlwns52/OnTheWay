@@ -1,7 +1,12 @@
-// import 'dart:convert';
 // import 'package:flutter/material.dart';
-// import 'package:kakao_map_plugin/kakao_map_plugin.dart';
-// import 'package:http/http.dart' as http;
+// import 'package:tmap_ui_sdk/auth/data/auth_data.dart';
+// import 'package:tmap_ui_sdk/auth/data/init_result.dart';
+// import 'package:tmap_ui_sdk/route/data/planning_option.dart';
+// import 'package:tmap_ui_sdk/route/data/route_point.dart';
+// import 'package:tmap_ui_sdk/route/data/route_request_data.dart';
+// import 'package:tmap_ui_sdk/tmap_ui_sdk.dart';
+// import 'package:tmap_ui_sdk/tmap_ui_sdk_manager.dart';
+// import 'package:tmap_ui_sdk/widget/tmap_view_widget.dart';
 //
 // class RouteMapScreen extends StatefulWidget {
 //   @override
@@ -10,85 +15,51 @@
 //
 // class _RouteMapScreenState extends State<RouteMapScreen> {
 //
-//   List<Polyline> polylines = [];
-//   late KakaoMapController _mapController; // Kakao Map Controller 초기화
-//   LatLng? storeSelectedLocation; // 사용자가 선택한 위치를 저장하는 변수
-//   Set<Marker> markers = {}; // 마커를 저장할 변수
-//   LatLng? markerPosition; // 마커의 위치를 관리할 새로운 변수
-//
-//
 //   @override
 //   void initState() {
 //     super.initState();
-//     getCarDirection();
-//     AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100'); // Kakao Map 인증 초기화
+//     initTmap();
 //   }
 //
-//   void getCarDirection() async {
-//     const String REST_API_KEY = 'c8111ea329648994aa9529377ce7766f';
-//     const String url = 'https://apis-navi.kakaomobility.com/v1/directions';
+//   Future<void> initTmap() async {
+//     try {
+//       String? platformVersion = await TmapUiSdk().getPlatformVersion();
+//       AuthData authData = AuthData(
+//         clientApiKey: "ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM", // 여기에 실제 Tmap API 키를 입력해야 합니다.
+//         // 다른 필드는 필요에 따라 채워주세요
+//       );
 //
-//     String origin = '36.402461020967664,127.42474065006031';
-//     String destination = '36.44872437488492,127.42882136402619';
+//       InitResult? result = await TmapUISDKManager().initSDK(authData);
 //
-//     final response = await http.get(
-//       Uri.parse('$url?origin=$origin&destination=$destination'),
-//       headers: {
-//         'Authorization': 'KakaoAK $REST_API_KEY',
-//         'Content-Type': 'application/json',
-//       },
-//     );
-//
-//     if (response.statusCode == 200) {
-//       var data = json.decode(response.body);
-//       createPolyline(data);
-//     } else {
-//       throw Exception('Failed to load directions');
-//     }
-//   }
-//
-//   void createPolyline(dynamic data) {
-//     List<LatLng> linePath = [];
-//     var roads = data['routes'][0]['sections'][0]['roads'];
-//
-//     for (var road in roads) {
-//       for (int i = 0; i < road['vertexes'].length; i += 2) {
-//         double lat = road['vertexes'][i + 1];
-//         double lng = road['vertexes'][i];
-//         linePath.add(LatLng(lat, lng));
+//       if (platformVersion != null && result != null && result == InitResult.granted) {
+//         print("초기화 성공 : $platformVersion / $result");
+//       } else {
+//         print("초기화 실패 : $platformVersion / $result");
 //       }
+//     } catch (e) {
+//       print("error ${e.toString()}");
 //     }
+//   }
 //
-//     final polyline = Polyline(
-//       polylineId: 'route',
-//       points: linePath,
-//       strokeColor: Colors.blue,
-//       strokeWidth: 5,
+//   TmapViewWidget getTmapViewWidget() {
+//     RouteRequestData data = RouteRequestData(
+//       source: RoutePoint(latitude: 36.402461020967664, longitude: 127.42474065006031, name: "출발지"),
+//       destination: RoutePoint(latitude: 36.44872437488492, longitude: 127.42882136402619, name: "도착지"),
+//       routeOption: [PlanningOption.recommend, PlanningOption.shortest],
 //     );
 //
-//     setState(() {
-//       polylines.add(polyline);
-//     });
+//     return TmapViewWidget(data: data);
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       body: KakaoMap(
-//         onMapCreated: (controller) {
-//           _mapController = controller; // Kakao Map Controller 생성 및 할당
-//         },
-//         polylines: polylines,
-//         markers: markers.toList(), // 마커 리스트 설정
-//         center: storeSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정
-//         onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
-//           if (markerDragType == MarkerDragType.end) {
-//             markerPosition = latLng;
-//           }
-//         },
+//       appBar: AppBar(
+//         title: Text('길찾기'),
 //       ),
-//
+//       body: getTmapViewWidget(),
 //     );
 //   }
-//
 // }
+//
+//

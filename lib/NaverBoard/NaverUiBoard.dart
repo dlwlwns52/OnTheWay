@@ -1,12 +1,15 @@
+import 'package:OnTheWay/Map/WriteMap/StoreMapScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../Alarm/AlarmUi.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
-
+import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
+import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
 class NaverBoardPage extends StatefulWidget {
@@ -20,9 +23,9 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // PostManager 인스턴스 생성
   final postManager = NaverPostManager();
-
   // final Alarm = Alarm(); // NaverAlarm 인스턴스를 생성합니다.
   late Alarm alarm;
+
 
   @override
   void initState() {
@@ -51,8 +54,8 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
 
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFFF8B13),
         // backgroundColor: Colors.deepOrange,
@@ -74,76 +77,80 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
         actions: <Widget>[
           Padding(
             padding: EdgeInsets.only(right: 10.0), // 오른쪽 패딩을 줄여 아이콘을 왼쪽으로 이동
-                child: Stack(
-                  alignment: Alignment.topRight,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.notifications),
-                      onPressed: () {
-                        // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => AlarmUi(),
-                          ),
-                        );
-                        setState(() {
-                          alarm.resetNotificationCount(); // 알림 수를 초기화합니다.
-                        });
-                      },
-                    ),
-                    if (alarm.getNotificationCount() > 0)
-                      Positioned(
-                        right: 11,
-                        top: 11,
-                        child: Container(
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 14,
-                            minHeight: 14,
-                          ),
-                          child: Text(
-                            '${alarm.getNotificationCount()}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.notifications),
+                  onPressed: () {
+                    // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AlarmUi(),
                       ),
-                  ],
+                    );
+                    setState(() {
+                      alarm.resetNotificationCount(); // 알림 수를 초기화합니다.
+                    });
+                  },
                 ),
-              ),
-            ],
+                if (alarm.getNotificationCount() > 0)
+                  Positioned(
+                    right: 11,
+                    top: 11,
+                    child: Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '${alarm.getNotificationCount()}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
+        ],
+      ),
 
 //게시판 몸통
-      body: Column(
+      body:
+      Column(
         children: <Widget>[
+
           SizedBox(height: 10), // AppBar와 Row 사이에 20픽셀의 높이를 가진 공간을 추가합니다.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               IconButton(
-                icon: Icon(Icons.home),
+                icon: Icon(Icons.location_on,), // 원하는 색상으로 설정
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        "상대방이 있는 위치 입니다.", textAlign: TextAlign.center,),
-                      // behavior: SnackBarBehavior.floating,
+                        "상대방이 있는 위치 입니다.",
+                        textAlign: TextAlign.center,
+                      ),
                       duration: Duration(seconds: 1),
                     ),
                   );
                 },
               ),
 
+
               IconButton(
-                icon: Icon(Icons.store),
+                icon: Icon(Icons.store,),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -220,12 +227,14 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                         children: <Widget>[
                           InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
                             onTap: () {
-                              postManager.helpAndExit(context,
-                                  doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                             },
-                            child: Card( // 정보를 담는 카드 위젯
-                              color: isMyPost ? Colors.orange[100] : Colors
-                                  .white, // 내 게시물인 경우 배경색을 주황색으로, 아닌 경우 흰색으로 설정
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0), // 라운드 모서리
+                              ),
+                              elevation: 3.0, // 그림자 효과
+                              color: isMyPost ? Colors.orange[100] : Colors.white,
                               child: Container(
                                 height: 100, // 카드의 높이 설정
                                 child: Padding(
@@ -233,34 +242,73 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                   // 내부 패딩 설정
                                   child: Row(
                                     children: <Widget>[
+
                                       Expanded(
-                                        child: Text(
-                                          data['my_location'] ?? '제목 없음',
-                                          // 위치 정보 또는 '제목 없음' 표시
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0,
-                                              fontWeight: FontWeight.bold),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (!isMyPost) {
+                                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                                              Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => PostCurrentMap(documentId: doc.id),
+                                              ));
+                                            }
+                                            else{
+                                              postManager.helpAndExit(context, doc);// 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
+                                            }
+                                          },
+                                          child: Text(
+                                            data['my_location'] ?? '내용 없음',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.bold,
+                                              decoration: isMyPost ? TextDecoration.none : TextDecoration.underline, // 내 게시물이 아닐 때만 밑줄 추가
+                                              color: isMyPost ? Colors.black : Colors.black, // 내 게시물이 아닐 때만 색상 변경
+                                            ),
+                                          ),
                                         ),
                                       ),
+
+
                                       Expanded(
-                                        child: Text(
-                                          data['store'] ?? '내용 없음',
-                                          // 가게 정보 또는 '내용 없음' 표시
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0,
-                                              fontWeight: FontWeight.bold),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (!isMyPost) {
+                                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                                              Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => PostStoreMap(documentId: doc.id),
+                                              ));
+                                            }
+                                            else{
+                                              postManager.helpAndExit(context, doc); // 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
+                                            }
+                                          },
+                                          child: Text(
+                                            data['store'] ?? '내용 없음',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.bold,
+                                              decoration: isMyPost ? TextDecoration.none : TextDecoration.underline, // 내 게시물이 아닐 때만 밑줄 추가
+                                              color: isMyPost ? Colors.black : Colors.black, // 내 게시물이 아닐 때만 색상 변경
+                                            ),
+                                          ),
                                         ),
                                       ),
+
+
                                       Expanded(
                                         child: Text(
                                           data['cost'] ?? '추가 내용 없음',
                                           // 비용 정보 또는 '추가 내용 없음' 표시
                                           textAlign: TextAlign.center,
                                           style: TextStyle(fontSize: 20.0,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold, color: Colors.black),
                                         ),
                                       ),
+
                                     ],
+
                                   ),
                                 ),
                               ),
@@ -316,4 +364,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
       ),
     );
   }
+}
+
+
+
+void pp() {
+  print("heelo");
 }
