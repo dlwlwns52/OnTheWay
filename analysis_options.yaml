@@ -36,7 +36,7 @@ linter:
 #    prefer_const_constructors:
 #      false: 이 규칙은 "가능하면 const를 사용하여 객체를 생성하라"는 것인데, 이 규칙을 비활성화(false)하면 const를 사용하지 않고 객체를 생성해도 경고가 나지 않습니다.
 #
-#    prefer_const_constructors_in_immutables:
+#    prefer_const_constructors_in_iㅁmmutables:
 #      false: 이 규칙은 "불변성을 가진 객체를 생성할 때 가능하면 const를 사용하라"는 것인데, 이 규칙을 비활성화(false)하면 불변성을 가진 객체를 const 없이 생성해도 경고가 나지 않습니다.
 #
 #    avoid_print:

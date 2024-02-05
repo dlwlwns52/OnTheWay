@@ -113,7 +113,7 @@ class _MapScreenState extends State<PostStoreMap> {
                   child: FloatingActionButton(
                     onPressed: () => _moveToCurrentLocation(widget.documentId),
                     backgroundColor: Colors.orange,
-                    child: Icon(Icons.place, size: 50), // 아이콘 크기
+                    child: Icon(Icons.store, size: 50), // 아이콘 크기
                     tooltip: '설정된 위치로 이동',
                   ),
                 )

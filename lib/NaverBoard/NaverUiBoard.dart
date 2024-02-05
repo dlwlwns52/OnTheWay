@@ -5,6 +5,7 @@ import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../Alarm/AlarmUi.dart';
+import '../Chat/all_users_screen.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
@@ -247,7 +248,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                         child: GestureDetector(
                                           onTap: () {
                                             if (!isMyPost) {
-                                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                                              // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                                               Navigator.of(context).push(MaterialPageRoute(
                                                 builder: (context) => PostCurrentMap(documentId: doc.id),
                                               ));
@@ -274,7 +275,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                         child: GestureDetector(
                                           onTap: () {
                                             if (!isMyPost) {
-                                              postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                                              // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                                               Navigator.of(context).push(MaterialPageRoute(
                                                 builder: (context) => PostStoreMap(documentId: doc.id),
                                               ));
@@ -351,14 +352,20 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
         unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
         onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
-            );
+          // 채팅방으로 이동
+          if (index == 0) {
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => AllUsersScreen()),
+            // );
+            //새 게시글 만드는 곳으로 이동
           } else if (index == 1) {
-            // 본인 확인 클래스로 이동하는 코드
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
+            );
           }
+
         },
         selectedLabelStyle: TextStyle(color: Colors.orange), // 선택된 항목의 텍스트 색상 설정
       ),

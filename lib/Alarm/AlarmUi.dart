@@ -212,6 +212,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
+                _deleteNotification(documentId); // 수락시 알림 내용 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -233,6 +234,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'rejected');
                 Navigator.of(context).pop(); // 대화 상자 닫기
+                _deleteNotification(documentId); // 거절시 알림 내용 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
