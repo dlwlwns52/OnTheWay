@@ -53,3 +53,5 @@ flutter:
   assets:
     - assets/noimage.jpeg
     - assets/blankimage.png
+    - assets/avatar.png
+    - assets/ava.png

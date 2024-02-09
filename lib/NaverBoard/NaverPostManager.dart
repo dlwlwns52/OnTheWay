@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OnTheWay/NaverBoard/NaverWriteBoard.dart';
+import 'package:http/http.dart';
 
 
 class NaverPostManager {
@@ -83,8 +84,6 @@ class NaverPostManager {
 
   void _deletePost(String docId,String postStore, String postOwnerEmail) async {
     try {
-      print(postStore);
-      print(postOwnerEmail);
       // 'naverUserHelpStatus' 컬렉션에서 문서 이름 생성
       String documentName = createDocumentName(postStore, postOwnerEmail);
       print(documentName);
@@ -246,18 +245,30 @@ class NaverPostManager {
       // 도와주기 버튼 누른 사람 닉네임 users 컬렉션에서 조회한 후 변수에 저ㄹ장!
       // Firestore의 'users' 컬렉션에서 helperEmail에 해당하는 사용자 문서를 조회합니다.
       final usersCollection = FirebaseFirestore.instance.collection('users');
-      final userDoc = await usersCollection.where('email', isEqualTo: helperEmail).get();
+      final helpUserDoc = await usersCollection.where('email', isEqualTo: helperEmail).get(); // 도와주기 요청한 사람 이메일
+      final ownerUserDoc = await usersCollection.where('email', isEqualTo: postOwnerEmail).get();
 
       // 사용자 문서가 존재하면 닉네임을 가져옵니다.
       String helperNickname = '';
-      if (userDoc.docs.isNotEmpty) {
-        helperNickname = userDoc.docs.first.data()['nickname'];
+      if (helpUserDoc.docs.isNotEmpty) {
+        helperNickname = helpUserDoc.docs.first.data()['nickname'];
       } else {
         // 사용자 문서가 없다면 에러 처리를 합니다.
         // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
         print('User document not found for email: $helperEmail');
         return;
       }
+
+      String OwnerNickname = '';
+      if (ownerUserDoc.docs.isNotEmpty){
+        OwnerNickname = ownerUserDoc.docs.first.data()['nickname'];
+      } else {
+        // 사용자 문서가 없다면 에러 처리를 합니다.
+        // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
+        print('User document not found for email: $helperEmail');
+        return;
+      }
+
 
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 
@@ -269,6 +280,7 @@ class NaverPostManager {
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
         'University' : "naver",
         'post_id': doc.id,
+        'owner_email_nickname' : OwnerNickname,
         'helper_email': helperEmail,
         'helper_email_nickname' : helperNickname,
         'owner_email': postOwnerEmail,

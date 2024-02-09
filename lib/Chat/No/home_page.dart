@@ -1,5 +1,5 @@
-// import 'package:OnTheWay/Chat/all_users_screen.dart';
-// import 'package:OnTheWay/Chat/models/user_details.dart';
+// import 'package:chat_app/all_users_screen.dart';
+// import 'package:chat_app/models/user_details.dart';
 // import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
@@ -21,14 +21,14 @@
 //   Future<FirebaseUser> signIn() async {
 //     GoogleSignInAccount _signInAccount = await _googleSignIn.signIn();
 //     GoogleSignInAuthentication _signInAuthentication =
-//         await _signInAccount.authentication;
+//     await _signInAccount.authentication;
 //
 //     AuthCredential authCredential = GoogleAuthProvider.getCredential(
 //         idToken: _signInAuthentication.idToken,
 //         accessToken: _signInAuthentication.accessToken);
 //
 //     FirebaseUser user =
-//         await _firebaseAuth.signInWithCredential(authCredential);
+//     await _firebaseAuth.signInWithCredential(authCredential);
 //     return user;
 //   }
 //

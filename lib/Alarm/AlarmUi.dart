@@ -74,11 +74,14 @@ class _NotificationScreenState extends State<AlarmUi> {
                 return ListView.separated(
                   itemCount: notifications.length,
                   itemBuilder: (context, index) {
+
+                    //알림 온 시간 측정
                     final DocumentSnapshot doc = notifications[index];
                     final notification = doc.data() as Map<String, dynamic>;
                     final timestamp = notification['timestamp'] as Timestamp;
                     final DateTime dateTime = timestamp.toDate();
                     final String timeAgo = getTimeAgo(dateTime);
+
                     final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
                     final Color avatarColor = _getColorFromName(nickname); // 색상 결정
 
@@ -258,3 +261,4 @@ class _NotificationScreenState extends State<AlarmUi> {
 
 
 }
+

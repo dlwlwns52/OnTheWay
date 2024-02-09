@@ -1,11 +1,11 @@
+import 'package:OnTheWay/Chat/all_users_screen.dart';
 import 'package:OnTheWay/Map/WriteMap/StoreMapScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
-import '../Chat/all_users_screen.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
@@ -354,10 +354,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
         onTap: (index) {
           // 채팅방으로 이동
           if (index == 0) {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => AllUsersScreen()),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllUsersScreen()),
+            );
             //새 게시글 만드는 곳으로 이동
           } else if (index == 1) {
             Navigator.push(
