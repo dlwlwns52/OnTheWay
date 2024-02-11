@@ -210,7 +210,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                 ),
               ),
-              child: Text('수락',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
+              child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'accepted');
@@ -232,7 +232,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                 ),
               ),
-              child: Text('거절',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
+              child: Text('거절',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'rejected');

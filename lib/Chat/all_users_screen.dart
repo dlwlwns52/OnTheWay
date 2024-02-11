@@ -14,20 +14,38 @@ class AllUsersScreen extends StatefulWidget {
 
 class _AllUsersScreenState extends State<AllUsersScreen> {
 
-  late StreamSubscription<QuerySnapshot> _helpActionsSubscription; // Firestore 스트림 구독을 위한 변수
-  List<DocumentSnapshot> acceptedHelpActions = []; // 수락된 도움말 액션을 저장하는 변수
+  late StreamSubscription<QuerySnapshot> _chatActionsSubscription; // Firestore 스트림 구독을 위한 변수
+  List<DocumentSnapshot> acceptedChatActions = []; // 수락된 도움말 액션을 저장하는 변수
 
 
 
 
   // elif 문 만들기
-  // helper_email과 owner_email 합치면 or사용 않해도 되는지 알아보기
+  // helper_email과 owner_email 합치면 or사용 않해도 되는지 알아보ㄷ
 
 
-
-
-
-
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   User? currentUser = FirebaseAuth.instance.currentUser;
+  //   String? currentUserEmail = currentUser?.email;
+  //
+  //   if (currentUserEmail != null) {
+  //     _helpActionsSubscription =
+  //         FirebaseFirestore.instance // Firebase Firestore 인스턴스 생성
+  //             .collection('helpActions') // 'helpActions' 컬렉션을 참조
+  //             .where('response', isEqualTo: 'accepted') // 'response' 필드가 'accepted'인 문서만 가져오기
+  //             .where('helper_email', isEqualTo: currentUserEmail)
+  //             .where('owner_email', isEqualTo: currentUserEmail)
+  //             .snapshots() // 실시간 업데이트를 감지하기 위해 스냅샷 생성
+  //             .listen((data) { // 스트림을 구독하고 업데이트를 처리하는 콜백 함수
+  //           setState(() {
+  //             acceptedHelpActions = data.docs; // 수락된 도움말 액션 리스트 업데이트
+  //           });
+  //
+  //         });
+  //   }
+  // }
 
   @override
   void initState() {
@@ -36,25 +54,27 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
     String? currentUserEmail = currentUser?.email;
 
     if (currentUserEmail != null) {
-      _helpActionsSubscription =
-          FirebaseFirestore.instance // Firebase Firestore 인스턴스 생성
-              .collection('helpActions') // 'helpActions' 컬렉션을 참조
-              .where('response', isEqualTo: 'accepted') // 'response' 필드가 'accepted'인 문서만 가져오기
-              .where('helper_email', isEqualTo: currentUserEmail)
-              .where('owner_email', isEqualTo: currentUserEmail)
-              .snapshots() // 실시간 업데이트를 감지하기 위해 스냅샷 생성
-              .listen((data) { // 스트림을 구독하고 업데이트를 처리하는 콜백 함수
-            setState(() {
-              acceptedHelpActions = data.docs; // 수락된 도움말 액션 리스트 업데이트
-            });
+      _chatActionsSubscription = FirebaseFirestore.instance
+          .collection('ChatActions')
+          .where('response', isEqualTo: 'accepted')
+          .snapshots()
+          .listen((data) {
+        var filteredDocs = data.docs.where((doc) {
+          var docData = doc.data() as Map<String, dynamic>;
+          return docData['helper_email'] == currentUserEmail ||
+              docData['owner_email'] == currentUserEmail;
+        }).toList();
 
-          });
+        setState(() {
+          acceptedChatActions = filteredDocs;
+        });
+      });
     }
   }
 
   @override
   void dispose() {
-    _helpActionsSubscription.cancel(); // 스트림 구독 해제
+    _chatActionsSubscription.cancel(); // 스트림 구독 해제
     super.dispose();
   }
 
@@ -83,28 +103,20 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
           title: Text("채팅",
             style: TextStyle(fontWeight: FontWeight.bold),),
           actions: <Widget>[
-            // IconButton(
-            //   icon: Icon(Icons.close),
-            //   onPressed: () async {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => NaverBoardPage()), // NaverBoardPage로 이동
-            //     );
-            //   },
-            // )
           ],
 
         ),
 
-        body: acceptedHelpActions != null
+        body: acceptedChatActions != null
             ? Container(
           child: ListView.builder(
-            itemCount: acceptedHelpActions.length,
+            itemCount: acceptedChatActions.length,
             itemBuilder: ((context, index) {
-              DocumentSnapshot userDoc = acceptedHelpActions[index];
+              DocumentSnapshot userDoc = acceptedChatActions[index];
               Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
               //알림 온 시간 측정
-              final DocumentSnapshot doc = acceptedHelpActions[index];
+              final DocumentSnapshot doc = acceptedChatActions[index];
               final notification = doc.data() as Map<String, dynamic>;
               final timestamp = notification['timestamp'] as Timestamp;
               final DateTime dateTime = timestamp.toDate();
@@ -131,7 +143,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  userData['helper_email_nickname'],
+                                  userData['owner_email_nickname'],
                                   style: TextStyle(
                                     color: Colors.black87,
                                     fontWeight: FontWeight.bold,
@@ -168,15 +180,83 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                           ),
                         ],
                       ),
+                    )
+                  else if (userData['owner_email'] == currentUserEmail)
+                    InkWell(
+                      onTap: () {
+                        // 탭 이벤트 핸들러
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: <Widget>[
+                            ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: AssetImage('assets/ava.png'),
+                                radius: 28,
+                              ),
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    userData['helper_email_nickname'],
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    "마지막 메시지 미리보기",
+                                    style: TextStyle(
+                                      color: Colors.grey[800],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$timeAgo',
+                                  style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  Divider(thickness: 1),
+                  // Divider(thickness: 1),
                 ],
               );
-
             }),
           ),
-
-
         )
             : Center(
           child: CircularProgressIndicator(), // 로딩 중 표시

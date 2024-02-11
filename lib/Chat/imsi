@@ -1,0 +1,55 @@
+                  else if (userData['owner_email'] == currentUserEmail)
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      child: Stack(
+                        children: <Widget>[
+                          // 'owner_email' 조건에 해당하는 위젯 구성
+                          // 예시로, 동일한 구조를 사용했습니다. 필요에 따라 변경하세요.
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: AssetImage('assets/ava.png'),
+                              radius: 30,
+                            ),
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  userData['helper_email_nickname'], // 'owner_email'에 맞는 닉네임
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "마지막 메시지 미리보기",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // 탭 이벤트 핸들러
+                            },
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              child: Text(
+                                '$timeAgo',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),

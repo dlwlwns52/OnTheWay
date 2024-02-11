@@ -287,6 +287,17 @@ class NaverPostManager {
         'timestamp': DateTime.now(),
       });
 
+      //채팅용 도움 따로 만듬 -> 아니면 알림을 삭제할때 같이 삭제
+      await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
+        'University' : "naver",
+        'post_id': doc.id,
+        'owner_email': postOwnerEmail,
+        'owner_email_nickname' : OwnerNickname,
+        'helper_email': helperEmail,
+        'helper_email_nickname' : helperNickname,
+        'timestamp': DateTime.now(),
+      });
+
       // 대화상자를 닫고 스낵바 표시
       Navigator.of(context).pop();
       // 성공 메시지 표시
