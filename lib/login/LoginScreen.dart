@@ -280,17 +280,23 @@ class _LoginScreenState extends State<LoginScreen> {
         .where('email', isEqualTo: email)
         .get();
 
+    User? currentUser = FirebaseAuth.instance.currentUser; //임시!!!!!!!!!
+    String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기  //임시!!!!!!!
+
     if (querySnapshot.docs.isNotEmpty) {
       // 해당 이메일을 가진 사용자 문서가 존재하는 경우
       String userId = querySnapshot.docs.first.id;
 
       // 해당 사용자 문서에 토큰을 저장합니다.
       await firestore.collection('users').doc(userId).set({
+        'uid': userUid, //임시!!!!!!!!!!!
         'token': token,
       }, SetOptions(merge: true));
     } else {
       print('No user found with email: $email');
     }
+
+
   }
 
   Future<void> getTokenAndSave(String? email) async {

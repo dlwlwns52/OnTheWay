@@ -172,9 +172,10 @@ class NaverPostManager {
 
   void helpPost(BuildContext context, DocumentSnapshot doc) async {
     try {
+// 현재 로그인된 사용자 가져오기
       User? currentUser = FirebaseAuth.instance.currentUser;
 
-      // currentUser가 null인 경우, 즉 사용자가 로그인하지 않았다면, 오류 메시지를 표시하고 함수를 종료합니다.
+// 로그인하지 않은 경우 오류 메시지 표시 후 함수 종료
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -185,36 +186,36 @@ class NaverPostManager {
         return;
       }
 
-      String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
+// 도와주는 사용자의 이메일 가져오기
+      String? helperEmail = getUserEmail();
 
+// 게시물 정보 가져오기
       String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
-      // 'naver_posts' 컬렉션에서 해당 게시물의 'store' 값을 가져옵니다.
       DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
       String postStore = postDoc['store']; // 게시물의 'store' 필드
 
-      // 현재 시간을 기반으로 타임스탬프 생성
+// 현재 시간을 기반으로 타임스탬프 생성
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
 
-
-      // 'naverUserHelpStatus' 컬렉션에서 특정 문서(도와주기 상태)를 가져옵니다.
-      // 문서 이름은 postStore와 postOwnerEmail을 결합하여 생성됩니다.
+// 도와주기 상태 가져오기
       Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
 
-      // 가져온 문서에서 docId를 키로 하는 상태를 확인합니다.
-      // 문서가 없거나 해당 키가 없으면 기본값을 사용합니다.
+// 클릭 상태 확인
       var postStatus = helpStatus[helperEmail] ?? {'clickCount': 0, 'lastClickedTime': DateTime(1970)};
+      int clickCount = postStatus['clickCount']; // 클릭 횟수 가져오기
 
-      int clickCount = postStatus['clickCount']; // 클릭 횟수를 가져옵니다.
-      // lastClickedTime을 가져오기 위한 초기화
+// 마지막 클릭 시간 가져오기
       DateTime lastClickedTime;
-
-      // postStatus에서 lastClickedTime이 Timestamp 형식인지 확인합니다.
-      // Timestamp 형식이면 DateTime으로 변환하고, 아니면 기본값을 사용합니다.
       if (postStatus['lastClickedTime'] is Timestamp) {
         lastClickedTime = (postStatus['lastClickedTime'] as Timestamp).toDate();
       } else {
         lastClickedTime = postStatus['lastClickedTime'] ?? DateTime(1970);
       }
+
+// 도와주는 사람과 게시물 작성자의 UID 가져오기(Chat 에서 사용)
+      String helperUid = '';
+      String ownerUid = '';
+
 
 // 현재 시간을 가져옵니다.
       DateTime now = DateTime.now();
@@ -252,6 +253,8 @@ class NaverPostManager {
       String helperNickname = '';
       if (helpUserDoc.docs.isNotEmpty) {
         helperNickname = helpUserDoc.docs.first.data()['nickname'];
+        helperUid = helpUserDoc.docs.first.id; // UID 저장
+        print(helperUid + "helper");
       } else {
         // 사용자 문서가 없다면 에러 처리를 합니다.
         // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
@@ -262,6 +265,8 @@ class NaverPostManager {
       String OwnerNickname = '';
       if (ownerUserDoc.docs.isNotEmpty){
         OwnerNickname = ownerUserDoc.docs.first.data()['nickname'];
+        ownerUid = ownerUserDoc.docs.first.id; // UID 저장
+        print(ownerUid + "ownerUid");
       } else {
         // 사용자 문서가 없다면 에러 처리를 합니다.
         // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
@@ -287,16 +292,6 @@ class NaverPostManager {
         'timestamp': DateTime.now(),
       });
 
-      //채팅용 도움 따로 만듬 -> 아니면 알림을 삭제할때 같이 삭제
-      await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
-        'University' : "naver",
-        'post_id': doc.id,
-        'owner_email': postOwnerEmail,
-        'owner_email_nickname' : OwnerNickname,
-        'helper_email': helperEmail,
-        'helper_email_nickname' : helperNickname,
-        'timestamp': DateTime.now(),
-      });
 
       // 대화상자를 닫고 스낵바 표시
       Navigator.of(context).pop();
@@ -307,6 +302,24 @@ class NaverPostManager {
           duration: Duration(seconds: 1),
         ),
       ).closed;
+
+
+      /*
+      채팅용
+      */
+
+// 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.
+      await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
+        'University' : "naver",
+        'post_id': doc.id,
+        'owner_email': postOwnerEmail,
+        'owner_email_nickname' : OwnerNickname,
+        'ownerUid': ownerUid, // 게시물 작성자의 UID
+        'helper_email': helperEmail,
+        'helper_email_nickname' : helperNickname,
+        'helperUid': helperUid, // 도와주는 사람의 UID
+        'timestamp': DateTime.now(),
+      });
 
 
     } catch (e) {

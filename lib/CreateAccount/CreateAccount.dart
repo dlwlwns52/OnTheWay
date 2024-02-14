@@ -429,8 +429,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             DateTime now = DateTime.now();
                             String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
+                            User? currentUser = FirebaseAuth.instance.currentUser;
+                            String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기
+
                             final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
                             await usersCollection.doc(nickname).set({
+                              'uid': userUid,
                               'nickname': nickname,
                               'email': email,
                               'joined_date': formattedDate,

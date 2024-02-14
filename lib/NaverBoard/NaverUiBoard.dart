@@ -1,4 +1,4 @@
-import 'package:OnTheWay/Chat/all_users_screen.dart';
+import 'package:OnTheWay/Chat/AllUsersScreen.dart';
 import 'package:OnTheWay/Map/WriteMap/StoreMapScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
@@ -26,6 +26,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   final postManager = NaverPostManager();
   // final Alarm = Alarm(); // NaverAlarm 인스턴스를 생성합니다.
   late Alarm alarm;
+
 
 
   @override
@@ -373,8 +374,3 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   }
 }
 
-
-
-void pp() {
-  print("heelo");
-}

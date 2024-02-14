@@ -255,7 +255,7 @@ class _NotificationScreenState extends State<AlarmUi> {
 
 
   void _respondToHelpRequest(String documentId, String response) async {
-    await FirebaseFirestore.instance.collection('helpActions').doc(documentId)
+    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
         .update({'response': response});
   }
 

@@ -1,4 +1,4 @@
-// import 'package:chat_app/all_users_screen.dart';
+// import 'package:chat_app/AllUsersScreen.dart';
 // import 'package:chat_app/models/user_details.dart';
 // import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';

@@ -24,6 +24,14 @@ class Message {
     this.photoUrl,
   });
 
+  Message.withoutMessage({
+    required this.senderUid,
+    required this.receiverUid,
+    required this.type,
+    required this.timestamp,
+    this.photoUrl}
+      );
+
   // Message 객체를 Map 형식으로 변환
   // Map<String, dynamic> 사용하여 여러 타입의 데이터를 다룰 수 있도록 함
   Map<String, dynamic> toMap() {
