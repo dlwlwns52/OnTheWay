@@ -33,8 +33,7 @@ class NaverPostManager {
                 '수정',
               ),
               onPressed: () {
-                _navigateToEditPostScreen(
-                    context, doc); // '수정' 버튼 클릭 시 게시물 수정 화면으로 이동 메서드 실행
+                _navigateToEditPostScreen(context, doc); // '수정' 버튼 클릭 시 게시물 수정 화면으로 이동 메서드 실행
                 // Navigator.of(context).pop(); // 대화 상자 닫기
               },
             ),
@@ -105,7 +104,6 @@ class NaverPostManager {
     String? userEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일 가져오기
     bool isMyPost = userEmail == doc['user_email']; // 현재 게시물이 로그인한 사용자의 것인지 확인
 
-
     if (isMyPost) {
       _showEditDeleteDialog(context, doc); // 수정 및 삭제 옵션 제공
 
@@ -140,7 +138,7 @@ class NaverPostManager {
                 ),
                 child: Text('도와주기'),
                 onPressed: () {
-                  helpPost(context, doc); // 도와주기 기능 실행
+                  helpPost(context, doc); // 도기와주기 기능 실행
                 },
               ),
 
@@ -252,9 +250,14 @@ class NaverPostManager {
       // 사용자 문서가 존재하면 닉네임을 가져옵니다.
       String helperNickname = '';
       if (helpUserDoc.docs.isNotEmpty) {
+        // 닉네임을 가져옵니다.
         helperNickname = helpUserDoc.docs.first.data()['nickname'];
-        helperUid = helpUserDoc.docs.first.id; // UID 저장
-        print(helperUid + "helper");
+
+        // UID를 가져옵니다.
+        helperUid = helpUserDoc.docs.first.data()['uid'];
+
+
+
       } else {
         // 사용자 문서가 없다면 에러 처리를 합니다.
         // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
@@ -265,8 +268,8 @@ class NaverPostManager {
       String OwnerNickname = '';
       if (ownerUserDoc.docs.isNotEmpty){
         OwnerNickname = ownerUserDoc.docs.first.data()['nickname'];
-        ownerUid = ownerUserDoc.docs.first.id; // UID 저장
-        print(ownerUid + "ownerUid");
+        ownerUid = ownerUserDoc.docs.first.data()['uid']; // UID 저장
+
       } else {
         // 사용자 문서가 없다면 에러 처리를 합니다.
         // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.

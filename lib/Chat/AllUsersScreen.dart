@@ -73,6 +73,10 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
       _chatActionsSubscription = Rx.combineLatest2(
           helperEmailStream, ownerEmailStream, (QuerySnapshot helperSnapshot, QuerySnapshot ownerSnapshot) {
         var combinedDocs = {...helperSnapshot.docs, ...ownerSnapshot.docs}.toList();
+
+        // 시간(timestamp)을 기준으로 문서들을 정렬
+        combinedDocs.sort((a, b) => b.get('timestamp').compareTo(a.get('timestamp')));
+
         setState(() {
           acceptedChatActions = combinedDocs;
         });
@@ -100,15 +104,15 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
     }
     if ( 1 < difference.inMinutes  && difference.inMinutes < 60) {
       return '${difference.inMinutes}분 전';
-    } else if (difference.inHours < 24) {
+    }
+    else if (difference.inHours < 24) {
       return '${difference.inHours}시간 전';
-    } else {
+    }
+    else {
       return '${difference.inDays}일 전';
     }
   }
-  bool _isValidUrl(String url) {
-    return Uri.tryParse(url)?.hasAbsolutePath ?? false;
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,14 +151,15 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                   if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
                     InkWell(
                         onTap: (() {
-                          // Navigator.push(
-                          //     context,
-                          //     new MaterialPageRoute(
-                          //         builder: (context) => ChatScreen(
-                          //           name: userData['owner_email_nickname'],
-                          //           // photoUrl: userData['photoUrl'],
-                          //           receiverUid: userData['ownerUid'],
-                          //         )));
+                          Navigator.push(
+                              context,
+                              new MaterialPageRoute(
+                                  builder: (context) => ChatScreen(
+                                    senderName: userData['helper_email_nickname'],
+                                    receiverName : userData['owner_email_nickname'],
+                                    // photoUrl: userData['photoUrl'],
+                                    receiverUid: userData['ownerUid'],
+                                  )));
                         }),
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 20),
@@ -228,14 +233,14 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                   else if (userData['owner_email'] == currentUserEmail)
                     InkWell(
                       onTap: (() {
-                        // Navigator.push(
-                        //     context,
-                        //     new MaterialPageRoute(
-                        //         builder: (context) => ChatScreen(
-                        //             name: userData['owner_email_nickname'],
-                        //             // photoUrl: userData['photoUrl'],
-                        //             receiverUid: userData['helperUid'],
-                        //     )));
+                        Navigator.push(
+                            context,
+                            new MaterialPageRoute(
+                                builder: (context) => ChatScreen(
+                                    senderName: userData['owner_email_nickname'],
+                                    receiverName : userData['helper_email_nickname'],
+                                    receiverUid: userData['helperUid'],
+                            )));
                       }),
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 20),

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
@@ -14,7 +13,6 @@ class _NotificationScreenState extends State<AlarmUi> {
   late final Alarm alarm;  // NaverAlarm 클래스의 인스턴스를 선언합니다.
   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
-
 
   @override
   void initState() {
