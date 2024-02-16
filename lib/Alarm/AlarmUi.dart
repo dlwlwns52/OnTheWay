@@ -211,6 +211,7 @@ class _NotificationScreenState extends State<AlarmUi> {
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
                 // 수락 로직 구현
+                print(documentId);
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제

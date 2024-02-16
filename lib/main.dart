@@ -6,6 +6,7 @@ import 'NaverBoard/NaverUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:OnTheWay/Alarm/Alarm.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -15,13 +16,15 @@ Future<void> backgroundMessageHandler(RemoteMessage message) async {
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
-  AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100');
-
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
+  await Firebase.initializeApp(); // Firebase 초기화를 기다림
+  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler); // 백그라운드 메시지 핸들러 등록
+  AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100'); // 인증 리포지토리 초기화
+  await initializeDateFormatting(); // 날짜 형식 초기화를 기다림
+  runApp(MyApp()); // 앱 실행
 }
+
+
 
 Future<String> loadSomeData() async {
   await Future.delayed(Duration(seconds: 1)); // 데이터 로딩을 시뮬레이션하기 위한 코드

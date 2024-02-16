@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'chat_screen.dart';
+import 'ChatScreen.dart';
 
 
 class AllUsersScreen extends StatefulWidget {
@@ -146,6 +146,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
               User? currentUser = FirebaseAuth.instance.currentUser;
               String? currentUserEmail = currentUser?.email;
 
+
               return Column(
                 children: [
                   if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
@@ -159,6 +160,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                     receiverName : userData['owner_email_nickname'],
                                     // photoUrl: userData['photoUrl'],
                                     receiverUid: userData['ownerUid'],
+                                    documentName : doc.id,
                                   )));
                         }),
                     child: Container(
@@ -240,6 +242,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                     senderName: userData['owner_email_nickname'],
                                     receiverName : userData['helper_email_nickname'],
                                     receiverUid: userData['helperUid'],
+                                    documentName : doc.id,
                             )));
                       }),
                       child: Container(

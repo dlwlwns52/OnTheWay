@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OnTheWay/NaverBoard/NaverWriteBoard.dart';
-import 'package:http/http.dart';
+
 
 
 class NaverPostManager {
@@ -85,7 +85,7 @@ class NaverPostManager {
     try {
       // 'naverUserHelpStatus' 컬렉션에서 문서 이름 생성
       String documentName = createDocumentName(postStore, postOwnerEmail);
-      print(documentName);
+
       // 'naverUserHelpStatus' 컬렉션에서 해당 문서 삭제
       await FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).delete();
 
@@ -192,8 +192,8 @@ class NaverPostManager {
       DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
       String postStore = postDoc['store']; // 게시물의 'store' 필드
 
-// 현재 시간을 기반으로 타임스탬프 생성
-      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+// // 현재 시간을 기반으로 타임스탬프 생성
+//       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
 
 // 도와주기 상태 가져오기
       Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
@@ -217,6 +217,9 @@ class NaverPostManager {
 
 // 현재 시간을 가져옵니다.
       DateTime now = DateTime.now();
+      String timestamp = (now.millisecondsSinceEpoch / 1000).round().toString();
+      String documentName = "${postStore}_${helperEmail}_$timestamp";
+
 
 // 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다. // 현재는 100번 test용
       if (clickCount >= 100) {
@@ -252,7 +255,6 @@ class NaverPostManager {
       if (helpUserDoc.docs.isNotEmpty) {
         // 닉네임을 가져옵니다.
         helperNickname = helpUserDoc.docs.first.data()['nickname'];
-
         // UID를 가져옵니다.
         helperUid = helpUserDoc.docs.first.data()['uid'];
 
@@ -280,19 +282,22 @@ class NaverPostManager {
 
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 
-      // 문서 이름을 만듭니다. 예: "postStore_helperEmail_timestamp"
-      String documentName = "${postStore}_${helperEmail}_$timestamp";
+      // 문서 이름을 만듭니다.
+      // 초 단위의 timestamp 사용
+
+
       // String documentName = "${postStore}_${helperEmail}";
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
         'University' : "naver",
+        'post_store' : postStore,
         'post_id': doc.id,
         'owner_email_nickname' : OwnerNickname,
         'helper_email': helperEmail,
         'helper_email_nickname' : helperNickname,
         'owner_email': postOwnerEmail,
-        'timestamp': DateTime.now(),
+        'timestamp': now,
       });
 
 
@@ -314,6 +319,7 @@ class NaverPostManager {
 // 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.
       await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
         'University' : "naver",
+        'post_store' : postStore,
         'post_id': doc.id,
         'owner_email': postOwnerEmail,
         'owner_email_nickname' : OwnerNickname,
@@ -321,7 +327,7 @@ class NaverPostManager {
         'helper_email': helperEmail,
         'helper_email_nickname' : helperNickname,
         'helperUid': helperUid, // 도와주는 사람의 UID
-        'timestamp': DateTime.now(),
+        'timestamp': now,
       });
 
 

@@ -39,6 +39,7 @@ dependencies:
   firebase_storage: ^11.6.0
   image_picker: ^1.0.7
   rxdart: ^0.27.7
+  flutter_chat_bubble: ^2.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,135 +1,407 @@
+class ChatScreen extends StatefulWidget {
+  final String receiverName;
+  final String senderName;
+  final String receiverUid;
+  final String documentName;  // 채팅방의 문서 이름
+  // final String photoUrl;
 
-class NaverPostManager {
+  ChatScreen({
+    required this.receiverName,
+    required this.senderName,
+    required this.receiverUid,
+    required this.documentName,  // 생성자에 documentName 추가
+    // required this.photoUrl,
+  });
 
-  FirebaseFirestore db = FirebaseFirestore.instance;
-
-
-  String? getUserEmail() {
-    // 현재 로그인한 사용자의 이메일 반환하는 메서드 정의
-    final user = FirebaseAuth.instance.currentUser; // 현재 로그인한 사용자 정보 가져오기
-    return user?.email; // 사용자의 이메일 반환
-  }
-
-
-  void helpPost(BuildContext context, DocumentSnapshot doc) async {
-    try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-
-      // currentUser가 null인 경우, 즉 사용자가 로그인하지 않았다면, 오류 메시지를 표시하고 함수를 종료합니다.
-      if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("로그인이 필요합니다.", textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
-      }
-
-      String? helperEmail = getUserEmail(); // 도와주는 사용자의 이메일 가져오기
-
-      String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
-      // 'naver_posts' 컬렉션에서 해당 게시물의 'store' 값을 가져옵니다.
-      DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
-      String postStore = postDoc['store']; // 게시물의 'store' 필드
-
-      // 현재 시간을 기반으로 타임스탬프 생성
-      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-
-
-      // 'naverUserHelpStatus' 컬렉션에서 특정 문서(도와주기 상태)를 가져옵니다.
-      // 문서 이름은 postStore와 postOwnerEmail을 결합하여 생성됩니다.
-      Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
-
-      // 가져온 문서에서 docId를 키로 하는 상태를 확인합니다.
-      // 문서가 없거나 해당 키가 없으면 기본값을 사용합니다.
-      var postStatus = helpStatus[helperEmail] ?? {'clickCount': 0, 'lastClickedTime': DateTime(1970)};
-
-      int clickCount = postStatus['clickCount']; // 클릭 횟수를 가져옵니다.
-      // lastClickedTime을 가져오기 위한 초기화
-      DateTime lastClickedTime;
-
-      // postStatus에서 lastClickedTime이 Timestamp 형식인지 확인합니다.
-      // Timestamp 형식이면 DateTime으로 변환하고, 아니면 기본값을 사용합니다.
-      if (postStatus['lastClickedTime'] is Timestamp) {
-        lastClickedTime = (postStatus['lastClickedTime'] as Timestamp).toDate();
-      } else {
-        lastClickedTime = postStatus['lastClickedTime'] ?? DateTime(1970);
-      }
-
-      // 도와주기 버튼 누른 사람 닉네임 users 컬렉션에서 조회한 후 변수에 저ㄹ장!
-      // Firestore의 'users' 컬렉션에서 helperEmail에 해당하는 사용자 문서를 조회합니다.
-      final usersCollection = FirebaseFirestore.instance.collection('users');
-      final helpUserDoc = await usersCollection.where('email', isEqualTo: helperEmail).get(); // 도와주기 요청한 사람 이메일
-      final ownerUserDoc = await usersCollection.where('email', isEqualTo: postOwnerEmail).get();
-
-      // 사용자 문서가 존재하면 닉네임을 가져옵니다.
-      String helperNickname = '';
-      if (helpUserDoc.docs.isNotEmpty) {
-        helperNickname = helpUserDoc.docs.first.data()['nickname'];
-      } else {
-        // 사용자 문서가 없다면 에러 처리를 합니다.
-        // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
-        print('User document not found for email: $helperEmail');
-        return;
-      }
-
-      String OwnerNickname = '';
-      if (ownerUserDoc.docs.isNotEmpty){
-        OwnerNickname = ownerUserDoc.docs.first.data()['nickname'];
-      } else {
-        // 사용자 문서가 없다면 에러 처리를 합니다.
-        // 예를 들어, 로그를 남기거나 사용자에게 피드백을 줄 수 있습니다.
-        print('User document not found for email: $helperEmail');
-        return;
-      }
-
-
-      updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
-
-      // 문서 이름을 만듭니다. 예: "postStore_helperEmail_timestamp"
-      String documentName = "${postStore}_${helperEmail}_$timestamp";
-      // String documentName = "${postStore}_${helperEmail}";
-
-      // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
-      await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
-        'University' : "naver",
-        'post_id': doc.id,
-        'owner_email_nickname' : OwnerNickname,
-        'helper_email': helperEmail,
-        'helper_email_nickname' : helperNickname,
-        'owner_email': postOwnerEmail,
-        'timestamp': DateTime.now(),
-      });
-
-      //채팅용 도움 따로 만듬 -> 아니면 알림을 삭제할때 같이 삭제
-      await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
-        'University' : "naver",
-        'post_id': doc.id,
-        'owner_email': postOwnerEmail,
-        'owner_email_nickname' : OwnerNickname,
-        'helper_helper_emailemail': helperEmail,
-        'helper_email_nickname' : helperNickname,
-        'timestamp': DateTime.now(),
-      });
-
-    } catch (e) {
-      // 오류 메시지 표시
-      // 대화상자를 닫고 스낵바 표시
-      Navigator.of(context).pop();
-      await ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("도와주기'요청이 전송이 실패하였습니다: $e",textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      ).closed;
-    }
-  }
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
+class _ChatScreenState extends State<ChatScreen> {
+  late Message _message; // 채팅 메시지 객체
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // 폼 상태를 관리하는 GlobalKey
+  Map<String, dynamic> map = {}; // 메시지 맵
+  late CollectionReference<Map<String, dynamic>> _collectionReference; // 파이어스토어 컬렉션 참조
+  late DocumentReference<Map<String, dynamic>> _receiverDocumentReference; // 수신자 문서 참조
+  late DocumentReference<Map<String, dynamic>> _senderDocumentReference; // 발신자 문서 참조
+  late DocumentReference<Map<String, dynamic>> _documentReference; // 문서 참조
+  late DocumentSnapshot<Map<String, dynamic>> documentSnapshot; // 문서 스냅샷
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // FirebaseAuth 인스턴스
+  String? _senderUid; // 발신자 UID
+  late File imageFile; // 이미지 파일
+  late Reference _storageReference; // Firebase Storage 참조
+  late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
+  late StreamSubscription _chatSubscription; // 구독
+
+  // 추가된 변수 선언
+  late String senderPhotoUrl; // 발신자 사진 URL
+  late String senderName; // 발신자 이름
+  late String receiverPhotoUrl; // 수신자 사진 URL
+  late String receiverName; // 수신자 이름
+
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController = TextEditingController();
+    _initializeChatDetails();
+
+  }
+
+// 채팅에 필요한 초기 세부 정보를 설정하는 함수
+  Future<void> _initializeChatDetails() async {
+    try {
+      User? user = await _getUID();
+      if (user != null && user.uid != null) {
+        var senderSnapshot = await _getSenderPhotoUrl();
+        var receiverSnapshot = await _getReceiverPhotoUrl();
+
+        setState(() {
+          _senderUid = user.uid; // 발신자의 UID 설정
+          senderPhotoUrl = senderSnapshot; // 발신자의 사진
+          senderName = widget.senderName; // 발신자의 이름 설정
+          receiverPhotoUrl = receiverSnapshot; // 수신자의 사진
+          receiverName = widget.receiverName; // 수신자의 이름 설정
+        });
+      } else {
+        // 사용자 정보가 없는 경우의 처리 (예: 로그인 화면으로 이동)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('사용자 정보가 없는 에러가 발생했습니다. 다시 로그인해 주세요', textAlign: TextAlign.center,)),
+        );
+      }
+    } catch (error) {
+      print("Error initializing chat details: $error");
+    }
+  }
 
 
 
+  @override
+  void dispose() {
+    super.dispose();
+    // subscription?.cancel(); // 스트림 구독 취소
+  }
+
+
+  void _addMessageToDb(Message message) async {
+    Map<String, dynamic> messageMap = message.toMap();
+
+    // 해당 채팅방의 messages 서브컬렉션 참조
+    CollectionReference messages = FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(widget.documentName)
+        .collection('messages');
+
+    // 메시지를 messages 서브컬렉션에 추가
+    messages.add(messageMap).whenComplete(() {
+      print("Message added to ChatActions");
+    });
+  }
 
 
 
+  // 채팅 입력 위젯
+  Widget ChatInputWidget() {
+    return Container(
+      height: 55.0,
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: IconButton(
+              splashColor: Colors.white,
+              icon: Icon(
+                Icons.camera_alt,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                _pickImage(); // 이미지 선택
+              },
+            ),
+          ),
+          Flexible(
+            child: TextFormField(
+              validator: (String? input) {
+                if (input == null || input.isEmpty) {
+                  return "Please enter a message"; // 메시지를 입력하라는 경고
+                }
+                return null;
+              },
+              controller: _messageController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+              ),
+              onFieldSubmitted: (value) {
+                _messageController.text = value;
+              },
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: IconButton(
+              splashColor: Colors.white,
+              icon: Icon(
+                Icons.send,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                if (_formKey.currentState?.validate() == true) {
+                  _sendMessage(); // 메시지 전송
+                }
+              },
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+// 사용자가 이미지를 선택하고 업로드하는 함수
+  Future<String> _pickImage() async {
+    final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
+    final XFile? selectedImage = await _picker.pickImage(source: ImageSource.gallery); // 갤러리에서 이미지 선택
+
+    if (selectedImage != null) { // 선택된 이미지가 있는 경우
+      File imageFile = File(selectedImage.path); // 선택된 이미지의 파일 경로를 가져와 File 객체 생성
+      setState(() {
+        this.imageFile = imageFile; // 상태를 업데이트하여 선택된 이미지 표시
+      });
+
+      // Firebase Storage에 이미지를 저장하기 위한 참조 생성
+      Reference storageReference = FirebaseStorage.instance
+          .ref()
+          .child('images/${DateTime.now().millisecondsSinceEpoch}');
+
+      // 선택된 이미지 파일을 Firebase Storage에 업로드
+      UploadTask uploadTask = storageReference.putFile(imageFile);
+      TaskSnapshot taskSnapshot = await uploadTask; // 업로드 작업 완료 대기
+      String downloadUrl = await taskSnapshot.ref.getDownloadURL(); // 업로드된 이미지의 URL 획득
+
+      print("URL: $downloadUrl"); // 콘솔에 URL 출력
+      _uploadImageToDb(downloadUrl); // Firestore에 이미지 URL 업로드
+      return downloadUrl; // 업로드된 이미지의 URL 반환
+    }
+    return ''; // 이미지 선택이 없는 경우 빈 문자열 반환
+  }
+
+  void _uploadImageToDb(String downloadUrl) {
+    if (_senderUid != null) {
+      Message message = Message.withoutMessage(
+        receiverUid: widget.receiverUid,
+        senderUid: _senderUid!,
+        photoUrl: downloadUrl,
+        timestamp: FieldValue.serverTimestamp(),
+        type: 'image',
+      );
+
+      // _addMessageToDb 함수를 사용하여 메시지 추가
+      _addMessageToDb(message);
+    }
+  }
+
+
+  void _sendMessage() {
+    // 입력된 텍스트 가져오기
+    var text = _messageController.text;
+
+    // 발신자 UID가 null이 아닌지 확인
+    if (_senderUid != null) {
+      // 텍스트 메시지 객체 생성
+      Message message = Message(
+        receiverUid: widget.receiverUid,
+        senderUid: _senderUid!, // null이 아님을 확신할 때 '!' 사용
+        message: text,
+        timestamp: FieldValue.serverTimestamp(),
+        type: 'text',
+      );
+
+      // _addMessageToDb 함수를 사용하여 메시지 추가
+      _addMessageToDb(message);
+    } else {
+      // _senderUid가 null인 경우 적절한 처리를 할 수 있습니다.
+      // 예를 들어, 사용자에게 오류 메시지를 표시하거나 로그인 화면으로 이동할 수 있습니다.
+      print("Error: Sender UID is null");
+    }
+
+    // 메시지 입력 필드 초기화
+    _messageController.clear();
+  }
+
+
+  // 현재 사용자 UID 가져오기
+  Future<User?> _getUID() async {
+    User? user = _firebaseAuth.currentUser;
+    return user;
+  }
+
+
+  // 발신자 기본 사진 URL 반환
+  Future<String> _getSenderPhotoUrl() async {
+    // Firestore에서 사용자 정보를 가져오는 로직 대신 기본 이미지 경로 반환
+    return 'assets/ava.png';
+  }
+
+  // 수신자 기본 사진 URL 반환
+  Future<String> _getReceiverPhotoUrl() async {
+    // Firestore에서 사용자 정보를 가져오는 로직 대신 기본 이미지 경로 반환
+    return 'assets/ava.png';
+  }
+
+
+  Widget ChatMessagesListWidget() {
+    return Flexible(
+      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance
+            .collection('messages')
+            .doc(_senderUid)
+            .collection(widget.receiverUid)
+            .orderBy('timestamp', descending: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(), // 로딩 표시
+            );
+          } else {
+            var listItem = snapshot.data!.docs;
+            return ListView.builder(
+              padding: EdgeInsets.all(10.0),
+              itemBuilder: (context, index) =>
+                  chatMessageItem(snapshot.data!.docs[index]), // 채팅 메시지 항목 생성
+              itemCount: snapshot.data!.docs.length,
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  // Timestamp 객체를 입력받아 문자열로 변환하는 함수를 정의합니다.
+  String _formatTimestamp(Timestamp timestamp){
+    DateTime dateTime = timestamp.toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
+    // DateFormat을 사용하여 시간을 '오전/오후 h:mm' 형식으로 포매팅합니다.
+    // 'ko' 로케일을 사용하여 한국어 형식(예: 오전 10:30)으로 출력합니다.
+    String formattedTime = DateFormat('a h:mm', 'ko').format(dateTime);
+
+    return formattedTime;// 포매팅된 시간 문자열을 반환합니다.
+  }
+
+
+
+  // 채팅 메시지 항목 생성
+  Widget chatMessageItem(QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
+    return buildChatLayout(documentSnapshot);
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold),), // 채팅방 이름 표시
+        backgroundColor: Color(0XFF98ABEE),
+        elevation: 0,
+        // iconTheme: IconThemeData(
+        //   color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
+        // ),
+      ),
+      body: Column(
+        children: <Widget>[
+          Divider(
+            height: 2.0, // Divider의 높이 설정
+            thickness: 3.0, // Divider의 두께 설정
+            color: Colors.grey, // Divider의 색상 설정
+          ),
+          Expanded(
+            child: _senderUid == null
+                ? Container(
+              child: CircularProgressIndicator(), // 로딩 표시
+            )
+                : Column(
+              children: <Widget>[
+                ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                Divider(
+                  height: 20.0,
+                  color: Colors.black,
+                ),
+                ChatInputWidget(), // 채팅 입력 위젯
+                SizedBox(
+                  height: 10.0,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+// 채팅 메시지 레이아웃을 구성하는 함수
+  Widget buildChatLayout(QueryDocumentSnapshot<Map<String, dynamic>> snapshot) {
+    // 메시지가 현재 사용자에 의해 보내졌는지 여부를 확인
+    bool isSentByMe = snapshot['senderUid'] == _senderUid;
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        // 메시지가 현재 사용자에 의해 보내진 경우 오른쪽 정렬, 아니면 왼쪽 정렬
+        mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: <Widget>[
+          if (!isSentByMe) // 메시지가 상대방에게서 온 경우, 상대방의 프로필 사진 표시
+            CircleAvatar(
+              backgroundImage: AssetImage('assets/ava.png'), // 기본 프로필 이미지
+              backgroundColor: Colors.grey, // 배경 색상
+              radius: 20.0, // 원의 반지름
+            ),
+          SizedBox(width: 8.0), // 프로필 사진과 메시지 사이의 간격
+
+          Expanded( // 메시지 텍스트가 화면 너비를 초과하지 않도록 함
+            child:
+            Column(
+              // 메시지 정렬 설정 (오른쪽 또는 왼쪽)
+              crossAxisAlignment: isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(width: 8.0),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                  decoration: BoxDecoration(
+                    color: isSentByMe ? Colors.orangeAccent : Colors.grey[300], // 메시지 배경 색상
+                    borderRadius: BorderRadius.circular(20), // 메시지 상자 모서리 둥글게
+                  ),
+                  child: Column(
+                    children: <Widget>[
+
+                      SizedBox(height: 5.0),
+
+                      if (snapshot['type'] == 'text')
+                        Text(
+                          snapshot['message'], // 텍스트 메시지 내용
+                          style: TextStyle(color: isSentByMe ? Colors.black : Colors.black),
+                        )
+
+                      else
+                        Image.network(snapshot['photoUrl'], width: 200.0, height: 200.0), // 이미지 메시지 경우
+
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5.0),
+
+                Text(
+                  _formatTimestamp(snapshot['timestamp']),
+                  style: TextStyle(fontSize: 12.0, color: Colors. black87),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

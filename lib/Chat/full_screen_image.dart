@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 
+
 class FullScreenImage extends StatefulWidget {
   String photoUrl; // 표시할 이미지의 URL
 
