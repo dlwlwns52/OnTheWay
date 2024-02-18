@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:OnTheWay/Chat/full_screen_image.dart';
-import 'package:OnTheWay/Chat/models/message.dart';
+import 'package:OnTheWay/Chat/FullScreenImage.dart';
+import 'package:OnTheWay/Chat/message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -59,7 +59,11 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.addListener(_checkFieldsFilled);
     _initializeChatDetails();
     _markUnreadMessagesAsRead();
+    _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
+
+    print("시작");
   }
+
   void _checkFieldsFilled() {
     setState(() {
       isFilled = _messageController.text.isNotEmpty;
@@ -73,7 +77,6 @@ class _ChatScreenState extends State<ChatScreen> {
       if (user != null && user.uid != null) {
         var senderSnapshot = await _getSenderPhotoUrl();
         var receiverSnapshot = await _getReceiverPhotoUrl();
-
         setState(() {
           _senderUid = user.uid; // 발신자의 UID 설정
           senderPhotoUrl = senderSnapshot; // 발신자의 사진
@@ -92,6 +95,9 @@ class _ChatScreenState extends State<ChatScreen> {
       print("Error initializing chat details: $error");
     }
   }
+
+
+
 
   Future<void> _markUnreadMessagesAsRead() async {
     try {
@@ -116,7 +122,45 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     super.dispose();
     // subscription?.cancel(); // 스트림 구독 취소
+    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
   }
+
+  Future<void> _updateUserStatusInChatRoom(bool isInChatRoom) async {
+    if (widget.receiverName != null) {
+      print(isInChatRoom);
+      await FirebaseFirestore.instance
+          .collection('userStatus') // 별도의 'userStatus' 컬렉션 사용
+          .doc(widget.senderName) // 사용자의 UID를 문서 ID로 사용
+          .set({'isInChatRoom': isInChatRoom});
+    }
+  }
+
+//
+// 상대방의 채팅방 상태를 확인하는 함수
+  Future<void> _checkAndUpdateMessageReadStatus() async {
+    // 파이어스토어에서 상대방의 사용자 상태 문서를 가져옵니다.
+    DocumentSnapshot userStatusSnapshot = await FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(widget.receiverName)
+        .get();
+
+    // 문서가 존재하는지 확인합니다.
+    if (userStatusSnapshot.exists) {
+
+      // 문서 데이터를 Map<String, dynamic>으로 캐스팅합니다.
+      Map<String, dynamic> userStatusData = userStatusSnapshot.data() as Map<String, dynamic>;
+
+      // 사용자가 채팅방에 있는지 여부를 확인합니다.
+      bool isInChatRoom = userStatusData['isInChatRoom'] ?? false;
+
+      // 상대방이 채팅방에 있으면, 아직 읽지 않은 모든 메시지를 '읽음'으로 표시합니다.
+      if (isInChatRoom) {
+        _markUnreadMessagesAsRead();
+      }
+    }
+  }
+
+
 
 /*
 사진 설정
@@ -206,6 +250,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+
   void _sendMessage() {
     // 입력된 텍스트 가져오기
     var text = _messageController.text;
@@ -224,8 +269,15 @@ class _ChatScreenState extends State<ChatScreen> {
         type: 'text',
       );
 
+
+      _checkAndUpdateMessageReadStatus();
+
+
+
       // _addMessageToDb 함수를 사용하여 메시지 추가
       _addMessageToDb(message);
+
+
     } else {
       // _senderUid가 null인 경우 적절한 처리를 할 수 있습니다.
       // 예를 들어, 사용자에게 오류 메시지를 표시하거나 로그인 화면으로 이동할 수 있습니다.
@@ -393,7 +445,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
-        if (isSentByMe && !isMessageRead)
+        if ((isSentByMe && !isMessageRead) || (isSentByMe && !isMessageRead))
           Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
