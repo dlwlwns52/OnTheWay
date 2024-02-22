@@ -50,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   //색상 변환
   bool isFilled = false;
-
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -120,18 +120,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
+    _scrollController.dispose(); // 스크롤 컨트롤러 해제
     super.dispose();
     // subscription?.cancel(); // 스트림 구독 취소
-    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
   }
 
   Future<void> _updateUserStatusInChatRoom(bool isInChatRoom) async {
     if (widget.receiverName != null) {
       print(isInChatRoom);
+
       await FirebaseFirestore.instance
           .collection('userStatus') // 별도의 'userStatus' 컬렉션 사용
           .doc(widget.senderName) // 사용자의 UID를 문서 ID로 사용
-          .set({'isInChatRoom': isInChatRoom});
+          .set({
+          'isInChatRoom': isInChatRoom,
+          'timestamp': DateTime.timestamp()
+          });
+          // .set({'senderName'} : widget.senderName);
     }
   }
 
@@ -243,7 +249,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .doc(widget.documentName)
         .collection('messages');
 
-
     // 메시지를 messages 서브컬렉션에 추가
     messages.add(messageMap).whenComplete(() {
       print("Message added to ChatActions");
@@ -269,14 +274,9 @@ class _ChatScreenState extends State<ChatScreen> {
         type: 'text',
       );
 
-
       _checkAndUpdateMessageReadStatus();
-
-
-
       // _addMessageToDb 함수를 사용하여 메시지 추가
       _addMessageToDb(message);
-
 
     } else {
       // _senderUid가 null인 경우 적절한 처리를 할 수 있습니다.
@@ -290,30 +290,42 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget ChatMessagesListWidget() {
     return Flexible(
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( // 스트림 빌더를 사용하여 데이터 스트림을 처리
-        stream: FirebaseFirestore.instance // 파이어스토어의 채팅 액션 컬렉션에서 메시지 스트림을 가져옴
-            .collection('ChatActions')
-            .doc(widget.documentName)
-            .collection('messages')
-            .orderBy('timestamp', descending: false)
-            .snapshots(),
-        builder: (context, snapshot) { // 스냅샷을 기반으로 UI를 빌드
-          if (!snapshot.hasData) { // 데이터가 없는 경우 로딩 표시
-            return Center(child: CircularProgressIndicator());
-          }
-
-          List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs; // 메시지 목록을 가져옴
-          return ListView.builder( // 리스트뷰를 사용하여 메시지 목록을 표시
-            padding: EdgeInsets.all(10.0),
-            itemCount: messages.length, // 메시지 수에 따라 아이템 수 설정
-            itemBuilder: (context, index) { // 각 메시지에 대한 아이템을 빌드
-              // 이전 메시지의 발신자와 현재 메시지의 발신자 비교하여 아바타 표시 여부 결정
-              bool shouldDisplayAvatar = index == 0 || messages[index - 1]['senderUid'] != messages[index]['senderUid'];
-              bool isRead = messages[index]['read'] as bool; // 'read' 필드 확인
-              return chatMessageItem(messages[index], shouldDisplayAvatar, isRead); // 채팅 메시지 항목 위젯 반환
-            },
-          );
+      child: GestureDetector( // GestureDetector 추가
+        onTap: () {
+          FocusScope.of(context).requestFocus(FocusNode()); // 키보드 숨김
         },
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('ChatActions')
+              .doc(widget.documentName)
+              .collection('messages')
+              .orderBy('timestamp', descending: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            // 데이터가 로드된 후 스크롤을 최하단으로 이동
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_scrollController.hasClients) {
+                _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+              }
+            });
+
+            List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
+            return ListView.builder(
+              controller: _scrollController, // 스크롤 컨트롤러 할당
+              padding: EdgeInsets.all(10.0),
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                bool shouldDisplayAvatar = index == 0 || messages[index - 1]['senderUid'] != messages[index]['senderUid'];
+                bool isRead = messages[index]['read'] as bool;
+                return chatMessageItem(messages[index], shouldDisplayAvatar, isRead);
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -334,8 +346,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Timestamp 객체를 입력받아 문자열로 변환하는 함수를 정의합니다.
   String _formatTimestamp(Timestamp timestamp) {
-    DateTime dateTime = timestamp
-        .toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
+    DateTime dateTime = timestamp.toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
     // DateFormat을 사용하여 시간을 '오전/오후 h:mm' 형식으로 포매팅합니다.
     // 'ko' 로케일을 사용하여 한국어 형식(예: 오전 10:30)으로 출력합니다.
     String formattedTime = DateFormat('a h:mm', 'ko').format(dateTime);
@@ -364,6 +375,9 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: EdgeInsets.symmetric(horizontal: 10.0), // 좌우 여백 추가
               child: TextFormField(
                 controller: _messageController,
+                onFieldSubmitted: (value){
+                  _sendMessage();
+                },
                 decoration: InputDecoration(
                   hintText: "메시지 입력...",
                   contentPadding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 15.0), // 패딩 조정
@@ -417,14 +431,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CircularProgressIndicator(), // 로딩 표시
             )
                 : Column(
-              children: <Widget>[
-                ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                // Divider(
-                //   height: 20.0,
-                //   color: Colors.black,
-                // ),
-                ChatInputWidget(), // 채팅 입력 위젯
-                SizedBox(
+                    children: <Widget>[
+                      ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                      ChatInputWidget(), // 채팅 입력 위젯
+                  SizedBox(
                   height: 10.0,
                 ),
               ],
