@@ -15,24 +15,30 @@ class AllUsersScreen extends StatefulWidget {
   _AllUsersScreenState createState() => _AllUsersScreenState();
 }
 
-class _AllUsersScreenState extends State<AllUsersScreen> {
+class _AllUsersScreenState extends State<AllUsersScreen>{
 
   late StreamSubscription<dynamic> _chatActionsSubscription; // Firestore 스트림 구독을 위한 변수
   List<DocumentSnapshot> acceptedChatActions = []; // 수락된 도움말 액션을 저장하는 변수
 // 채팅방 별 마지막 메시지 시간을 저장할 변수
   Map<String, DateTime?> lastMessageTimes = {};
+  // 각 채팅방 및 사용자별 메시지 수를 저장할 Map
+  Map<String, int> messageCounts = {};
+  // 스트림 구독을 저장할 변수를 선언
+  late StreamSubscription<DocumentSnapshot> _messageCountSubscription;
+
+
 
   @override
   void initState() {
     super.initState();
     _fetchChatActions();
-    _fetchLastMessageTimes();
   }
 
 
   @override
   void dispose() {
     _chatActionsSubscription.cancel(); // 스트림 구독 해제
+    _messageCountSubscription.cancel();
     super.dispose();
   }
 
@@ -64,15 +70,16 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
 
     // 두 스트림을 결합하여 채팅방 목록을 생성합니다.
     _chatActionsSubscription = Rx.combineLatest2(
-        helperEmailStream,
-        ownerEmailStream,
-            (QuerySnapshot helperSnapshot, QuerySnapshot ownerSnapshot) async {
+        helperEmailStream, ownerEmailStream, (QuerySnapshot helperSnapshot, QuerySnapshot ownerSnapshot) async {
           // helperEmailStream과 ownerEmailStream에서 받은 문서들을 결합합니다.
           var combinedDocs = {...helperSnapshot.docs, ...ownerSnapshot.docs}.toList();
 
           // 각 채팅방의 마지막 메시지 시간을 비동기적으로 가져오는 작업 목록을 생성합니다.
           var fetchLastMessageFutures = <Future<void>>[];
           for (var doc in combinedDocs) {
+            Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+            _updateMessageCount(doc.id, userData);
+
             var docName = doc.id;
             fetchLastMessageFutures.add(
               fetchLastMessage(docName).then((timestamp) {
@@ -118,12 +125,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
       if (lastMessageSnapshot.docs.isNotEmpty) {
         Timestamp lastMessageTimestamp = lastMessageSnapshot.docs.first.data()['timestamp'];
         return lastMessageTimestamp.toDate();
-      } else {
-        // 메시지가 없을 경우 채팅방 생성 시간을 사용해야 하므로 해당 로직을 구현
-        // 예시: lastMessageTimestamp = 채팅방 생성 타임스탬프;
-        // 참고: 여기서 채팅방 생성 타임스탬프를 어떻게 가져올지에 대한 로직이 필요함
       }
-
     }
     catch (error) {
       // 에러 처리 로직
@@ -131,15 +133,48 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
     }
   }
 
-  void _fetchLastMessageTimes() async {
-    for (var doc in acceptedChatActions) {
-      String documentName = doc.id;
-      DateTime? lastMessageTime = await fetchLastMessage(documentName);
-      if (mounted) {
-        setState(() {
-          lastMessageTimes[documentName] = lastMessageTime;
+  Future<void> _updateMessageCount(documentName, userData) async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    String? currentUserEmail = currentUser?.email;
+    String? helperNickname = userData['helper_email_nickname'];
+    String? ownerNickname = userData['owner_email_nickname'];
+    String helperMessageCountKey = "$documentName-${userData['helper_email']}";
+    String ownerMessageCountKey = "$documentName-${userData['owner_email']}";
+
+    try {
+      if (userData['helper_email'] == currentUserEmail) {
+        _messageCountSubscription = FirebaseFirestore.instance
+            .collection('ChatActions')
+            .doc(documentName)
+            .snapshots()
+            .listen((snapshot) {
+          if (snapshot.exists) {
+            var data = snapshot.data() as Map<String, dynamic>;
+            if (this.mounted) {
+              setState(() {
+                messageCounts[helperMessageCountKey] = data['messageCount_$helperNickname'] ?? 0;
+              });
+            }
+          }
+        });
+      } else if (userData['owner_email'] == currentUserEmail) {
+        _messageCountSubscription = FirebaseFirestore.instance
+            .collection('ChatActions')
+            .doc(documentName)
+            .snapshots()
+            .listen((snapshot) {
+          if (snapshot.exists) {
+            var data = snapshot.data() as Map<String, dynamic>;
+            if (this.mounted) {
+              setState(() {
+                messageCounts[ownerMessageCountKey] = data['messageCount_$ownerNickname'] ?? 0;
+              });
+            }
+          }
         });
       }
+    } catch (error) {
+      print("Error updating message count: $error");
     }
   }
 
@@ -159,7 +194,6 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
       return '${difference.inDays}일 전';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -182,11 +216,10 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
               DocumentSnapshot userDoc = acceptedChatActions[index];
               Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
               final DocumentSnapshot doc = acceptedChatActions[index];
+              final String documentName = userDoc.id; // 채팅방 문서 ID
 
               //알림 온 시간 측정
-              final String documentName = userDoc.id; // 채팅방 문서 ID
               final DateTime? lastMessageTime = lastMessageTimes[documentName];
-
               if (lastMessageTime == null) {
                 // 마지막 메시지 시간을 아직 가져오지 않았다면, 비동기로 가져옵니다.
                 fetchLastMessage(documentName).then((timestamp) {
@@ -206,6 +239,16 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
               User? currentUser = FirebaseAuth.instance.currentUser;
               String? currentUserEmail = currentUser?.email;
 
+              // 메시지 카운트 키 생성
+              String messageCountKey = "";
+              if (userData['helper_email'] == currentUserEmail) {
+                messageCountKey = "$documentName-${userData['helper_email']}";
+              }
+              else if (userData['owner_email'] == currentUserEmail) {
+                messageCountKey = "$documentName-${userData['owner_email']}";
+              }
+              // 메시지 카운트 가져오기
+              int messageCount = messageCounts[messageCountKey] ?? 0;
 
               return Column(
                 children: [
@@ -271,8 +314,8 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                               ),
                             ),
                             Positioned(
-                              top: 10,
-                              right: 10,
+                              bottom: 30,
+                              right: 10000,
                               child: Container(
                                 padding: EdgeInsets.all(6),
                                 decoration: BoxDecoration(
@@ -288,6 +331,32 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                 ),
                               ),
                             ),
+                            // 메시지 카운트를 표시하는 배지 추가
+                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Container(
+                                  padding: EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red, // 배지의 배경 색상
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    minWidth: 24,
+                                    minHeight: 24,
+                                  ),
+                                  child: Text(
+                                    messageCount.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -353,23 +422,38 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                               ),
                             ),
                             Positioned(
-                              top: 10,
+
                               right: 10,
-                              child: Container(
-                                padding: EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
                                 child: Text(
                                   '$timeAgo',
                                   style: TextStyle(
                                     color: Colors.grey[800],
-                                    fontSize: 14,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
-                            ),
+                            // 메시지 카운트를 표시하는 배지 추가
+                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
+                              Positioned(
+                                top: 25,
+                                right: 20,
+                                child: Container(
+                                  padding: EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent, // 배지의 배경 색상
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    messageCount.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

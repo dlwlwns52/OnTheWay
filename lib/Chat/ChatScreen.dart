@@ -60,9 +60,16 @@ class _ChatScreenState extends State<ChatScreen> {
     _initializeChatDetails();
     _markUnreadMessagesAsRead();
     _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
-
-    print("시작");
   }
+
+  @override
+  void dispose() {
+    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
+    _scrollController.dispose(); // 스크롤 컨트롤러 해제
+    super.dispose();
+    // subscription?.cancel(); // 스트림 구독 취소
+  }
+
 
   void _checkFieldsFilled() {
     setState(() {
@@ -97,39 +104,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-
-
-  Future<void> _markUnreadMessagesAsRead() async {
-    try {
-      // 현재 사용자의 UID를 사용하여 아직 읽지 않은 메시지를 조회하고 업데이트합니다.
-      QuerySnapshot<Map<String, dynamic>> unreadMessages = await FirebaseFirestore.instance
-          .collection('ChatActions')
-          .doc(widget.documentName)
-          .collection('messages')
-          .where('read', isEqualTo: false)
-          .get();
-
-      for (var message in unreadMessages.docs) {
-        await message.reference.update({'read': true});
-      }
-    } catch (error) {
-      print("Error marking messages as read: $error");
-    }
-  }
-
-
-  @override
-  void dispose() {
-    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
-    _scrollController.dispose(); // 스크롤 컨트롤러 해제
-    super.dispose();
-    // subscription?.cancel(); // 스트림 구독 취소
-  }
-
   Future<void> _updateUserStatusInChatRoom(bool isInChatRoom) async {
     if (widget.receiverName != null) {
-      print(isInChatRoom);
-
       await FirebaseFirestore.instance
           .collection('userStatus') // 별도의 'userStatus' 컬렉션 사용
           .doc(widget.senderName) // 사용자의 UID를 문서 ID로 사용
@@ -152,17 +128,40 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // 문서가 존재하는지 확인합니다.
     if (userStatusSnapshot.exists) {
-
       // 문서 데이터를 Map<String, dynamic>으로 캐스팅합니다.
       Map<String, dynamic> userStatusData = userStatusSnapshot.data() as Map<String, dynamic>;
-
       // 사용자가 채팅방에 있는지 여부를 확인합니다.
       bool isInChatRoom = userStatusData['isInChatRoom'] ?? false;
-
       // 상대방이 채팅방에 있으면, 아직 읽지 않은 모든 메시지를 '읽음'으로 표시합니다.
       if (isInChatRoom) {
         _markUnreadMessagesAsRead();
       }
+    }
+  }
+
+
+  Future<void> _markUnreadMessagesAsRead() async {
+    try {
+      // 현재 사용자의 UID를 사용하여 아직 읽지 않은 메시지를 조회하고 업데이트합니다.
+      QuerySnapshot<Map<String, dynamic>> unreadMessages = await FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName)
+          .collection('messages')
+          .where('read', isEqualTo: false)
+          .get();
+
+      for (var message in unreadMessages.docs) {
+        await message.reference.update({'read': true});
+      }
+
+      // read로 바뀌면 안읽은 메시지 0으로 초기화
+      await FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName)
+          .update({'messageCount_$senderName': 0});
+
+    } catch (error) {
+      print("Error marking messages as read: $error");
     }
   }
 
@@ -250,8 +249,29 @@ class _ChatScreenState extends State<ChatScreen> {
         .collection('messages');
 
     // 메시지를 messages 서브컬렉션에 추가
-    messages.add(messageMap).whenComplete(() {
-      print("Message added to ChatActions");
+    messages.add(messageMap).whenComplete(() async{
+      //상대방의 userStatus를 확인하고 messageCount를 업데이트합니다.
+      DocumentReference userStatusRef = FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(widget.receiverName);
+
+
+      DocumentReference userMessageCount = FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName);
+
+      DocumentSnapshot userStatusSnapshot = await userStatusRef.get();
+      DocumentSnapshot userCountSnapshot = await userMessageCount.get();
+
+      if (userStatusSnapshot.exists){
+        var statusData = userStatusSnapshot.data() as Map<String, dynamic>; //타입캐스팅
+        var countData = userCountSnapshot.data() as Map<String, dynamic>; //타입캐스팅
+        bool isRead = statusData['read'] ?? false;
+        if(!isRead){//false인 경우 즉 상대방이 채팅에 없을 경우 messageCount 증가
+          int messageCount = countData['messageCount_$receiverName'] ?? 0;
+          userMessageCount.update({'messageCount_$receiverName': messageCount + 1});
+        }
+      }
     });
   }
 
@@ -414,9 +434,11 @@ class _ChatScreenState extends State<ChatScreen> {
         // 채팅방 이름 표시
         // backgroundColor: Color(0XFF98ABEE),
         backgroundColor: Colors.white,
-        elevation: 0,        iconTheme: IconThemeData(
+        elevation: 0,
+        iconTheme: IconThemeData(
           color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
         ),
+
       ),
       body: Column(
         children: <Widget>[
