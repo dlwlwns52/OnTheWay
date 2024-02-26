@@ -250,12 +250,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // 메시지를 messages 서브컬렉션에 추가
     messages.add(messageMap).whenComplete(() async{
+      FirebaseFirestore.instance.collection('ChatActions').doc(widget.documentName).update({
+        'lastMessage': message.message,
+      });
+
+
       //상대방의 userStatus를 확인하고 messageCount를 업데이트합니다.
       DocumentReference userStatusRef = FirebaseFirestore.instance
         .collection('userStatus')
         .doc(widget.receiverName);
 
-
+      //메시지 온 횟수 추적
       DocumentReference userMessageCount = FirebaseFirestore.instance
           .collection('ChatActions')
           .doc(widget.documentName);
@@ -477,8 +482,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
-        if ((isSentByMe && !isMessageRead) || (isSentByMe && !isMessageRead))
-          Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+        // if ((isSentByMe && !isMessageRead) || (isSentByMe && !isMessageRead))
+        //   Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
           shouldDisplayAvatar

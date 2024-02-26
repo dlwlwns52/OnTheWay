@@ -195,6 +195,189 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     }
   }
 
+  // helper의 isDeleted_ 활성화
+  Future<void> helperDeleteChatRoom(String documentId, String helperNickname) async {
+    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
+      'isDeleted_$helperNickname': true
+    });
+  }
+
+  //owner의 isDeleted_ 활성화
+  Future<void> ownerDeleteChatRoom(String documentId, String ownerNickname) async {
+    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
+      'isDeleted_$ownerNickname' : true
+    });
+  }
+
+  //helper의 isDeleted_ 와 owner의 isDeleted_ 두개다 모두 활성화 시 문서삭제
+  Future<void> deleteChatRoomIfBothDeleted(String documentId, String helperNickname, String ownerNickname) async {
+    // 채팅방 문서 참조
+    DocumentReference chatRoomRef = FirebaseFirestore.instance.collection('ChatActions').doc(documentId);
+
+    // 채팅방 문서 가져오기
+    DocumentSnapshot chatRoomSnapshot = await chatRoomRef.get();
+
+    if (chatRoomSnapshot.exists) {
+      Map<String, dynamic> chatRoomData = chatRoomSnapshot.data() as Map<String, dynamic>;
+
+      // 두 사용자 모두 채팅방을 삭제했는지 확인
+      bool isHelperDeleted = chatRoomData['isDeleted_$helperNickname'] ?? false;
+      bool isOwnerDeleted = chatRoomData['isDeleted_$ownerNickname'] ?? false;
+      print(isHelperDeleted);
+      if (isHelperDeleted && isOwnerDeleted) {
+        // 두 사용자 모두 채팅방을 삭제했다면 문서 삭제
+        await chatRoomRef.delete();
+      }
+    }
+  }
+
+
+  // helper 채팅방 나가기 dialog
+  void helperShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          title: Text(
+            '채팅방 나가기',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          content: Text(
+            '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
+            style: TextStyle(
+              color: Colors.black87,
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.orangeAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                '나가기',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
+                helperDeleteChatRoom(documentId, helperNickname);
+                deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "채팅방이 삭제되었습니다.",
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                '취소',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+// owner 채팅방 나가기 dialog
+  void ownerShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          title: Text(
+            '채팅방 나가기',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          content: Text(
+            '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
+            style: TextStyle(
+              color: Colors.black87,
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.orangeAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                '나가기',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
+                ownerDeleteChatRoom(documentId, ownerNickname);
+                deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "채팅방이 삭제되었습니다.",
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                '취소',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,6 +401,11 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               final DocumentSnapshot doc = acceptedChatActions[index];
               final String documentName = userDoc.id; // 채팅방 문서 ID
 
+              // 로그인한 사람 이메일 확인
+              User? currentUser = FirebaseAuth.instance.currentUser;
+              String? currentUserEmail = currentUser?.email;
+
+
               //알림 온 시간 측정
               final DateTime? lastMessageTime = lastMessageTimes[documentName];
               if (lastMessageTime == null) {
@@ -235,10 +423,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               final String timeAgo = getTimeAgo(dateTime);
 
 
-              // 로그인한 사람 이메일 확인
-              User? currentUser = FirebaseAuth.instance.currentUser;
-              String? currentUserEmail = currentUser?.email;
-
               // 메시지 카운트 키 생성
               String messageCountKey = "";
               if (userData['helper_email'] == currentUserEmail) {
@@ -250,10 +434,53 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               // 메시지 카운트 가져오기
               int messageCount = messageCounts[messageCountKey] ?? 0;
 
+             //마지막으로 온 메시지
+              String lastMessage = userData['lastMessage'] ?? "마지막 메시지 미리보기";
+
+
+              //나가기 버튼 사용시 상대방 대화 안보이게 하기
+              // 소프트 삭제된 채팅방은 표시하지 않음
+              if (userData['helper_email'] == currentUserEmail && userData['isDeleted_$userData[helper_email_nickname]'] == true) {
+                return Container(); // 또는 적절한 '삭제됨' UI를 표시
+              }
+              else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_$userData[owner_email_nickname]'] == true) {
+                print(1);
+                return Container(); // 또는 적절한 '삭제됨' UI를 표시
+              }
+
               return Column(
                 children: [
                   if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
-                    InkWell(
+                    Dismissible(
+                        key: Key(doc.id),
+                        confirmDismiss: (direction) async {
+                          // 스와이프 후 삭제 확인 대화상자 표시
+                          helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                        },
+                        background: Container(
+                          color: Colors.red,
+                          child: Align(
+                            alignment: Alignment.center, // 왼쪽 정렬
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                              children: <Widget>[
+                                Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
+                                Text(
+                                  ' 삭제', // 텍스트
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        child: InkWell(
+                          onLongPress: () {
+                            helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                          },
                       onTap: (() {
                         Navigator.push(
                             context,
@@ -304,33 +531,47 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    "마지막 메시지 미리보기",
+                                    "$lastMessage",
                                     style: TextStyle(
                                       color: Colors.grey[800],
-                                      fontSize: 14,
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Positioned(
-                              bottom: 30,
-                              right: 10000,
-                              child: Container(
-                                padding: EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '$timeAgo',
-                                  style: TextStyle(
-                                    color: Colors.grey[800],
-                                    fontSize: 14,
-                                  ),
+                              right: 10,
+                              child: Text(
+                                '$timeAgo',
+                                style: TextStyle(
+                                  color: Colors.grey[800],
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
+                            // 메시지 카운트를 표시하는 배지 추가
+                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
+                              Positioned(
+                                top: 25,
+                                right: 20,
+                                child: Container(
+                                  padding: EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent, // 배지의 배경 색상
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    messageCount.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             // 메시지 카운트를 표시하는 배지 추가
                             if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
                               Positioned(
@@ -361,8 +602,38 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                         ),
                       ),
                     )
+                  )
                   else if (userData['owner_email'] == currentUserEmail)
-                    InkWell(
+                    Dismissible(
+                      key: Key(doc.id),
+                      confirmDismiss: (direction) async {
+                        // 스와이프 후 삭제 확인 대화상자 표시
+                        ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                      },
+                      background: Container(
+                        color: Colors.red,
+                        child: Align(
+                          alignment: Alignment.center, // 왼쪽 정렬
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                            children: <Widget>[
+                              Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
+                              Text(
+                                ' 삭제', // 텍스트
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    child: InkWell(
+                      onLongPress: () {
+                        ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                      },
                       onTap: (() {
                         Navigator.push(
                             context,
@@ -412,17 +683,16 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    "마지막 메시지 미리보기",
+                                    "$lastMessage",
                                     style: TextStyle(
                                       color: Colors.grey[800],
-                                      fontSize: 14,
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Positioned(
-
                               right: 10,
                                 child: Text(
                                   '$timeAgo',
@@ -458,6 +728,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                         ),
                       ),
                     ),
+                  ),
                   // Divider(thickness: 1),
                 ],
               );
@@ -469,3 +740,4 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
         ));
   }
 }
+
