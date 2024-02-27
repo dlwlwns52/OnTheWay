@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Message 클래스: 메시지 관련 데이터를 저장하고 처리
 class Message {
   // 멤버 변수들: 사용자의 UID, 메시지 타입, 내용, 타임스탬프, 이미지 URL, 읽음 여부
+  String receiverName;
+  String senderName;
   String senderUid;
   String receiverUid;
   String type;
@@ -16,6 +18,8 @@ class Message {
 
   // 생성자: 필수적인 속성들을 받아서 Message 객체를 생성
   Message({
+    required this.receiverName,
+    required this.senderName,
     required this.senderUid,
     required this.receiverUid,
     required this.type,
@@ -26,6 +30,8 @@ class Message {
   });
 
   Message.withoutMessage({
+    required this.receiverName,
+    required this.senderName,
     required this.senderUid,
     required this.receiverUid,
     required this.type,
@@ -37,6 +43,8 @@ class Message {
   // Message 객체를 Map 형식으로 변환
   Map<String, dynamic> toMap() {
     return {
+      'receiverName' : receiverName,
+      'senderName' : senderName,
       'senderUid': senderUid,
       'receiverUid': receiverUid,
       'type': type,
@@ -50,6 +58,8 @@ class Message {
   // Map을 Message 객체로 변환하는 factory 생성자
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
+      receiverName : map['receiverName'] ?? '',
+      senderName : map['senderName'] ?? '',
       senderUid: map['senderUid'] ?? '',
       receiverUid: map['receiverUid'] ?? '',
       type: map['type'] ?? '',

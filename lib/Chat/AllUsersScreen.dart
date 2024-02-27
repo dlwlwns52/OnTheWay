@@ -448,7 +448,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               int messageCount = messageCounts[messageCountKey] ?? 0;
 
              //마지막으로 온 메시지
-              String lastMessage = userData['lastMessage'] ?? "마지막 메시지 미리보기";
+              String lastMessage = userData['lastMessage'] ?? "채팅방이 개설되었습니다.";
 
 
               //나가기 버튼 사용시 상대방 대화 안보이게 하기
@@ -573,32 +573,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                   decoration: BoxDecoration(
                                     color: Colors.redAccent, // 배지의 배경 색상
                                     borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    messageCount.toString(),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            // 메시지 카운트를 표시하는 배지 추가
-                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: Container(
-                                  padding: EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red, // 배지의 배경 색상
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  constraints: BoxConstraints(
-                                    minWidth: 24,
-                                    minHeight: 24,
                                   ),
                                   child: Text(
                                     messageCount.toString(),

@@ -52,6 +52,10 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isFilled = false;
   final ScrollController _scrollController = ScrollController();
 
+
+
+
+
   @override
   void initState() {
     super.initState();
@@ -209,6 +213,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (_senderUid != null) {
       Message message = Message.withoutMessage(
+        receiverName : widget.receiverName,
+        senderName : widget.senderName,
         receiverUid: widget.receiverUid,
         senderUid: _senderUid!,
         photoUrl: downloadUrl,
@@ -291,6 +297,8 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_senderUid != null) {
       // 텍스트 메시지 객체 생성
       Message message = Message(
+        receiverName : widget.receiverName,
+        senderName : widget.senderName,
         receiverUid: widget.receiverUid,
         senderUid: _senderUid!,
         message: text,
@@ -404,7 +412,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   _sendMessage();
                 },
                 decoration: InputDecoration(
-                  hintText: "메시지 입력...",
+                  // hintText: "메시지 입력...",
                   contentPadding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 15.0), // 패딩 조정
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0), // 둥근 모서리 적용
