@@ -223,7 +223,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
       // 두 사용자 모두 채팅방을 삭제했는지 확인
       bool isHelperDeleted = chatRoomData['isDeleted_$helperNickname'] ?? false;
       bool isOwnerDeleted = chatRoomData['isDeleted_$ownerNickname'] ?? false;
-      print(isHelperDeleted);
+
       if (isHelperDeleted && isOwnerDeleted) {
         // 두 사용자 모두 채팅방을 삭제했다면 문서 삭제
         await chatRoomRef.delete();
@@ -231,6 +231,19 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     }
   }
 
+  Future<void> deleteSubCollection(DocumentReference parentDocRef) async{
+    //서브컬렉션 참조
+    CollectionReference subcollectionRef = parentDocRef.collection('messages');
+
+    //서브컬렉션의 모든 문서 가져오기
+    QuerySnapshot subcollectionSnapshot = await subcollectionRef.get();
+
+    //각 문서 삭제
+    for (var doc in subcollectionSnapshot.docs){
+      await doc.reference.delete();
+    }
+
+  }
 
   // helper 채팅방 나가기 dialog
   void helperShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
@@ -439,12 +452,12 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
 
 
               //나가기 버튼 사용시 상대방 대화 안보이게 하기
-              // 소프트 삭제된 채팅방은 표시하지 않음
-              if (userData['helper_email'] == currentUserEmail && userData['isDeleted_$userData[helper_email_nickname]'] == true) {
+              if (userData['helper_email'] == currentUserEmail && userData['isDeleted_${userData['helper_email_nickname']}'] == true) {
+                print('isDeleted_${userData['helper_email_nickname']}');
                 return Container(); // 또는 적절한 '삭제됨' UI를 표시
               }
-              else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_$userData[owner_email_nickname]'] == true) {
-                print(1);
+              else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_${userData['owner_email_nickname']}'] == true) {
+                print('isDeleted_${userData['owner_email_nickname']}');
                 return Container(); // 또는 적절한 '삭제됨' UI를 표시
               }
 

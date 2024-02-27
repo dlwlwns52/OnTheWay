@@ -482,8 +482,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
-        // if ((isSentByMe && !isMessageRead) || (isSentByMe && !isMessageRead))
-        //   Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+        if (isSentByMe && !isMessageRead)
+          Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
           shouldDisplayAvatar
