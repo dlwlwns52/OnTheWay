@@ -34,6 +34,7 @@ class Message {
     required this.senderName,
     required this.senderUid,
     required this.receiverUid,
+    this.message,
     required this.type,
     required this.timestamp,
     required this.read,

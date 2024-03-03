@@ -9,8 +9,6 @@ import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_chat_bubble/chat_bubble.dart';
-import 'package:flutter_chat_bubble/bubble_type.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverName;
@@ -40,6 +38,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // FirebaseAuth 인스턴스
   String? _senderUid; // 발신자 UID
   late File imageFile; // 이미지 파일
+  List<File> imageFiles = [];
+
+
   late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
 
   // 추가된 변수 선언
@@ -174,38 +175,127 @@ class _ChatScreenState extends State<ChatScreen> {
 /*
 사진 설정
 * */
-// 사용자가 이미지를 선택하고 업로드하는 함수
-  Future<String> _pickImage() async {
-    final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
-    final XFile? selectedImage = await _picker.pickImage(
-        source: ImageSource.gallery); // 갤러리에서 이미지 선택
+// // 사용자가 이미지를 선택하고 업로드하는 함수
 
-    if (selectedImage != null) { // 선택된 이미지가 있는 경우
-      File imageFile = File(
-          selectedImage.path); // 선택된 이미지의 파일 경로를 가져와 File 객체 생성
-      setState(() {
-        this.imageFile = imageFile; // 상태를 업데이트하여 선택된 이미지 표시
-      });
+  // Future<String> _pickImage() async {
+  //     final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
+  //     final XFile? selectedImage = await _picker.pickImage(
+  //         source: ImageSource.gallery); // 갤러리에서 이미지 선택
+  //
+  //     if (selectedImage != null) { // 선택된 이미지가 있는 경우
+  //       File imageFile = File(selectedImage.path); // 선택된 이미지의 파일 경로를 가져와 File 객체 생성
+  //       setState(() {
+  //         this.imageFile = imageFile; // 상태를 업데이트하여 선택된 이미지 표시
+  //       });
+  //
+  //       // Firebase Storage에 이미지를 저장하기 위한 참조 생성
+  //       Reference storageReference = FirebaseStorage.instance
+  //           .ref()
+  //           .child('images/${DateTime
+  //           .now()
+  //           .millisecondsSinceEpoch}');
+  //
+  //       // 선택된 이미지 파일을 Firebase Storage에 업로드
+  //       UploadTask uploadTask = storageReference.putFile(imageFile);
+  //       TaskSnapshot taskSnapshot = await uploadTask; // 업로드 작업 완료 대기
+  //       String downloadUrl = await taskSnapshot.ref
+  //           .getDownloadURL(); // 업로드된 이미지의 URL 획득
+  //
+  //       print("URL: $downloadUrl"); // 콘솔에 URL 출력
+  //       _uploadImageToDb(downloadUrl); // Firestore에 이미지 URL 업로드
+  //       return downloadUrl; // 업로드된 이미지의 URL 반환
+  //     }
+  //     return ''; // 이미지 선택이 없는 경우 빈 문자열 반환
+  //   }
 
-      // Firebase Storage에 이미지를 저장하기 위한 참조 생성
-      Reference storageReference = FirebaseStorage.instance
-          .ref()
-          .child('images/${DateTime
-          .now()
-          .millisecondsSinceEpoch}');
-
-      // 선택된 이미지 파일을 Firebase Storage에 업로드
-      UploadTask uploadTask = storageReference.putFile(imageFile);
-      TaskSnapshot taskSnapshot = await uploadTask; // 업로드 작업 완료 대기
-      String downloadUrl = await taskSnapshot.ref
-          .getDownloadURL(); // 업로드된 이미지의 URL 획득
-
-      print("URL: $downloadUrl"); // 콘솔에 URL 출력
-      _uploadImageToDb(downloadUrl); // Firestore에 이미지 URL 업로드
-      return downloadUrl; // 업로드된 이미지의 URL 반환
+  Future<void> _pickImageAndUpload() async {
+    List<String> downloadUrls = (await _pickImage()) as List<String>; // 이미지를 선택하고 업로드한 후, 업로드된 이미지의 URL 리스트를 받아옵니다.
+    for (String downloadUrl in downloadUrls) {
+      _uploadImageToDb(downloadUrl); // 각 이미지 URL을 Firestore 데이터베이스에 업로드합니다.
     }
-    return ''; // 이미지 선택이 없는 경우 빈 문자열 반환
   }
+
+  Future<List<String>> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final List<XFile>? selectedImages = await _picker.pickMultiImage();
+    List<String> uploadImageUrls = [];
+
+    if (selectedImages != null && selectedImages.isNotEmpty) {
+      List<File> imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
+
+      List<String>? result = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          title: Text('사진 확인',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
+            textAlign: TextAlign.center,),
+          content: Container(
+            height: 300,
+            width: double.infinity,
+            child: SingleChildScrollView(
+              child: Column(
+                children: imageFiles.map((file) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: Image.file(file, fit: BoxFit.cover),
+                  ),
+                )).toList(),
+              ),
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: <Widget>[
+            ElevatedButton.icon(
+              icon: Icon(Icons.send, color: Colors.white),
+              label: Text('보내기'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.orangeAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onPressed: () async {
+                for (var imageFile in imageFiles) {
+                  Reference storageReference = FirebaseStorage.instance
+                      .ref()
+                      .child('images/${DateTime.now().millisecondsSinceEpoch}');
+                  UploadTask uploadTask = storageReference.putFile(imageFile);
+                  TaskSnapshot taskSnapshot = await uploadTask;
+                  String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+                  uploadImageUrls.add(downloadUrl);
+                }
+                Navigator.of(context).pop(uploadImageUrls);
+              },
+            ),
+
+            ElevatedButton.icon(
+              icon: Icon(Icons.cancel, color: Colors.white),
+              label: Text('취소'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+
+          ],
+        ),
+      );
+      return result ?? [];
+    }
+    return uploadImageUrls;
+  }
+
+
+
 
   void _uploadImageToDb(String downloadUrl) {
     DateTime now = DateTime.now();
@@ -219,6 +309,7 @@ class _ChatScreenState extends State<ChatScreen> {
         senderUid: _senderUid!,
         photoUrl: downloadUrl,
         timestamp: timestamp,
+        message: '사진',
         read: false,
         type: 'image',
       );
@@ -289,10 +380,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     // 입력된 텍스트 가져오기
-    var text = _messageController.text;
+    var text = _messageController.text.trim(); // 공백 제거
     DateTime now = DateTime.now();
     Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
 
+    // 공백일시 안보내짐
+    if (text.isEmpty){
+      return;
+    }
     // 발신자 UID가 null이 아닌지 확인
     if (_senderUid != null) {
       // 텍스트 메시지 객체 생성
@@ -400,7 +495,7 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             icon: Icon(Icons.image, color: Colors.grey[600], size:35,), // 아이콘 색상 조정
             onPressed: () {
-              _pickImage(); // 이미지 선택
+              _pickImageAndUpload(); // 이미지 선택
             },
           ),
           Flexible(
@@ -487,7 +582,6 @@ class _ChatScreenState extends State<ChatScreen> {
     bool isMessageRead = snapshot.data().containsKey('read') ? snapshot.data()['read'] as bool : false; // 읽음 상태
 
     return Row(
-
       mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
         if (isSentByMe && !isMessageRead)
@@ -509,22 +603,51 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
 
         SizedBox(width: 10.0),
-          Column(
-            crossAxisAlignment:  isSentByMe ? CrossAxisAlignment.start :CrossAxisAlignment.end , // Alignment 조정
-            children: <Widget>[
-              ChatBubble(
-              clipper: isSentByMe
-                  ? ChatBubbleClipper4(type: BubbleType.sendBubble)
-                  : ChatBubbleClipper4(type: BubbleType.receiverBubble),
-              alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-              margin: EdgeInsets.only(top: 20),
-              backGroundColor: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
-              child: Container(
+        Column(
+          crossAxisAlignment: isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start, // Alignment 조정
+          children: <Widget>[
+            //사진 전송
+            Container(
+              child: Column(
+                children: <Widget>[
+                  // 이미지 전송
+                  if (snapshot['type'] == 'image')
+                    GestureDetector(
+                      onTap: () {
+                        // 이미지 클릭 시 FullScreenImage 보여주기
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullScreenImage(photoUrl: snapshot['photoUrl']),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.network(
+                          snapshot['photoUrl'],
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+
+                ],
+              ),
+            ),
+            //텍스트 전송
+            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty)
+              Container(
+                // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
+                margin: EdgeInsets.only(top: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
+                ),
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.7,
+                  maxWidth: MediaQuery.of(context).size.width * 0.7,
                 ),
                 child: Column(
                   children: <Widget>[
@@ -534,21 +657,16 @@ class _ChatScreenState extends State<ChatScreen> {
                         style: TextStyle(
                             color: isSentByMe ? Colors.black : Colors.black),
                       )
-                    else
-                      Image.network(
-                          snapshot['photoUrl'], width: 200.0, height: 200.0),
                   ],
                 ),
               ),
+            SizedBox(height: 10),
+            Text(
+              _formatTimestamp(snapshot['timestamp']),
+              style: TextStyle(fontSize: 12.0, color: Colors.black87),
             ),
-              SizedBox(height: 10,),
-                Text(
-                  _formatTimestamp(snapshot['timestamp']),
-                  style: TextStyle(fontSize: 12.0, color: Colors.black87),
-                ),
-            ],
-          ),
-
+          ],
+        ),
       ],
     );
   }

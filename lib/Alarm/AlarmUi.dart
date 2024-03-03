@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../Chat/AllUsersScreen.dart';
 import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
 
 class AlarmUi extends StatefulWidget {
@@ -214,6 +215,11 @@ class _NotificationScreenState extends State<AlarmUi> {
                 print(documentId);
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
+
+                Navigator.of(context).push(MaterialPageRoute(//채팅 목록창으로 이동
+
+                builder: (context) => AllUsersScreen(),
+                ));
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
