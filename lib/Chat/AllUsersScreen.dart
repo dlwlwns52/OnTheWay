@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
@@ -224,7 +225,32 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
       bool isHelperDeleted = chatRoomData['isDeleted_$helperNickname'] ?? false;
       bool isOwnerDeleted = chatRoomData['isDeleted_$ownerNickname'] ?? false;
 
+
       if (isHelperDeleted && isOwnerDeleted) {
+        // 채팅방에 있는 모든 이미지 URL 가져오기
+        QuerySnapshot messagesImageSnapshot = await chatRoomRef.collection('messages')
+            .where('type', isEqualTo: 'image')
+            .get();
+
+        // Firebase Storage에서 이미지 삭제
+        for (var doc in messagesImageSnapshot.docs) {
+          var messageData = doc.data() as Map<String, dynamic>;
+            var photoUrl = messageData['photoUrl'];
+            if (photoUrl != null) {
+              try {
+                await FirebaseStorage.instance.refFromURL(photoUrl).delete();
+              } catch (e) {
+                print("Error deleting image from Storage: $e");
+              }
+            }
+        }
+
+
+        QuerySnapshot messagesSnapshot = await chatRoomRef.collection('messages').get();
+        for (var doc in messagesSnapshot.docs){
+          await doc.reference.delete();
+        }
+
         // 두 사용자 모두 채팅방을 삭제했다면 문서 삭제
         await chatRoomRef.delete();
       }
@@ -453,11 +479,9 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
 
               //나가기 버튼 사용시 상대방 대화 안보이게 하기
               if (userData['helper_email'] == currentUserEmail && userData['isDeleted_${userData['helper_email_nickname']}'] == true) {
-                print('isDeleted_${userData['helper_email_nickname']}');
                 return Container(); // 또는 적절한 '삭제됨' UI를 표시
               }
               else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_${userData['owner_email_nickname']}'] == true) {
-                print('isDeleted_${userData['owner_email_nickname']}');
                 return Container(); // 또는 적절한 '삭제됨' UI를 표시
               }
 

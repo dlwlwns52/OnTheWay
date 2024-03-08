@@ -122,6 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+
 //
 // 상대방의 채팅방 상태를 확인하는 함수
   Future<void> _checkAndUpdateMessageReadStatus() async {
@@ -176,38 +177,6 @@ class _ChatScreenState extends State<ChatScreen> {
 사진 설정
 * */
 // // 사용자가 이미지를 선택하고 업로드하는 함수
-
-  // Future<String> _pickImage() async {
-  //     final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
-  //     final XFile? selectedImage = await _picker.pickImage(
-  //         source: ImageSource.gallery); // 갤러리에서 이미지 선택
-  //
-  //     if (selectedImage != null) { // 선택된 이미지가 있는 경우
-  //       File imageFile = File(selectedImage.path); // 선택된 이미지의 파일 경로를 가져와 File 객체 생성
-  //       setState(() {
-  //         this.imageFile = imageFile; // 상태를 업데이트하여 선택된 이미지 표시
-  //       });
-  //
-  //       // Firebase Storage에 이미지를 저장하기 위한 참조 생성
-  //       Reference storageReference = FirebaseStorage.instance
-  //           .ref()
-  //           .child('images/${DateTime
-  //           .now()
-  //           .millisecondsSinceEpoch}');
-  //
-  //       // 선택된 이미지 파일을 Firebase Storage에 업로드
-  //       UploadTask uploadTask = storageReference.putFile(imageFile);
-  //       TaskSnapshot taskSnapshot = await uploadTask; // 업로드 작업 완료 대기
-  //       String downloadUrl = await taskSnapshot.ref
-  //           .getDownloadURL(); // 업로드된 이미지의 URL 획득
-  //
-  //       print("URL: $downloadUrl"); // 콘솔에 URL 출력
-  //       _uploadImageToDb(downloadUrl); // Firestore에 이미지 URL 업로드
-  //       return downloadUrl; // 업로드된 이미지의 URL 반환
-  //     }
-  //     return ''; // 이미지 선택이 없는 경우 빈 문자열 반환
-  //   }
-
   Future<void> _pickImageAndUpload() async {
     List<String> downloadUrls = (await _pickImage()) as List<String>; // 이미지를 선택하고 업로드한 후, 업로드된 이미지의 URL 리스트를 받아옵니다.
     for (String downloadUrl in downloadUrls) {
@@ -215,19 +184,24 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<List<String>> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final List<XFile>? selectedImages = await _picker.pickMultiImage();
-    List<String> uploadImageUrls = [];
 
+// 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
+  Future<List<String>> _pickImage() async {
+    final ImagePicker _picker = ImagePicker(); // ImagePicker 객체를 생성합니다.
+    final List<XFile>? selectedImages = await _picker.pickMultiImage(); // 사용자가 여러 이미지를 선택할 수 있게 합니다.
+    List<String> uploadImageUrls = []; // 업로드된 이미지의 URL들을 저장할 리스트입니다.
+
+    // 선택된 이미지들이 있는지 확인합니다.
     if (selectedImages != null && selectedImages.isNotEmpty) {
+      // 선택된 이미지 파일들을 File 타입으로 변환합니다.
       List<File> imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
 
+      // 선택된 이미지를 보여주고 업로드를 진행할지 결정하는 UI
       List<String>? result = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
+            borderRadius: BorderRadius.circular(30.0), // 대화상자 모서리를 둥글게 합니다.
           ),
           title: Text('사진 확인',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
@@ -240,8 +214,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: imageFiles.map((file) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(25.0),
-                    child: Image.file(file, fit: BoxFit.cover),
+                    borderRadius: BorderRadius.circular(25.0), // 이미지 모서리를 둥글게 합니다.
+                    child: Image.file(file, fit: BoxFit.cover), // 이미지를 화면에 맞춰 표시합니다.
                   ),
                 )).toList(),
               ),
@@ -253,23 +227,32 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.send, color: Colors.white),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent,
+                primary: Colors.orangeAccent, // 버튼 색상을 오렌지색으로 설정합니다.
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               onPressed: () async {
                 for (var imageFile in imageFiles) {
+                  // Firebase Storage에 이미지를 업로드합니다.
                   Reference storageReference = FirebaseStorage.instance
                       .ref()
                       .child('images/${DateTime.now().millisecondsSinceEpoch}');
                   UploadTask uploadTask = storageReference.putFile(imageFile);
                   TaskSnapshot taskSnapshot = await uploadTask;
-                  String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-                  uploadImageUrls.add(downloadUrl);
+                  String downloadUrl = await taskSnapshot.ref.getDownloadURL(); // 업로드된 이미지의 URL을 가져옵니다.
+                  uploadImageUrls.add(downloadUrl); // 가져온 URL을 리스트에 추가합니다.
                 }
-                Navigator.of(context).pop(uploadImageUrls);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(
+                      "이미지가 전송되고 있습니다. 잠시만 기다려 주세요.",
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                Navigator.of(context).pop(uploadImageUrls); // 업로드된 이미지 URL 리스트를 반환합니다.
               },
             ),
 
@@ -277,22 +260,23 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.cancel, color: Colors.white),
               label: Text('취소'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey,
+                primary: Colors.grey, // 버튼 색상을 회색으로 설정합니다.
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop(), // 대화상자를 닫습니다.
             ),
 
           ],
         ),
       );
-      return result ?? [];
+      return result ?? []; // 대화상자로부터 반환된 결과를 반환하거나, 결과가 없으면 빈 리스트를 반환합니다.
     }
-    return uploadImageUrls;
+    return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.
   }
+
 
 
 
@@ -416,11 +400,75 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
+  // 날짜 표시를 위한 위젯
+  Widget buildDateSeparator(String dateString) {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          dateString,
+          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+
+  // Widget ChatMessagesListWidget() {
+  //   return Flexible(
+  //     child: GestureDetector( // GestureDetector 추가
+  //       onTap: () {
+  //         FocusScope.of(context).requestFocus(FocusNode()); // 키보드 숨김
+  //       },
+  //       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  //         stream: FirebaseFirestore.instance
+  //             .collection('ChatActions')
+  //             .doc(widget.documentName)
+  //             .collection('messages')
+  //             .orderBy('timestamp', descending: false)
+  //             .snapshots(),
+  //         builder: (context, snapshot) {
+  //           if (!snapshot.hasData) {
+  //             return Center(child: CircularProgressIndicator());
+  //           }
+  //
+  //           // 데이터가 로드된 후 스크롤을 최하단으로 이동
+  //           WidgetsBinding.instance.addPostFrameCallback((_) {
+  //             if (_scrollController.hasClients) {
+  //               _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  //             }
+  //           });
+  //
+  //
+  //           List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
+  //           return ListView.builder(
+  //             controller: _scrollController, // 스크롤 컨트롤러 할당
+  //             padding: EdgeInsets.all(10.0),
+  //             itemCount: messages.length,
+  //             itemBuilder: (context, index) {
+  //               bool shouldDisplayAvatar = index == 0 || messages[index - 1]['senderUid'] != messages[index]['senderUid'];
+  //               bool isRead = messages[index]['read'] as bool;
+  //               return chatMessageItem(messages[index], shouldDisplayAvatar, isRead);
+  //             },
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
+  //
+  // // 채팅 메시지 항목 생성
+  // Widget chatMessageItem(
+  //     QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot,
+  //     bool shouldDisplayAvatar, bool isRead) {
+  //   return buildChatLayout(documentSnapshot, shouldDisplayAvatar, isRead);
+  // }
+
   Widget ChatMessagesListWidget() {
     return Flexible(
-      child: GestureDetector( // GestureDetector 추가
+      child: GestureDetector(
         onTap: () {
-          FocusScope.of(context).requestFocus(FocusNode()); // 키보드 숨김
+          FocusScope.of(context).requestFocus(FocusNode());
         },
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
@@ -434,7 +482,6 @@ class _ChatScreenState extends State<ChatScreen> {
               return Center(child: CircularProgressIndicator());
             }
 
-            // 데이터가 로드된 후 스크롤을 최하단으로 이동
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (_scrollController.hasClients) {
                 _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -442,15 +489,61 @@ class _ChatScreenState extends State<ChatScreen> {
             });
 
             List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
-            return ListView.builder(
-              controller: _scrollController, // 스크롤 컨트롤러 할당
+
+            // 날짜 구분을 위한 로직 추가
+            List<Widget> messageWidgets = [];
+            DateTime? lastDate;
+            for (int i = 0; i < messages.length; i++) {
+              final message = messages[i];
+              final messageDate = (message['timestamp'] as Timestamp).toDate();
+              if (lastDate == null || messageDate.day != lastDate.day) {
+                if (i > 0) { // 메시지가 있으면 바로 위, 없으면 상단 중앙에 표시
+                  messageWidgets.add(SizedBox(height: 20)); // 메시지 간격 조정용
+                }
+                messageWidgets.add(
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), // 내부 여백 조정
+                        decoration: BoxDecoration(
+                          color: Colors.white, // 배경색
+                          border: Border.all(color: Colors.black, width: 1), // 오렌지색 테두리
+                          borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
+                          // boxShadow: [ // 그림자 효과
+                          //   BoxShadow(
+                          //     color: Colors.grey.withOpacity(0.5),
+                          //     spreadRadius: 2,
+                          //     blurRadius: 7,
+                          //     offset: Offset(0, 3), // 그림자 위치 조정
+                          //   ),
+                          // ],
+                        ),
+                        child: Text(
+                          DateFormat('yyyy년 M월 d일').format(messageDate),
+                          style: TextStyle(
+                            color: Colors.black, // 텍스트 색상
+                            fontWeight: FontWeight.bold, // 글자 굵기
+                          ),
+                        ),
+                      ),
+                    )
+
+                );
+                if (i > 0) {
+                  messageWidgets.add(SizedBox(height: 10)); // 날짜와 메시지 사이 간격 조정용
+                }
+              }
+              lastDate = messageDate;
+
+              // 메시지 위젯 추가
+              bool shouldDisplayAvatar = i == 0 || messages[i - 1]['senderUid'] != messages[i]['senderUid'];
+              bool isRead = messages[i]['read'] as bool;
+              messageWidgets.add(chatMessageItem(message, shouldDisplayAvatar, isRead));
+            }
+
+            return ListView(
+              controller: _scrollController,
               padding: EdgeInsets.all(10.0),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                bool shouldDisplayAvatar = index == 0 || messages[index - 1]['senderUid'] != messages[index]['senderUid'];
-                bool isRead = messages[index]['read'] as bool;
-                return chatMessageItem(messages[index], shouldDisplayAvatar, isRead);
-              },
+              children: messageWidgets,
             );
           },
         ),
@@ -458,12 +551,12 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // 채팅 메시지 항목 생성
   Widget chatMessageItem(
       QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot,
       bool shouldDisplayAvatar, bool isRead) {
     return buildChatLayout(documentSnapshot, shouldDisplayAvatar, isRead);
   }
+
 
   // 현재 사용자 UID 가져오기
   Future<User?> _getUID() async {
@@ -607,9 +700,11 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start, // Alignment 조정
           children: <Widget>[
             //사진 전송
+            SizedBox(height: 10),
             Container(
               child: Column(
                 children: <Widget>[
+
                   // 이미지 전송
                   if (snapshot['type'] == 'image')
                     GestureDetector(
@@ -622,6 +717,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         );
                       },
+
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(15),
                         child: Image.network(
@@ -660,7 +756,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
-            SizedBox(height: 10),
             Text(
               _formatTimestamp(snapshot['timestamp']),
               style: TextStyle(fontSize: 12.0, color: Colors.black87),
