@@ -12,14 +12,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+ #맵관련
   kakao_map_plugin: ^0.2.4
   webview_flutter: ^4.4.4
   location: ^5.0.3
   http: ^1.0.0
-  #  tmap_ui_sdk:
-  #    git:
-  #      url: https://github.com/TmapSDK/TmapUI_FlutterSDK.git
-  #      ref: 1.0.0' 이부분은 제거하지말고
+  cloud_functions: ^4.6.0
 
 
   firebase_core: ^2.21.0
@@ -45,7 +43,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  #채팅 오픈소스
 
 flutter:
   uses-material-design: true

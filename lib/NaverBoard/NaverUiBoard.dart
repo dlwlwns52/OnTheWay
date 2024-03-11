@@ -298,7 +298,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                         ),
                                       ),
 
-
                                       Expanded(
                                         child: Text(
                                           data['cost'] ?? '추가 내용 없음',

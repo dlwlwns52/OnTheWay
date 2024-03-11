@@ -477,11 +477,11 @@ class _ChatScreenState extends State<ChatScreen> {
               .collection('messages')
               .orderBy('timestamp', descending: false)
               .snapshots(),
+
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
-
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (_scrollController.hasClients) {
                 _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -489,13 +489,13 @@ class _ChatScreenState extends State<ChatScreen> {
             });
 
             List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
-
             // 날짜 구분을 위한 로직 추가
             List<Widget> messageWidgets = [];
             DateTime? lastDate;
             for (int i = 0; i < messages.length; i++) {
               final message = messages[i];
               final messageDate = (message['timestamp'] as Timestamp).toDate();
+
               if (lastDate == null || messageDate.day != lastDate.day) {
                 if (i > 0) { // 메시지가 있으면 바로 위, 없으면 상단 중앙에 표시
                   messageWidgets.add(SizedBox(height: 20)); // 메시지 간격 조정용
@@ -508,14 +508,14 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white, // 배경색
                           border: Border.all(color: Colors.black, width: 1), // 오렌지색 테두리
                           borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                          // boxShadow: [ // 그림자 효과
-                          //   BoxShadow(
-                          //     color: Colors.grey.withOpacity(0.5),
-                          //     spreadRadius: 2,
-                          //     blurRadius: 7,
-                          //     offset: Offset(0, 3), // 그림자 위치 조정
-                          //   ),
-                          // ],
+                          boxShadow: [ // 그림자 효과
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 7,
+                              offset: Offset(0, 3), // 그림자 위치 조정
+                            ),
+                          ],
                         ),
                         child: Text(
                           DateFormat('yyyy년 M월 d일').format(messageDate),
@@ -704,7 +704,6 @@ class _ChatScreenState extends State<ChatScreen> {
             Container(
               child: Column(
                 children: <Widget>[
-
                   // 이미지 전송
                   if (snapshot['type'] == 'image')
                     GestureDetector(
@@ -756,6 +755,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
+            SizedBox(height: 7),
             Text(
               _formatTimestamp(snapshot['timestamp']),
               style: TextStyle(fontSize: 12.0, color: Colors.black87),
