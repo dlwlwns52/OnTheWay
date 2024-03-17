@@ -1,425 +1,210 @@
-//
-// //이 코드는 Flutter 애플리케이션에서 모든 사용자 목록을 표시하고 해당 사용자를 선택하여
-// //채팅 화면으로 이동할 수 있는 화면을 구현한 것입니다.
-//
-// import 'dart:async';
+// import 'package:OnTheWay/Chat/AllUsersScreen.dart';
+// import 'package:OnTheWay/Map/WriteMap/StoreMapScreen.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:rxdart/rxdart.dart';
+// import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
+// import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
+// import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
+// import 'package:flutter/widgets.dart';
+// import '../Alarm/AlarmUi.dart';
+// import '../Map/TMapView.dart';
+// import 'NaverWriteBoard.dart';
+// import 'NaverPostManager.dart';
+// import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
+// import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
+// import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
 //
-// import 'ChatScreen.dart';
-//
-//
-// class AllUsersScreen extends StatefulWidget {
-//   _AllUsersScreenState createState() => _AllUsersScreenState();
+// // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
+// class NaverBoardPage extends StatefulWidget {
+//   @override
+//   _NaverBoardPageState createState() => _NaverBoardPageState(); // 상태(State) 객체를 생성합니다.
 // }
 //
-// class _AllUsersScreenState extends State<AllUsersScreen>{
-//
-//   late StreamSubscription<dynamic> _chatActionsSubscription; // Firestore 스트림 구독을 위한 변수
-//   List<DocumentSnapshot> acceptedChatActions = []; // 수락된 도움말 액션을 저장하는 변수
-// // 채팅방 별 마지막 메시지 시간을 저장할 변수
-//   Map<String, DateTime?> lastMessageTimes = {};
-//   // 각 채팅방 및 사용자별 메시지 수를 저장할 Map
-//   Map<String, int> messageCounts = {};
-//   // 스트림 구독을 저장할 변수를 선언
-//   late StreamSubscription<DocumentSnapshot> _messageCountSubscription;
+// // _BoardPageState 클래스는 BoardPage의 상태를 관리합니다.
+// class _NaverBoardPageState extends State<NaverBoardPage> {
 //
 //
 //
-//   @override
-//   void initState() {
-//     super.initState();
-//     _fetchChatActions();
-//   }
-//
-//
-//   @override
-//   void dispose() {
-//     _chatActionsSubscription.cancel(); // 스트림 구독 해제
-//     _messageCountSubscription.cancel();
-//     super.dispose();
-//   }
-//
-//
-//   // 이 함수는 현재 로그인한 사용자의 채팅방 목록을 가져오고, 각 채팅방의 최신 메시지 시간에 따라 목록을 정렬합니다.
-//   Future<void> _fetchChatActions() async {
-//     // 현재 로그인한 사용자 정보를 가져옵니다.
-//     User? currentUser = FirebaseAuth.instance.currentUser;
-//     // 사용자가 로그인하지 않았거나 이메일 정보가 없다면 함수를 종료합니다.
-//     if (currentUser == null || currentUser.email == null) {
-//       return;
-//     }
-//
-//     // 현재 사용자의 이메일 주소를 가져옵니다.
-//     String currentUserEmail = currentUser.email!;
-//     // 'helper_email' 필드가 현재 사용자의 이메일과 일치하는 'ChatActions' 컬렉션의 문서 스트림을 가져옵니다.
-//     var helperEmailStream = FirebaseFirestore.instance
-//         .collection('ChatActions')
-//         .where('response', isEqualTo: 'accepted')
-//         .where('helper_email', isEqualTo: currentUserEmail)
-//         .snapshots();
-//
-//     // 'owner_email' 필드가 현재 사용자의 이메일과 일치하는 'ChatActions' 컬렉션의 문서 스트림을 가져옵니다.
-//     var ownerEmailStream = FirebaseFirestore.instance
-//         .collection('ChatActions')
-//         .where('response', isEqualTo: 'accepted')
-//         .where('owner_email', isEqualTo: currentUserEmail)
-//         .snapshots();
-//
-//     // 두 스트림을 결합하여 채팅방 목록을 생성합니다.
-//     _chatActionsSubscription = Rx.combineLatest2(
-//         helperEmailStream, ownerEmailStream, (QuerySnapshot helperSnapshot, QuerySnapshot ownerSnapshot) async {
-//       // helperEmailStream과 ownerEmailStream에서 받은 문서들을 결합합니다.
-//       var combinedDocs = {...helperSnapshot.docs, ...ownerSnapshot.docs}.toList();
-//
-//       // 각 채팅방의 마지막 메시지 시간을 비동기적으로 가져오는 작업 목록을 생성합니다.
-//       var fetchLastMessageFutures = <Future<void>>[];
-//       for (var doc in combinedDocs) {
-//         Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-//         _updateMessageCount(doc.id, userData);
-//
-//         var docName = doc.id;
-//         fetchLastMessageFutures.add(
-//           fetchLastMessage(docName).then((timestamp) {
-//             lastMessageTimes[docName] = timestamp ?? doc.get('timestamp').toDate();
-//           }),
-//         );
-//       }
-//
-//       // 모든 채팅방의 마지막 메시지 시간을 가져온 후에 목록을 정렬합니다.
-//       await Future.wait(fetchLastMessageFutures);
-//       combinedDocs.sort((a, b) => lastMessageTimes[b.id]!.compareTo(lastMessageTimes[a.id]!));
-//
-//       // 위젯이 화면에 여전히 존재하는 경우에만 상태를 업데이트합니다.
-//       if (mounted) {
-//         setState(() {
-//           acceptedChatActions = combinedDocs;
-//         });
-//       }
-//     }
-//     ).listen(
-//           (data) {},
-//       onError: (error) {
-//         // 스트림에서 오류가 발생한 경우 로그를 출력합니다.
-//         print("An error occurred: $error");
-//       },
-//     );
-//   }
-//
-//
-//   //마지막 메시지 보낸 시간 확인
-//   Future<DateTime?> fetchLastMessage(String documentName) async {
-//     try {
-//       // 채팅방의 마지막 메시지를 검색하기 위한 쿼리
-//       QuerySnapshot<Map<String, dynamic>> lastMessageSnapshot = await FirebaseFirestore.instance
-//           .collection('ChatActions')
-//           .doc(documentName)
-//           .collection('messages')
-//           .orderBy('timestamp', descending: true)
-//           .limit(1)
-//           .get();
-//
-//       // 검색된 문서가 있는지 확인하고, 있다면 마지막 메시지의 타임스탬프를 가져옴
-//       if (lastMessageSnapshot.docs.isNotEmpty) {
-//         Timestamp lastMessageTimestamp = lastMessageSnapshot.docs.first.data()['timestamp'];
-//         return lastMessageTimestamp.toDate();
-//       }
-//     }
-//     catch (error) {
-//       // 에러 처리 로직
-//       // 예: print("Error fetching last message: $error");
-//     }
-//   }
-//
-//   Future<void> _updateMessageCount(documentName, userData) async {
-//     User? currentUser = FirebaseAuth.instance.currentUser;
-//     String? currentUserEmail = currentUser?.email;
-//     String? helperNickname = userData['helper_email_nickname'];
-//     String? ownerNickname = userData['owner_email_nickname'];
-//     String helperMessageCountKey = "$documentName-${userData['helper_email']}";
-//     String ownerMessageCountKey = "$documentName-${userData['owner_email']}";
-//
-//     try {
-//       if (userData['helper_email'] == currentUserEmail) {
-//         _messageCountSubscription = FirebaseFirestore.instance
-//             .collection('ChatActions')
-//             .doc(documentName)
-//             .snapshots()
-//             .listen((snapshot) {
-//           if (snapshot.exists) {
-//             var data = snapshot.data() as Map<String, dynamic>;
-//             if (this.mounted) {
-//               setState(() {
-//                 messageCounts[helperMessageCountKey] = data['messageCount_$helperNickname'] ?? 0;
-//               });
-//             }
-//           }
-//         });
-//       } else if (userData['owner_email'] == currentUserEmail) {
-//         _messageCountSubscription = FirebaseFirestore.instance
-//             .collection('ChatActions')
-//             .doc(documentName)
-//             .snapshots()
-//             .listen((snapshot) {
-//           if (snapshot.exists) {
-//             var data = snapshot.data() as Map<String, dynamic>;
-//             if (this.mounted) {
-//               setState(() {
-//                 messageCounts[ownerMessageCountKey] = data['messageCount_$ownerNickname'] ?? 0;
-//               });
-//             }
-//           }
-//         });
-//       }
-//     } catch (error) {
-//       print("Error updating message count: $error");
-//     }
-//   }
-//
-//   // 시간을 '분 전' 형식으로 변환하는 함수
-//   String getTimeAgo(DateTime dateTime) {
-//     final Duration difference = DateTime.now().difference(dateTime);
-//     if (difference.inMinutes <= 1){
-//       return '방금 전';
-//     }
-//     if ( 1 < difference.inMinutes  && difference.inMinutes < 60) {
-//       return '${difference.inMinutes}분 전';
-//     }
-//     else if (difference.inHours < 24) {
-//       return '${difference.inHours}시간 전';
-//     }
-//     else {
-//       return '${difference.inDays}일 전';
-//     }
-//   }
-//
-//   // helper의 isDeleted_ 활성화
-//   Future<void> helperDeleteChatRoom(String documentId, String helperNickname) async {
-//     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
-//       'isDeleted_$helperNickname': true
-//     });
-//   }
-//
-//   //owner의 isDeleted_ 활성화
-//   Future<void> ownerDeleteChatRoom(String documentId, String ownerNickname) async {
-//     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
-//       'isDeleted_$ownerNickname' : true
-//     });
-//   }
-//
-//   //helper의 isDeleted_ 와 owner의 isDeleted_ 두개다 모두 활성화 시 문서삭제
-//   Future<void> deleteChatRoomIfBothDeleted(String documentId, String helperNickname, String ownerNickname) async {
-//     // 채팅방 문서 참조
-//     DocumentReference chatRoomRef = FirebaseFirestore.instance.collection('ChatActions').doc(documentId);
-//
-//     // 채팅방 문서 가져오기
-//     DocumentSnapshot chatRoomSnapshot = await chatRoomRef.get();
-//
-//     if (chatRoomSnapshot.exists) {
-//       Map<String, dynamic> chatRoomData = chatRoomSnapshot.data() as Map<String, dynamic>;
-//
-//       // 두 사용자 모두 채팅방을 삭제했는지 확인
-//       bool isHelperDeleted = chatRoomData['isDeleted_$helperNickname'] ?? false;
-//       bool isOwnerDeleted = chatRoomData['isDeleted_$ownerNickname'] ?? false;
-//       print(isHelperDeleted);
-//       if (isHelperDeleted && isOwnerDeleted) {
-//         // 두 사용자 모두 채팅방을 삭제했다면 문서 삭제
-//         await chatRoomRef.delete();
-//       }
-//     }
-//   }
-//
-//
-//   // helper 채팅방 나가기 dialog
-//   void helperShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           shape: RoundedRectangleBorder(
-//             borderRadius: BorderRadius.circular(15.0),
-//           ),
-//           title: Text(
-//             '채팅방 나가기',
-//             textAlign: TextAlign.center,
-//             style: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               color: Colors.black,
-//             ),
-//           ),
-//           content: Text(
-//             '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
-//             style: TextStyle(
-//               color: Colors.black87,
-//             ),
-//           ),
-//           actions: <Widget>[
-//             ElevatedButton(
-//               style: ElevatedButton.styleFrom(
-//                 primary: Colors.orangeAccent,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//               ),
-//               child: Text(
-//                 '나가기',
-//                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//               ),
-//               onPressed: () {
-//                 // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
-//                 helperDeleteChatRoom(documentId, helperNickname);
-//                 deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
-//                 Navigator.of(context).pop();
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   SnackBar(
-//                     content: Text(
-//                       "채팅방이 삭제되었습니다.",
-//                       textAlign: TextAlign.center,
-//                     ),
-//                     duration: Duration(seconds: 1),
-//                   ),
-//                 );
-//               },
-//             ),
-//             ElevatedButton(
-//               style: ElevatedButton.styleFrom(
-//                 primary: Colors.grey,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//               ),
-//               child: Text(
-//                 '취소',
-//                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//               ),
-//               onPressed: () {
-//                 Navigator.of(context).pop();
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-//
-//
-// // owner 채팅방 나가기 dialog
-//   void ownerShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           shape: RoundedRectangleBorder(
-//             borderRadius: BorderRadius.circular(15.0),
-//           ),
-//           title: Text(
-//             '채팅방 나가기',
-//             textAlign: TextAlign.center,
-//             style: TextStyle(
-//               fontWeight: FontWeight.bold,
-//               color: Colors.black,
-//             ),
-//           ),
-//           content: Text(
-//             '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
-//             style: TextStyle(
-//               color: Colors.black87,
-//             ),
-//           ),
-//           actions: <Widget>[
-//             ElevatedButton(
-//               style: ElevatedButton.styleFrom(
-//                 primary: Colors.orangeAccent,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//               ),
-//               child: Text(
-//                 '나가기',
-//                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//               ),
-//               onPressed: () {
-//                 // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
-//                 ownerDeleteChatRoom(documentId, ownerNickname);
-//                 deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
-//                 Navigator.of(context).pop();
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   SnackBar(
-//                     content: Text(
-//                       "채팅방이 삭제되었습니다.",
-//                       textAlign: TextAlign.center,
-//                     ),
-//                     duration: Duration(seconds: 1),
-//                   ),
-//                 );
-//               },
-//             ),
-//             ElevatedButton(
-//               style: ElevatedButton.styleFrom(
-//                 primary: Colors.grey,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//               ),
-//               child: Text(
-//                 '취소',
-//                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//               ),
-//               onPressed: () {
-//                 Navigator.of(context).pop();
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-//
-//
+//   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
 //   @override
 //   Widget build(BuildContext context) {
+//
 //     return Scaffold(
-//         appBar: AppBar(
-//           backgroundColor: Color(0xFFFF8B13),
-//           elevation: 0,
-//           title: Text("채팅",
-//             style: TextStyle(fontWeight: FontWeight.bold),),
-//           actions: <Widget>[
-//           ],
 //
-//         ),
+// //게시판 몸통
+//       body:
+//       Column(
+//         children: <Widget>[
 //
-//         body: acceptedChatActions != null
-//             ? Container(
-//           child: ListView.builder(
-//             itemCount: acceptedChatActions.length,
-//             itemBuilder: ((context, index) {
-//               DocumentSnapshot userDoc = acceptedChatActions[index];
-//               Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-//               final DocumentSnapshot doc = acceptedChatActions[index];
-//               final String documentName = userDoc.id; // 채팅방 문서 ID
+//           Flexible( // Flexible 위젯을 사용하여 자식 위젯이 화면 공간을 유연하게 확장할 수 있도록 함
+//             child: StreamBuilder<List<
+//                 DocumentSnapshot>>( // Firestore 데이터 스트림을 사용하여 게시물 목록을 갱신하는 위젯
+//               stream: getPosts(), // getPosts() 함수로부터 Firestore 데이터 스트림을 얻어옴
+//               builder: (context, snapshot) { // 스트림의 상태에 따라 화면을 동적으로 구성하는 빌더 함수
+//                 if (snapshot.connectionState ==
+//                     ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
+//                   return Center(
+//                       child: CircularProgressIndicator()); // 로딩 중을 나타내는 화면을 반환
+//                 } else if (snapshot.hasError) { // 데이터 로딩 중에 오류가 발생한 경우
+//                   return Center(child: Text('오류가 발생했습니다.')); // 오류 메시지를 표시
+//                 } else if (snapshot.hasData) { // 데이터가 로딩되었고, 데이터가 있는 경우
+//                   final posts = snapshot.data!; // Firestore에서 가져온 게시물 목록
+//                   final myEmail = currentUserEmail(); // 현재 사용자의 이메일을 가져옴
 //
-//               // 로그인한 사람 이메일 확인
-//               User? currentUser = FirebaseAuth.instance.currentUser;
-//               String? currentUserEmail = currentUser?.email;
+//                   // 게시물 목록을 사용자 이메일을 기준으로 정렬
+//                   posts.sort((a, b) {
+//                     Map<String, dynamic> dataA = a.data() as Map<String,
+//                         dynamic>;
+//                     Map<String, dynamic> dataB = b.data() as Map<String,
+//                         dynamic>;
+//                     bool isMyPostA = dataA['user_email'] == myEmail;
+//                     bool isMyPostB = dataB['user_email'] == myEmail;
+//                     if (isMyPostA && !isMyPostB) return -1;
+//                     if (!isMyPostA && isMyPostB) return 1;
+//                     return 0;
+//                   });
 //
-//               return Column(
-//                 children: [
-//                   if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
-//                    ...
-//                   else if (userData['owner_email'] == currentUserEmail)
-//                    ...
-//                   // Divider(thickness: 1),
-//                 ],
-//               );
-//             }),
+//                   return ListView.builder( // 게시물 목록을 스크롤 가능한 리스트뷰로 표시
+//                     itemCount: posts.length, // 아이템 개수는 게시물 목록의 길이
+//                     itemBuilder: (context, index) { // 각 아이템을 생성하는 함수 정의
+//                       DocumentSnapshot doc = posts[index]; // 현재 아이템에 대한 Firestore 문서
+//                       Map<String, dynamic> data = doc.data() as Map<
+//                           String,
+//                           dynamic>; // Firestore 문서 데이터 가져옴
+//                       bool isMyPost = data['user_email'] ==
+//                           myEmail; // 현재 아이템이 내 게시물인지 여부
+//                       bool nextPostIsMine = false;
+//
+//                       if (index + 1 < posts.length) { // 다음 아이템이 있는 경우
+//                         Map<String, dynamic> nextData = posts[index + 1]
+//                             .data() as Map<String, dynamic>; // 다음 아이템의 데이터
+//                         nextPostIsMine = nextData['user_email'] ==
+//                             myEmail; // 다음 아이템이 내 게시물인지 여부
+//                       }
+//
+//                       return Column(
+//                         children: <Widget>[
+//                           InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
+//                             onTap: () {
+//                               postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+//                             },
+//                             child: Card(
+//                               shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(15.0), // 라운드 모서리
+//                               ),
+//                               elevation: 3.0, // 그림자 효과
+//                               color: isMyPost ? Colors.orange[100] : Colors.white,
+//                               child: Container(
+//                                 height: 100, // 카드의 높이 설정
+//                                 child: Padding(
+//                                   padding: const EdgeInsets.all(8.0),
+//                                   // 내부 패딩 설정
+//                                   child: Row(
+//                                     children: <Widget>[
+//
+//                                       Expanded(
+//                                         child: GestureDetector(
+//                                           onTap: () {
+//                                             if (!isMyPost) {
+//                                               // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+//                                               Navigator.of(context).push(MaterialPageRoute(
+//                                                 builder: (context) => PostStoreMap(documentId: doc.id),
+//                                               ));
+//                                             }
+//                                             else{
+//                                               postManager.helpAndExit(context, doc); // 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
+//                                             }
+//                                           },
+//                                           child: Text(
+//                                             data['store'] ?? '내용 없음',
+//                                             textAlign: TextAlign.center,
+//                                             style: TextStyle(
+//                                               fontSize: 20.0,
+//                                               fontWeight: FontWeight.bold,
+//                                               decoration: isMyPost ? TextDecoration.none : TextDecoration.underline, // 내 게시물이 아닐 때만 밑줄 추가
+//                                               color: isMyPost ? Colors.black : Colors.black, // 내 게시물이 아닐 때만 색상 변경
+//                                             ),
+//                                           ),
+//                                         ),
+//                                       ),
+//
+//                                       Expanded(
+//                                         child: Text(
+//                                           data['cost'] ?? '추가 내용 없음',
+//                                           // 비용 정보 또는 '추가 내용 없음' 표시
+//                                           textAlign: TextAlign.center,
+//                                           style: TextStyle(fontSize: 20.0,
+//                                               fontWeight: FontWeight.bold, color: Colors.black),
+//                                         ),
+//                                       ),
+//
+//                                     ],
+//
+//                                   ),
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                           // 현재 게시물이 내 게시물이고 다음 게시물이 내 게시물이 아닐 때만 구분선을 추가
+//                           if (isMyPost && !nextPostIsMine)
+//                             Divider(
+//                               color: Colors.orange[50], // 구분선의 색상 설정
+//                               thickness: 3.0, // 구분선의 두께 설정
+//                             ),
+//                         ],
+//                       );
+//                     },
+//                   );
+//                 } else { // 데이터가 로딩되지 않았거나 비어 있는 경우
+//                   return Center(
+//                       child: Text('게시글이 없습니다.')); // '게시글이 없습니다.' 메시지를 표시
+//                 }
+//               },
+//             ),
 //           ),
-//         )
-//             : Center(
-//           child: CircularProgressIndicator(), // 로딩 중 표시
-//         ));
+//         ],
+//       ),
+//       bottomNavigationBar: BottomNavigationBar(
+//         items: <BottomNavigationBarItem>[
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.forum_rounded, color: Colors.black),
+//             label: '채팅',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.create, color: Colors.black,),
+//             label: '새 게시글',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.person, color: Colors.black,),
+//             label: '프로필',
+//           ),
+//         ],
+//         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
+//         unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+//         onTap: (index) {
+//           // 채팅방으로 이동
+//           if (index == 0) {
+//             Navigator.push(
+//               context,
+//               MaterialPageRoute(builder: (context) => AllUsersScreen()),
+//             );
+//             //새 게시글 만드는 곳으로 이동
+//           } else if (index == 1) {
+//             Navigator.push(
+//               context,
+//               MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
+//             );
+//           }
+//           else if (index == 2) {
+//             Navigator.push(
+//               context,
+//               MaterialPageRoute(builder: (context) => VideoCard()),
+//             );
+//           }
+//
+//         },
+//         selectedLabelStyle: TextStyle(color: Colors.orange), // 선택된 항목의 텍스트 색상 설정
+//       ),
+//     );
 //   }
 // }
 //

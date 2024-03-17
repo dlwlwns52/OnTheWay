@@ -508,14 +508,14 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white, // 배경색
                           border: Border.all(color: Colors.black, width: 1), // 오렌지색 테두리
                           borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                          boxShadow: [ // 그림자 효과
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 2,
-                              blurRadius: 7,
-                              offset: Offset(0, 3), // 그림자 위치 조정
-                            ),
-                          ],
+                          // boxShadow: [ // 그림자 효과
+                          //   BoxShadow(
+                          //     color: Colors.grey.withOpacity(0.3),
+                          //     spreadRadius: 2,
+                          //     blurRadius: 7,
+                          //     offset: Offset(0, 3), // 그림자 위치 조정
+                          //   ),
+                          // ],
                         ),
                         child: Text(
                           DateFormat('yyyy년 M월 d일').format(messageDate),

@@ -639,6 +639,10 @@ PODS:
     - firebase_core
     - Flutter
     - nanopb (< 2.30910.0, >= 2.30908.0)
+  - cloud_functions (4.6.0):
+    - Firebase/Functions (= 10.18.0)
+    - firebase_core
+    - Flutter
   - Firebase/Auth (10.18.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 10.18.0)
@@ -851,11 +855,14 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - webview_cookie_manager (0.0.1):
+    - Flutter
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
+  - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
   - Firebase/Functions
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -869,6 +876,7 @@ DEPENDENCIES:
   - kakao_map_plugin (from `.symlinks/plugins/kakao_map_plugin/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - webview_cookie_manager (from `.symlinks/plugins/webview_cookie_manager/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
@@ -905,6 +913,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
+  cloud_functions:
+    :path: ".symlinks/plugins/cloud_functions/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_core:
@@ -929,6 +939,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/location/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  webview_cookie_manager:
+    :path: ".symlinks/plugins/webview_cookie_manager/ios"
   webview_flutter_wkwebview:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
@@ -936,6 +948,7 @@ SPEC CHECKSUMS:
   abseil: c582bbf59f009606334bfd042bfeda8fd9abde35
   BoringSSL-GRPC: 0c327029bf8f7a84e693992771dbf3b717b0aab1
   cloud_firestore: 73eece22ce25a0565238c283ee9990f1618d8063
+  cloud_functions: ac380580bd5eae13e242c2107512e2fe43cd8e1e
   Firebase: a2b5a817e7ce9479d63eef3c06675ff4275ae3da
   firebase_auth: 8e9ec02991ca4659111cc671c84d0c010b6bfb26
   firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
@@ -973,6 +986,7 @@ SPEC CHECKSUMS:
   PromisesObjC: 4c8eeaef508e2e5842316da811187b4242aa6e43
   RecaptchaInterop: 563d7bb483401b6e26134db3924b8b62ffae3891
   shared_preferences_foundation: b4c3b4cddf1c21f02770737f147a3f5da9d39695
+  webview_cookie_manager: eaf920722b493bd0f7611b5484771ca53fed03f7
   webview_flutter_wkwebview: 4f3e50f7273d31e5500066ed267e3ae4309c5ae4
 
 PODFILE CHECKSUM: 9e32663d35196a067a1956b2071410adc23f7309

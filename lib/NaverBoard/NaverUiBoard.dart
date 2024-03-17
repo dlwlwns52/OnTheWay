@@ -6,6 +6,7 @@ import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
 import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
+import '../Map/TMapView.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
@@ -163,6 +164,19 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                   );
                 },
               ),
+              //경로찾기
+              IconButton(
+                icon: Icon(Icons.navigation),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("길찾기 기능 입니다.", textAlign: TextAlign.center,),
+                      // behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+              ),
 
               IconButton(
                 icon: Icon(Icons.monetization_on),
@@ -211,12 +225,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                     itemCount: posts.length, // 아이템 개수는 게시물 목록의 길이
                     itemBuilder: (context, index) { // 각 아이템을 생성하는 함수 정의
                       DocumentSnapshot doc = posts[index]; // 현재 아이템에 대한 Firestore 문서
-                      Map<String, dynamic> data = doc.data() as Map<
-                          String,
-                          dynamic>; // Firestore 문서 데이터 가져옴
-                      bool isMyPost = data['user_email'] ==
-                          myEmail; // 현재 아이템이 내 게시물인지 여부
+                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Firestore 문서 데이터 가져옴
+                      bool isMyPost = data['user_email'] == myEmail; // 현재 아이템이 내 게시물인지 여부
                       bool nextPostIsMine = false;
+
 
                       if (index + 1 < posts.length) { // 다음 아이템이 있는 경우
                         Map<String, dynamic> nextData = posts[index + 1]
@@ -244,7 +256,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                   // 내부 패딩 설정
                                   child: Row(
                                     children: <Widget>[
-
                                       Expanded(
                                         child: GestureDetector(
                                           onTap: () {
@@ -287,6 +298,32 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                           },
                                           child: Text(
                                             data['store'] ?? '내용 없음',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.bold,
+                                              decoration: isMyPost ? TextDecoration.none : TextDecoration.underline, // 내 게시물이 아닐 때만 밑줄 추가
+                                              color: isMyPost ? Colors.black : Colors.black, // 내 게시물이 아닐 때만 색상 변경
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (!isMyPost) {
+                                              Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => TMapView(currentLocation: data['current_location'], storeLocation: data['store_location'],),
+                                              ));
+                                            }
+                                            else{
+                                              postManager.helpAndExit(context, doc); // 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
+                                            }
+                                          },
+                                          child: Text(
+                                            '길찾기',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontSize: 20.0,
@@ -364,6 +401,8 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                 context,
                 MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
             );
+          }
+          else if (index == 2) {
           }
 
         },
