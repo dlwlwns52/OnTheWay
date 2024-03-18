@@ -1,0 +1,228 @@
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+// 첫 번째 함수: 도움 요청 푸시 알림 전송
+exports.sendHelpNotification = functions.firestore
+  .document('helpActions/{documentId}')
+  .onCreate(async (snapshot, context) => {
+        const helpAction = snapshot.data(); // 생성된 문서의 데이터를 가져옵니다.
+        const helperEmail = helpAction.helper_email; // 도움을 제공하는 사용자의 이메일
+        const postOwnerId = helpAction.post_id; // 게시물 소유자의 ID
+        const helperNickname = helpAction.helper_email_nickname; // 추가된 닉네임 필드ㄴ
+        const postOwnerEmail = helpAction.owner_email; // 게시물 작성자의 이메일
+    
+        // 게시물 작성자의 디바이스 토큰을 조회합니다.
+        const postOwnerDoc = await admin.firestore().collection('users')
+          .where('email', '==', postOwnerEmail).get();
+    
+        if (postOwnerDoc.empty) {
+          console.log('No device token found for post owner.'); // 게시물 소유자의 디바이스 토큰이 없을 경우 로그에 메시지를 출력합니다.
+          return null;
+        }
+    
+        // 가정: 게시물 작성자의 디바이스 토큰을 가져옵니다. 첫 번째 일치 항목만 사용합니다.
+        const postOwnerDeviceToken = postOwnerDoc.docs[0].data().token;
+    
+
+        const message = {
+          notification: {
+            title: '온더웨이',
+            body: `${helperNickname}님이 도움을 요청했습니다.`
+          },
+          data: {
+            screen: 'AlarmUi',
+            ownerEmail: postOwnerEmail // 게시물 작성자의 이메일
+          },
+          token: postOwnerDeviceToken
+        };
+
+        // 푸시 알림을 보냅니다.
+        try {
+          const response = await admin.messaging().send(message); // 푸시 알림을 보내고 응답을 기다립니다.
+          console.log('Successfully sent message:', response); // 푸시 알림을 성공적으로 보낸 경우 로그에 성공 메시지를 출력합니다.
+        } catch (error) {
+          console.log('Error sending message:', error); // 푸시 알림을 보내는 도중 오류가 발생한 경우 오류 메시지를 출력합니다.
+        }
+    
+        return null; // 함수 실행 완료를 나타내기 위해 null을 반환합니다.
+      });
+
+
+// 두 번째 함수: 수락/거절 응답 푸시 알림 전송
+exports.respondToHelpRequest = functions.firestore
+  .document('helpActions/{documentId}')
+  .onUpdate(async (change, context) => {
+    const requestData = change.after.data(); // 업데이트된 문서 데이터
+    const helperEmail = requestData.helper_email; // 도움을 제공한 사용자 이메일
+    const response = requestData.response; // 요청에 대한 응답 ('accepted' 또는 'rejected')
+
+    // 요청을 보낸 사용자의 디바이스 토큰 조회
+    const helperDoc = await admin.firestore().collection('users')
+      .where('email', '==', helperEmail).get();
+
+    if (helperDoc.empty) {
+      console.log('No device token found for helper.');
+      return null;
+    }
+
+    const helperDeviceToken = helperDoc.docs[0].data().token; // 디바이스 토큰
+
+    // 푸시 알림 메시지 구성
+    const message = {
+      notification: {
+        title: '온더웨이',
+        body: `귀하의 요청이 ${response === 'accepted' ? '수락되었습니다' : '거절되었습니다'}.`
+      },
+      data: {
+        helperEmail: helperEmail // 게시물 작성자의 이메일
+      },
+      token: helperDeviceToken
+    };
+
+    // 푸시 알림 전송
+    try {
+      const response = await admin.messaging().send(message);
+      console.log('Successfully sent message:', response);
+    } catch (error) {
+      console.log('Error sending message:', error);
+    }
+
+    return null;
+  });
+
+
+//세 번째 함수 : 채팅방 생성 알림 함수
+exports.notifyChatRoomCreated = functions.firestore
+  .document('ChatActions/{documentId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+
+    // 요청이 수락된 경우만 처리
+    if (beforeData.response !== 'accepted' && afterData.response === 'accepted') {
+      const postOwnerId = afterData.post_id;
+      const helperEmail = afterData.helper_email;
+      const postOwnerEmail = afterData.owner_email; // 게시물 작성자의 이메일
+
+      // 게시물 작성자의 디바이스 토큰 조회
+      const postOwnerDoc = await admin.firestore().collection('users')
+        .where('email', '==', postOwnerEmail).get();
+      if (postOwnerDoc.empty) {
+        console.log('No device token found for post owner.');
+        return null;
+      }
+      const postOwnerDeviceToken = postOwnerDoc.docs[0].data().token;
+
+      
+      // 도움을 제공하는 사용자의 디바이스 토큰 조회
+      const helperDoc = await admin.firestore().collection('users')
+        .where('email', '==', helperEmail).get();
+      if (helperDoc.empty) {
+        console.log('No device token found for helper.');
+        return null;
+      }
+      const helperDeviceToken = helperDoc.docs[0].data().token;
+
+      // 채팅방 생성 알림 메시지
+      const messageForPostOwner = {
+        notification: {
+          title: '온더웨이',
+          body: '채팅방이 생성되었습니다.'
+        },
+        data: {
+          screen: 'AllUsersScreen',
+        },
+        token: postOwnerDeviceToken // 게시물 소유자의 디바이스 토큰
+      };
+
+      const messageForHelper = {
+        notification: {
+          title: '온더웨이',
+          body: '채팅방이 생성되었습니다.'
+        },
+        data: {
+          screen: 'AllUsersScreen',
+        },
+        token: helperDeviceToken // 도움을 제공한 사용자의 디바이스 토큰
+      };
+
+      // 3초 지연 함수
+      const delay = ms => new Promise(res => setTimeout(res, ms));
+
+      try {
+        // 3초 지연 후 알림 전송
+        await delay(3000);
+        await admin.messaging().send(messageForPostOwner);
+        await admin.messaging().send(messageForHelper);
+        console.log('Successfully sent chat room creation notifications');
+      } catch (error) {
+        console.log('Error sending chat room creation notifications:', error);
+      }
+    }
+
+    return null;
+  });
+
+
+  
+// 4번째 함수 채팅 메시지 푸시알림
+exports.sendPushNotification = functions.firestore // Cloud Functions를 사용하여 Firestore 이벤트를 감지합니다.
+    .document('ChatActions/{chatId}/messages/{messageId}') // 'ChatActions/{chatId}/messages/{messageId}' 경로의 문서에 변화가 있을 때 함수가 트리거됩니다.
+    .onCreate((snapshot, context) => { // 새 문서가 생성될 때 실행되는 함수입니다.
+        const messageData = snapshot.data(); // 생성된 문서의 데이터를 가져옵니다.
+        const receiverName = messageData.receiverName; // 메시지의 수신자 닉네임을 가져옵니다.
+        const senderName = messageData.senderName; // 메시지의 발신자 닉네임을 가져옵니다.
+        
+        // 수신자의 FCM 토큰을 가져오는 부분입니다.
+        // 사용자의 FCM 토큰을 'users' 컬렉션에서 관리한다고 가정합니다.
+        const tokenRef = admin.firestore().collection('users').doc(receiverName).get(); 
+
+        return tokenRef.then(tokenDoc => { // 토큰 문서를 가져온 후 처리합니다.
+            if (tokenDoc.exists) { // 토큰 문서가 존재하는 경우
+                const token = tokenDoc.data().token; // 수신자의 FCM 토큰을 가져옵니다.
+
+                // 푸시 알림의 내용을 설정합니다.
+                const payload = {
+                    notification: { 
+                        title: messageData.senderName, // 알림의 제목
+                        body: messageData.message, // 알림의 본문 (메시지 내용)
+                        // 필요에 따라 추가 FCM 옵션을 설정할 수 있습니다.
+                    },
+                    token: token // 알림을 받을 디바이스의 FCM 토큰
+                };
+
+                // 설정한 페이로드로 푸시 알림을 보냅니다.
+                return admin.messaging().send(payload); 
+
+            } else {
+                console.log("FCM 토큰이 없음"); // FCM 토큰이 없는 경우 로그 출력
+                return null;
+            }
+        });
+    });
+
+// 5 번째 함수 tmap 띄우기
+const axios = require('axios');
+
+exports.fetchTMapRoute = functions.https.onCall(async (data, context) => {
+  // TMAP 앱 키
+  const apiKey = 'ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM';
+  
+  // 요청 파라미터
+  const { startX, startY, endX, endY } = data;
+
+  //TMAP 보행자 길찾기 API URL
+  const url = `https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&format=json&appKey=${apiKey}&startX=${startX}&startY=${startY}&endX=${endX}&endY=${endY}`;
+
+  try {
+    // API 호출
+    const response = await axios.get(url);
+    // 성공적으로 데이터를 받아오면 데이터 반환
+    return { data: response.data };
+  } catch (error) {
+    // 에러 발생 시 처리
+    console.error("Error fetching TMap route:", error);
+    throw new functions.https.HttpsError('internal', 'Failed to fetch route from TMap', error);
+  }
+});
