@@ -202,27 +202,3 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
         });
     });
 
-// 5 번째 함수 tmap 띄우기
-const axios = require('axios');
-
-exports.fetchTMapRoute = functions.https.onCall(async (data, context) => {
-  // TMAP 앱 키
-  const apiKey = 'ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM';
-  
-  // 요청 파라미터
-  const { startX, startY, endX, endY } = data;
-
-  //TMAP 보행자 길찾기 API URL
-  const url = `https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&format=json&appKey=${apiKey}&startX=${startX}&startY=${startY}&endX=${endX}&endY=${endY}`;
-
-  try {
-    // API 호출
-    const response = await axios.get(url);
-    // 성공적으로 데이터를 받아오면 데이터 반환
-    return { data: response.data };
-  } catch (error) {
-    // 에러 발생 시 처리
-    console.error("Error fetching TMap route:", error);
-    throw new functions.https.HttpsError('internal', 'Failed to fetch route from TMap', error);
-  }
-});
