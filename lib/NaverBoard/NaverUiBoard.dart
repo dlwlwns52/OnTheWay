@@ -57,7 +57,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFFF8B13),
@@ -164,19 +163,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                   );
                 },
               ),
-              //경로찾기
-              IconButton(
-                icon: Icon(Icons.navigation),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("길찾기 기능 입니다.", textAlign: TextAlign.center,),
-                      // behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
 
               IconButton(
                 icon: Icon(Icons.monetization_on),
@@ -256,8 +242,6 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                   // 내부 패딩 설정
                                   child: Row(
                                     children: <Widget>[
-
-
                                       Expanded(
                                         child: Center( // Expanded 안에서 중앙 정렬을 위해 Center 위젯 사용
                                           child: Container(
@@ -304,89 +288,36 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                       ),
 
                                       Expanded(
-                                        child: Center( // Expanded 안에서 중앙 정렬을 위해 Center 위젯 사용
+                                        child: Center(
                                           child: Container(
-                                            width: 80, // 버튼의 가로 폭을 70으로 고정
+                                             width: 80,
                                             child: GestureDetector(
                                               onTap: () {
-                                                if (!isMyPost) {
-                                                  // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+                                                if(!isMyPost){
                                                   Navigator.of(context).push(MaterialPageRoute(
-                                                    builder: (context) => PostStoreMap(documentId: doc.id),
+                                                      builder: (context) => PostStoreMap(documentId: doc.id,),
                                                   ));
-                                                } else {
-                                                  postManager.helpAndExit(context, doc); // 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
+                                                }
+                                                else{
+                                                  postManager.helpAndExit(context, doc);
                                                 }
                                               },
                                               child: Container(
-                                                padding: EdgeInsets.all(5.0), // 내부 여백
+                                                padding: EdgeInsets.all(5.0),
                                                 decoration: BoxDecoration(
                                                   color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
-                                                  borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                                                  boxShadow: isMyPost ? [] :[
-                                                    // BoxShadow(
-                                                    //   color: Color(0xFFFF8B13).withOpacity(0.25),
-                                                    //   spreadRadius: 2,
-                                                    //   blurRadius: 7,
-                                                    //   offset: Offset(0, 3), // 그림자 위치 조정
-                                                    // ),
-                                                    BoxShadow(
-                                                      // color: Color(0xFFFF8B13).withOpacity(0.25),
-                                                      color: Colors.blueGrey.withOpacity(0.25),
-                                                      spreadRadius: 1,
-                                                      // blurRadius: 0,
-                                                      offset: Offset(0, 2), // 그림자 위치 조정
-                                                    ),
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  boxShadow: isMyPost ? []
+                                                    : [
+                                                      BoxShadow(
+                                                        color: Colors.blueGrey.withOpacity(0.25),
+                                                        spreadRadius: 1,
+                                                        offset: Offset(0,2),
+                                                      ),
                                                   ],
                                                 ),
                                                 child: Text(
                                                   data['store'] ?? '내용 없음',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: isMyPost ? 20 : 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black, // 텍스트 색상 변경
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-
-
-                                      Expanded(
-                                        child: Center( // Expanded 안에서 중앙 정렬을 위해 Center 위젯 사용
-                                          child: Container(
-                                            width: 80, // 버튼의 가로 폭을 70으로 고정
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                if (!isMyPost) {
-                                                  // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
-                                                  Navigator.of(context).push(MaterialPageRoute(
-                                                    builder: (context) => TMapView(currentLocation: data['current_location'], storeLocation: data['store_location'],),
-                                                  ));
-                                                } else {
-                                                  postManager.helpAndExit(context, doc); // 내 게시물인 경우에는 원래 게시물 눌렀을때 기능
-                                                }
-                                              },
-                                              child: Container(
-                                                padding: EdgeInsets.all(5.0), // 내부 여백
-                                                decoration: BoxDecoration(
-                                                  color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
-                                                  borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                                                  boxShadow: isMyPost ? [] :[
-                                                    BoxShadow(
-                                                      // color: Colors.orangeAccent.withOpacity(0.25),
-                                                      color: Colors.blueGrey.withOpacity(0.25),
-                                                      spreadRadius: 1,
-                                                      // blurRadius: 0,
-                                                      offset: Offset(0, 2), // 그림자 위치 조정
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Text(
-                                                  '길찾기',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     fontSize: isMyPost ? 20 : 18,
@@ -405,13 +336,11 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                           data['cost'] ?? '추가 내용 없음',
                                           // 비용 정보 또는 '추가 내용 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 20.0,
+                                          style: TextStyle(fontSize: 18.0,
                                               fontWeight: FontWeight.bold, color: Colors.black),
                                         ),
                                       ),
-
                                     ],
-
                                   ),
                                 ),
                               ),

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OnTheWay/NaverBoard/NaverWriteBoard.dart';
 
+import '../Map/TMapView.dart';
+
 
 
 class NaverPostManager {
@@ -128,6 +130,73 @@ class NaverPostManager {
               ),
             ),
             actions: <Widget>[
+
+              // Expanded(
+              //   child: Center( // Expanded 안에서 중앙 정렬을 위해 Center 위젯 사용
+              //     child: Container(
+              //       width: 80, // 버튼의 가로 폭을 70으로 고정
+              //       child: GestureDetector(
+              //         onTap: () {
+              //             // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
+              //             Navigator.of(context).push(MaterialPageRoute(
+              //               builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
+              //             ));
+              //         },
+              //         child: Container(
+              //           padding: EdgeInsets.all(5.0), // 내부 여백
+              //           decoration: BoxDecoration(
+              //             color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
+              //             borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
+              //             boxShadow: isMyPost ? [] :[
+              //               BoxShadow(
+              //                 // color: Colors.orangeAccent.withOpacity(0.25),
+              //                 color: Colors.blueGrey.withOpacity(0.25),
+              //                 spreadRadius: 1,
+              //                 // blurRadius: 0,
+              //                 offset: Offset(0, 2), // 그림자 위치 조정
+              //               ),
+              //             ],
+              //           ),
+              //           child: Text(
+              //             '길찾기',
+              //             textAlign: TextAlign.center,
+              //             style: TextStyle(
+              //               fontSize: isMyPost ? 20 : 18,
+              //               fontWeight: FontWeight.bold,
+              //               color: Colors.black, // 텍스트 색상 변경
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.orangeAccent,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                      BoxShadow(
+                        // color: Colors.orangeAccent.withOpacity(0.25),
+                        color: Colors.blueGrey.withOpacity(0.25),
+                        spreadRadius: 1,
+                        // blurRadius: 0,
+                        offset: Offset(0, 1), // 그림자 위치 조정
+                      ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.navigation_sharp,color: Colors.white,),
+                  onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
+                      ));
+                  },
+                ),
+              ),
+              SizedBox(width: 35), // 아이콘 버튼과 다음 위젯 사이의 간격 조절
 
               ElevatedButton( //'도와주기' 버튼
                 style: ElevatedButton.styleFrom(

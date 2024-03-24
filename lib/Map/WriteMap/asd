@@ -1,0 +1,49 @@
+큰 따옴표 처리
+입력 되는 문자열에 대한 아래 요건을 만족하는 괄호 검사 프로그램을 만드시오.
+
+- 큰 따옴표 사이에 대한 문자열 무시
+
+- 괄호 닫기에 대해 문제가 없어야 함
+
+INPUT
+”EOF“를 입력 받을 때까지 문자열을 입력
+
+OUTPUT
+괄호 검사 성공 여부에 따라 출력문은 아래와 같고 오류 시 오류가 생긴 문장의 라인,문자까지만 인정
+1) 성공 : OK, Line_count : (문장 수), bracket_count : (괄호 짝 수)
+2) 오류 : Error, Line_count : (문장 수), bracket_count : (괄호 짝 수)
+
+- 아래 main 함수를 참조하여 checkMatching() 함수를 만드시오.
+int main(){
+    std::string Str,temp;
+    while(true){
+        std::getline(std::cin,temp);
+        if(temp=="EOF")break;
+        Str.append(temp);
+        Str.append("\n");
+        std::cin.clear();
+    }
+    checkMatching(Str);
+
+    return 0;
+}
+
+ 
+
+Sample Input
+printf(" left bracket = (((((( ");
+printf(" right bracket = }}}}}} ");
+EOF
+
+Sample Output
+ 
+
+OK, Line_count : 2, bracket_count : 2
+
+Sample Input
+printf(" left bracket = (((((( );
+printf(" right bracket = }}}}}} ");
+EOF
+
+Sample Output
+Error, Line_count : 2, bracket_count : 0

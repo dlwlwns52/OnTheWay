@@ -91,29 +91,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderSide: BorderSide(color: Colors.orange), // 경계 색상 설정
                     ),
                   ),
-                  // obscureText: true, // 비밀번호를 별표로 표시
+                  obscureText: true, // 비밀번호를 별표로 표시
                   onFieldSubmitted: (value) => _login(), // 비밀번호 필드 -> 로그인
-                  // onFieldSubmitted: (value){
-                  //   setState(() {
-                  //     isLoginPressed = true; // 엔터키로 로그인 시도
-                  //   });
-                  //   _login();
-                  // },
                 ),
 
                 SizedBox(height: 10),
 
                 Row(
+
                   children: <Widget>[
                     Checkbox(
                       value: _isAutoLogin, // 체크박스 상태 값
                       onChanged: (bool? value) {
                         setState(() {
                           _isAutoLogin = value ?? false; // 상태 변경
+                          print(_isAutoLogin);
                         });
                       },
                       activeColor: Colors.orange, // 체크된 상태의 색깔
                     ),
+
                     Text(
                       '자동 로그인',
                     ),
@@ -193,20 +190,62 @@ class _LoginScreenState extends State<LoginScreen> {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
+
       );
-
-      // if (userCredential.user != null) {
-      //   // 로그인 성공
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => BoardPage()),
-      //   );
-
+        // 로그인 성공
         if (userCredential.user != null) {
-          // 로그인 성공
           await getTokenAndSave(userCredential.user!.email); // 사용자의 이메일을 인자로 넘겨 토큰 저장
           String email = userCredential.user!.email!;
           String domain = email.split('@').last; // 이메일에서 도메인 추출
+
+
+          //자동 로그인 기능
+          if(_isAutoLogin == true){
+            final FirebaseFirestore firestore = FirebaseFirestore.instance;
+            QuerySnapshot querySnapshot = await firestore.collection('users')
+                .where('email', isEqualTo: email)
+                .get();
+
+            if (querySnapshot.docs.isNotEmpty) {
+              // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+              DocumentSnapshot userDoc = querySnapshot.docs.first;
+              print(userDoc['nickname']);
+              // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+              String userId = userDoc.id;
+
+              // // 해당 사용자 문서에 토큰을 저장합니다.
+              await firestore.collection('users').doc(userId).set({
+                'isAutoLogin' : true,
+                'domain' : domain,
+              }, SetOptions(merge: true));
+            }
+            else {
+              print('No user found with email: $email');
+            }
+          }
+          // 자동로그인 체크 안하면
+          else if(_isAutoLogin == false) {
+            final FirebaseFirestore firestore = FirebaseFirestore.instance;
+            QuerySnapshot querySnapshot = await firestore.collection('users')
+                .where('email', isEqualTo: email)
+                .get();
+
+            if (querySnapshot.docs.isNotEmpty) {
+              // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+              DocumentSnapshot userDoc = querySnapshot.docs.first;
+              // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+              String userId = userDoc.id;
+
+              // // 해당 사용자 문서에 토큰을 저장합니다.
+              await firestore.collection('users').doc(userId).set({
+                'isAutoLogin': false,
+              }, SetOptions(merge: true));
+            }
+            else {
+              print('No user found with email: $email');
+            }
+          }
+
 
           switch (domain.toLowerCase()) {
             case 'naver.com':
@@ -237,12 +276,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-    } catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
+    }
+    catch (e) { //스낵바로 이메일 또는 비밀번호 계정 확인
       if (e is FirebaseAuthException) {
         print("FirebaseAuthException 코드: ${e.code}"); // 에러 코드 출력
         switch (e.code) {
           case 'invalid-email':
-            print(1);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("유효하지 않은 이메일 형식입니다.", textAlign: TextAlign.center,),
                 duration: Duration(seconds: 1),
@@ -270,6 +309,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+
+
+  //토큰 저장
   Future<void> saveTokenToDatabase(String? token, String? email) async {
     if (email == null) return; // 이메일이 null인 경우 함수 종료
 

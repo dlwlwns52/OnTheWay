@@ -1,3 +1,6 @@
+import 'package:OnTheWay/login/LoginScreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
@@ -5,7 +8,6 @@ import 'Alarm/AlarmUi.dart';
 import 'NaverBoard/NaverUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:OnTheWay/Alarm/Alarm.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
@@ -24,12 +26,41 @@ void main() async {
   runApp(MyApp()); // 앱 실행
 }
 
-
-
 Future<String> loadSomeData() async {
   await Future.delayed(Duration(seconds: 1)); // 데이터 로딩을 시뮬레이션하기 위한 코드
   return 'Some data';
 }
+
+Future<Map<String, dynamic>> _autoLogin() async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  User? user = FirebaseAuth.instance.currentUser;
+  Map<String, dynamic> loginResult = {
+    'isAutoLogin': false,
+    'domain': '',
+  };
+
+  if (user != null) {
+    String? email = user.email;
+    if (email != null) {
+      QuerySnapshot querySnapshot = await firestore.collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        bool autoLogin = userDoc['isAutoLogin'] ?? false;
+        String domain = userDoc['domain'] ?? '';
+        if (autoLogin) {
+          loginResult['isAutoLogin'] = true;
+          loginResult['domain'] = domain;
+        }
+      }
+    }
+  }
+  return loginResult;
+}
+
+
 
 class MyApp extends StatefulWidget {
   @override
@@ -37,9 +68,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Future<Map<String, dynamic>>? autoLoginResult;
+
   @override
   void initState() {
     super.initState();
+    autoLoginResult = _autoLogin();
+
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (message.data['screen'] == 'AlarmUi') {
         // `Navigator`를 사용하여 `AlarmUi` 화면으로 이동합니다.
@@ -50,30 +85,34 @@ class _MyAppState extends State<MyApp> {
   }
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder(
-        // FutureBuilder는 Future 객체와 함께 사용하여, Future가 완료될 때까지 로딩 화면을 표시하고,
-        // Future가 완료되면 해당 데이터를 화면에 표시하는데 사용됩니다.
-        future: loadSomeData(),
+      home: FutureBuilder<Map<String, dynamic>>(
+        future: autoLoginResult,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return LoadingScreen(); // 로딩 중일 때는 LoadingScreen을 표시
-          } else {
-            // return LoginScreen(); // 로딩이 완료되면 LoginScreen으로 전환
-            return NaverBoardPage();
+            return LoadingScreen(); // 로딩 중 화면
+          }
+          else if (snapshot.hasData) {
+            bool isAutoLogin = snapshot.data?['isAutoLogin'] ?? false;
+            String domain = snapshot.data?['domain'] ?? '';
+            if (isAutoLogin) {
+              switch (domain) {
+                case 'naver.com':
+                  return NaverBoardPage();
+              // 여기에 다른 도메인별 게시판 페이지 조건을 추가
 
+                default:
+                  return LoginScreen(); // 기본 게시판 페이지
+              }
+            } else {
+              return LoginScreen(); // 로그인 화면
+            }
+          } else {
+            return LoginScreen(); // 오류 화면
           }
         },
       ),
-      routes: {
-        '/naverBoard': (context) => NaverBoardPage(),
-        // '/hanbatBoard': (context) => HanbatBoardScreen(),
-        // '/yahooBoard': (context) => YahooBoardScreen(),
-        // '/defaultBoard': (context) => DefaultBoardScreen(),
-        // 기타 라우트 추가 가능
-      },
     );
   }
 }
