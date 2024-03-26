@@ -26,12 +26,9 @@ void main() async {
   runApp(MyApp()); // 앱 실행
 }
 
-Future<String> loadSomeData() async {
-  await Future.delayed(Duration(seconds: 1)); // 데이터 로딩을 시뮬레이션하기 위한 코드
-  return 'Some data';
-}
 
 Future<Map<String, dynamic>> _autoLogin() async {
+  await Future.delayed(Duration(seconds: 1)); // 데이터 로딩을 시뮬레이션하기 위한 코드
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   User? user = FirebaseAuth.instance.currentUser;
   Map<String, dynamic> loginResult = {
@@ -74,7 +71,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     autoLoginResult = _autoLogin();
-
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (message.data['screen'] == 'AlarmUi') {
         // `Navigator`를 사용하여 `AlarmUi` 화면으로 이동합니다.
@@ -83,6 +79,7 @@ class _MyAppState extends State<MyApp> {
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -103,7 +100,7 @@ class _MyAppState extends State<MyApp> {
               // 여기에 다른 도메인별 게시판 페이지 조건을 추가
 
                 default:
-                  return LoginScreen(); // 기본 게시판 페이지
+                  return LoginScreen(); // 기본 게시판 페이지 // 테스트로 현재 게시판으로 이동
               }
             } else {
               return LoginScreen(); // 로그인 화면

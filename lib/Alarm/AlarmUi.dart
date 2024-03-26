@@ -115,6 +115,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                         icon: Icon(Icons.close, color: Colors.black),
                         onPressed: () {
                           _deleteNotification(doc.id);
+                          _deleteChatActions(doc.id);
                         },
                       ) : null,
                     );
@@ -144,6 +145,7 @@ class _NotificationScreenState extends State<AlarmUi> {
     }
   }
 
+
   // 알림을 삭제하는 함수
   void _deleteNotification(String docId) {
     FirebaseFirestore.instance
@@ -154,18 +156,18 @@ class _NotificationScreenState extends State<AlarmUi> {
         .catchError((error) => print("Failed to delete document: $error"));
   }
 
-  //아이콘 배경 색상
-  // Color _getColorFromName(String name) {
-  //   final int hash = name.hashCode;
-  //   final List<Color> colors = [
-  //     Color(0xFF80B3FF),    // 보라색
-  //     Color(0xFF9EDDFF),
-  //     // Color(0xFF687EFF),
-  //     Colors.purple[200] ?? Colors.blue,         // 파란색
-  //     // Colors.blue[300] ?? Colors.orange,                           // 오렌지색
-  //   ];
-  //   return colors[hash % colors.length]; // 해시값을 색상 배열 길이로 나눈 나머지를 인덱스로 사용
-  // }
+
+  //채팅 정보 삭제
+  void _deleteChatActions(String docId) {
+    FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+  }
+
+
   Color _getColorFromName(String name) {
     final int nameLength = name.length;
     final List<Color> colors = [
@@ -212,15 +214,15 @@ class _NotificationScreenState extends State<AlarmUi> {
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
                 // 수락 로직 구현
-                print(documentId);
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
 
                 Navigator.of(context).push(MaterialPageRoute(//채팅 목록창으로 이동
-
                 builder: (context) => AllUsersScreen(),
                 ));
+
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -243,6 +245,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 _respondToHelpRequest(documentId, 'rejected');
                 Navigator.of(context).pop(); // 대화 상자 닫기
                 _deleteNotification(documentId); // 거절시 알림 내용 삭제
+                _deleteChatActions(documentId); // 거절시 채팅 정보 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(

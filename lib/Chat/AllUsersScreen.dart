@@ -525,7 +525,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                 builder: (context) => ChatScreen(
                                   senderName: userData['helper_email_nickname'],
                                   receiverName : userData['owner_email_nickname'],
-                                  // photoUrl: userData['photoUrl'],
                                   receiverUid: userData['ownerUid'],
                                   documentName : doc.id,
                                 )));
@@ -643,6 +642,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                       ),
                     child: InkWell(
                       onLongPress: () {
+                        // print(doc.data());
                         ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
                       },
                       onTap: (() {

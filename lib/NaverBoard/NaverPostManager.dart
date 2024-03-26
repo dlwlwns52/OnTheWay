@@ -8,7 +8,6 @@ import '../Map/TMapView.dart';
 
 
 class NaverPostManager {
-
   FirebaseFirestore db = FirebaseFirestore.instance;
 
 
@@ -83,7 +82,7 @@ class NaverPostManager {
   }
 
 
-  void _deletePost(String docId,String postStore, String postOwnerEmail) async {
+  void _deletePost(String docId, String postStore, String postOwnerEmail) async {
     try {
       // 'naverUserHelpStatus' 컬렉션에서 문서 이름 생성
       String documentName = createDocumentName(postStore, postOwnerEmail);
@@ -131,46 +130,6 @@ class NaverPostManager {
             ),
             actions: <Widget>[
 
-              // Expanded(
-              //   child: Center( // Expanded 안에서 중앙 정렬을 위해 Center 위젯 사용
-              //     child: Container(
-              //       width: 80, // 버튼의 가로 폭을 70으로 고정
-              //       child: GestureDetector(
-              //         onTap: () {
-              //             // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
-              //             Navigator.of(context).push(MaterialPageRoute(
-              //               builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
-              //             ));
-              //         },
-              //         child: Container(
-              //           padding: EdgeInsets.all(5.0), // 내부 여백
-              //           decoration: BoxDecoration(
-              //             color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
-              //             borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-              //             boxShadow: isMyPost ? [] :[
-              //               BoxShadow(
-              //                 // color: Colors.orangeAccent.withOpacity(0.25),
-              //                 color: Colors.blueGrey.withOpacity(0.25),
-              //                 spreadRadius: 1,
-              //                 // blurRadius: 0,
-              //                 offset: Offset(0, 2), // 그림자 위치 조정
-              //               ),
-              //             ],
-              //           ),
-              //           child: Text(
-              //             '길찾기',
-              //             textAlign: TextAlign.center,
-              //             style: TextStyle(
-              //               fontSize: isMyPost ? 20 : 18,
-              //               fontWeight: FontWeight.bold,
-              //               color: Colors.black, // 텍스트 색상 변경
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
               Container(
                 width: 40,
                 height: 40,
@@ -205,7 +164,7 @@ class NaverPostManager {
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
                 ),
-                child: Text('도와주기'),
+                child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
                   helpPost(context, doc); // 도기와주기 기능 실행
                 },
@@ -218,7 +177,7 @@ class NaverPostManager {
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
                 ),
-                child: Text('닫기'),
+                child: Text('닫기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
                   Navigator.of(context).pop(); // 대화 상자 닫기
                 },
@@ -290,7 +249,8 @@ class NaverPostManager {
       String documentName = "${postStore}_${helperEmail}_$timestamp";
 
 
-// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다. // 현재는 100번 test용
+// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.
+// 현재는 100번 test용
       if (clickCount >= 100) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -306,7 +266,7 @@ class NaverPostManager {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 30),
           ),
         );
         return;
@@ -397,6 +357,8 @@ class NaverPostManager {
         'helper_email_nickname' : helperNickname,
         'helperUid': helperUid, // 도와주는 사람의 UID
         'timestamp': now,
+        'currentLocation': doc['current_location'],
+        'storeLocation': doc['store_location'],
       });
 
 

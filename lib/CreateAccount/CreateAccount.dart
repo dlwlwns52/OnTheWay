@@ -473,7 +473,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
             child: Text(
               '회원가입',
-              style: TextStyle(fontSize: 18, color: Colors.black),
+              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
               primary: Colors.transparent,

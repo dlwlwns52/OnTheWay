@@ -13,8 +13,6 @@ class Alarm  {
     // 사용자가 앱을 백그라운드나 종료 상태에서 시작할 때 호출 9840
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleMessage(message);
-      print(1);
-      // 리스너를 여기서 설정
     });
     // 푸시 알림에 'screen' 데이터가 포함되어 있는 경우, 해당 화면으로 이동
 

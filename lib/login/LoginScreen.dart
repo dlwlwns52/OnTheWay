@@ -96,52 +96,68 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 SizedBox(height: 10),
-
                 Row(
-
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Checkbox(
                       value: _isAutoLogin, // 체크박스 상태 값
                       onChanged: (bool? value) {
                         setState(() {
                           _isAutoLogin = value ?? false; // 상태 변경
-                          print(_isAutoLogin);
                         });
                       },
                       activeColor: Colors.orange, // 체크된 상태의 색깔
                     ),
-
                     Text(
                       '자동 로그인',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
 
+                SizedBox(height: 5),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    TextButton(
-                      child: Text('이메일 찾기',style: TextStyle(color: Colors.black),),
+                    ElevatedButton(
+                      child: Text('비밀번호 찾기'),
                       onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.orange, // 버튼 배경색
+                        onPrimary: Colors.white, // 버튼 텍스트 색상
+                        shadowColor: Colors.orangeAccent, // 그림자 색
+                        elevation: 2, // 그림자 높이
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글기
+                        ),
+                      ),
                     ),
-                    TextButton(
-                      child: Text('비밀번호 찾기',style: TextStyle(color: Colors.black),),
-                      onPressed: () {},
-                    ),
-                    TextButton(
-                      child: Text('회원가입',style: TextStyle(color: Colors.black),),
+                    ElevatedButton(
+                      child: Text('회원가입'),
                       onPressed: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => CreateAccount())
                         );
                       },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.orange, // 버튼 배경색
+                        onPrimary: Colors.white, // 버튼 텍스트 색상
+                        shadowColor: Colors.orangeAccent, // 그림자 색
+                        elevation: 2, // 그림자 높이
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글기
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+
+                SizedBox(height: 20),
 
                 Container(
+                  height: 40,
                   width: double.infinity, // 버튼의 가로 길이를 최대로 설정
                   child: TextButton(
                     child: Text("로그인", style: TextStyle(color: Colors.white)),
@@ -199,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
           String domain = email.split('@').last; // 이메일에서 도메인 추출
 
 
-          //자동 로그인 기능
+          //자동 로그인 기이능
           if(_isAutoLogin == true){
             final FirebaseFirestore firestore = FirebaseFirestore.instance;
             QuerySnapshot querySnapshot = await firestore.collection('users')

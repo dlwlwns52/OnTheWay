@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 
+import '../Map/TMapView.dart';
+
 class ChatScreen extends StatefulWidget {
   final String receiverName;
   final String senderName;
@@ -33,13 +35,12 @@ class _ChatScreenState extends State<ChatScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<
       FormState>(); // 폼 상태를 관리하는 GlobalKey
   Map<String, dynamic> map = {}; // 메시지 맵
-  late DocumentReference<Map<String, dynamic>> _documentReference; // 문서 참조
   late DocumentSnapshot<Map<String, dynamic>> documentSnapshot; // 문서 스냅샷
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // FirebaseAuth 인스턴스
   String? _senderUid; // 발신자 UID
   late File imageFile; // 이미지 파일
   List<File> imageFiles = [];
-
+  List<String> tmapDirections = [];
 
   late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
 
@@ -118,7 +119,6 @@ class _ChatScreenState extends State<ChatScreen> {
           'isInChatRoom': isInChatRoom,
           'timestamp': DateTime.timestamp()
           });
-          // .set({'senderName'} : widget.senderName);
     }
   }
 
@@ -165,6 +165,25 @@ class _ChatScreenState extends State<ChatScreen> {
           .collection('ChatActions')
           .doc(widget.documentName)
           .update({'messageCount_$senderName': 0});
+
+    } catch (error) {
+      print("Error marking messages as read: $error");
+    }
+  }
+
+
+
+  Future<void> _tmapDirections() async {
+    try {
+      DocumentSnapshot tmapDirectionsSnapshot = await FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName)
+          .get();
+
+      String currenLocation = tmapDirectionsSnapshot.get('currentLocation');
+      String storeLocation = tmapDirectionsSnapshot.get('storeLocation');
+      tmapDirections.add(currenLocation);
+      tmapDirections.add(storeLocation);
 
     } catch (error) {
       print("Error marking messages as read: $error");
@@ -413,57 +432,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
-  // Widget ChatMessagesListWidget() {
-  //   return Flexible(
-  //     child: GestureDetector( // GestureDetector 추가
-  //       onTap: () {
-  //         FocusScope.of(context).requestFocus(FocusNode()); // 키보드 숨김
-  //       },
-  //       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-  //         stream: FirebaseFirestore.instance
-  //             .collection('ChatActions')
-  //             .doc(widget.documentName)
-  //             .collection('messages')
-  //             .orderBy('timestamp', descending: false)
-  //             .snapshots(),
-  //         builder: (context, snapshot) {
-  //           if (!snapshot.hasData) {
-  //             return Center(child: CircularProgressIndicator());
-  //           }
-  //
-  //           // 데이터가 로드된 후 스크롤을 최하단으로 이동
-  //           WidgetsBinding.instance.addPostFrameCallback((_) {
-  //             if (_scrollController.hasClients) {
-  //               _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-  //             }
-  //           });
-  //
-  //
-  //           List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
-  //           return ListView.builder(
-  //             controller: _scrollController, // 스크롤 컨트롤러 할당
-  //             padding: EdgeInsets.all(10.0),
-  //             itemCount: messages.length,
-  //             itemBuilder: (context, index) {
-  //               bool shouldDisplayAvatar = index == 0 || messages[index - 1]['senderUid'] != messages[index]['senderUid'];
-  //               bool isRead = messages[index]['read'] as bool;
-  //               return chatMessageItem(messages[index], shouldDisplayAvatar, isRead);
-  //             },
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-  //
-  // // 채팅 메시지 항목 생성
-  // Widget chatMessageItem(
-  //     QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot,
-  //     bool shouldDisplayAvatar, bool isRead) {
-  //   return buildChatLayout(documentSnapshot, shouldDisplayAvatar, isRead);
-  // }
-
   Widget ChatMessagesListWidget() {
     return Flexible(
       child: GestureDetector(
@@ -508,14 +476,6 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white, // 배경색
                           border: Border.all(color: Colors.black, width: 1), // 오렌지색 테두리
                           borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                          // boxShadow: [ // 그림자 효과
-                          //   BoxShadow(
-                          //     color: Colors.grey.withOpacity(0.3),
-                          //     spreadRadius: 2,
-                          //     blurRadius: 7,
-                          //     offset: Offset(0, 3), // 그림자 위치 조정
-                          //   ),
-                          // ],
                         ),
                         child: Text(
                           DateFormat('yyyy년 M월 d일').format(messageDate),
@@ -630,8 +590,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receiverName,
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
+        title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
         // 채팅방 이름 표시
         // backgroundColor: Color(0XFF98ABEE),
         backgroundColor: Colors.white,
@@ -639,7 +598,26 @@ class _ChatScreenState extends State<ChatScreen> {
         iconTheme: IconThemeData(
           color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
         ),
-
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.navigation_rounded, color: Colors.black,),
+            onPressed: () async {
+              await _tmapDirections(); // 위치 데이터를 가져옵니다.
+              if (tmapDirections.length >= 2) {
+                // tmapDirections 리스트에서 위치 정보 사용
+                String currentLocation = tmapDirections[0];
+                String storeLocation = tmapDirections[1];
+                // Navigator를 사용하여 새 페이지로 이동
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => TMapView(
+                    currentLocation: currentLocation,
+                    storeLocation: storeLocation,
+                  ),
+                ));
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: <Widget>[
