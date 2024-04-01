@@ -24,6 +24,14 @@ class _MapScreenState extends State<StoreMapScreen> {
 
   // 현재 위치로 지도 이동하는 함수
   void _moveToCurrentLocation() async {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
+        textAlign: TextAlign.center,),
+        duration: Duration(milliseconds: 900),
+      ),
+    );
+
     var location = new Location();
     var currentLocation = await location.getLocation(); // 현재 위치 정보 가져오기
     LatLng newCenter = LatLng(currentLocation.latitude!, currentLocation.longitude!);

@@ -253,6 +253,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               onPressed: () async {
+                print("1");
                 for (var imageFile in imageFiles) {
                   // Firebase Storage에 이미지를 업로드합니다.
                   Reference storageReference = FirebaseStorage.instance
