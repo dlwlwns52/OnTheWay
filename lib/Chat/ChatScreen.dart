@@ -253,7 +253,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               onPressed: () async {
-                print("1");
                 for (var imageFile in imageFiles) {
                   // Firebase Storage에 이미지를 업로드합니다.
                   Reference storageReference = FirebaseStorage.instance
@@ -300,7 +299,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 
-
+  //이미지 파이어스토어에 저장
   void _uploadImageToDb(String downloadUrl) {
     DateTime now = DateTime.now();
     Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
@@ -315,7 +314,9 @@ class _ChatScreenState extends State<ChatScreen> {
         timestamp: timestamp,
         message: '사진',
         read: false,
+        isDeleted: false,
         type: 'image',
+
       );
 
       // _addMessageToDb 함수를 사용하여 메시지 추가
@@ -403,7 +404,8 @@ class _ChatScreenState extends State<ChatScreen> {
         message: text,
         timestamp: timestamp,
         read : false,
-        type: 'text',
+        type : 'text',
+        isDeleted : false,
       );
 
       _checkAndUpdateMessageReadStatus();
@@ -432,6 +434,83 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
+  //메시지 및 이미지 삭제
+  void _deleteMessageImage(String messageId) async {
+    try{
+      await FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+            'isDeleted' : true
+      });
+    }
+    catch(e){
+      print("메시지 및 이미지 삭제 요류 : $e");
+    }
+  }
+
+
+
+  //메시지 삭제 및 수정 바텀 시트(직접 적어보기!!!!!!!!!!!!!!!!)
+  Future<void> showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 150,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('삭제'),
+                onTap: () {
+                  Navigator.of(context).pop("delete");
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit),
+                title: Text('수정'),
+                onTap: () {
+                  Navigator.of(context).pop("edit");
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action == "delete") {
+      _deleteMessageImage(snapshot.id);
+    } else if (action == "edit") {
+      // 수정할 메시지의 새로운 내용을 입력받는 과정 필요
+      // 예시에서는 바로 _editMessage 메서드를 호출하고 있으나, 실제로는 사용자 입력을 받는 단계를 추가해야 할 수 있습니다.
+      // _editMessage(snapshot.id, snapshot['message']);
+    }
+  }
+
+  // 현재 사용자 UID 가져오기
+  Future<User?> _getUID() async {
+    User? user = _firebaseAuth.currentUser;
+    return user;
+  }
+
+
+  // Timestamp 객체를 입력받아 문자열로 변환하는 함수를 정의합니다.
+  String _formatTimestamp(Timestamp timestamp) {
+    DateTime dateTime = timestamp.toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
+    // DateFormat을 사용하여 시간을 '오전/오후 h:mm' 형식으로 포매팅합니다.
+    // 'ko' 로케일을 사용하여 한국어 형식(예: 오전 10:30)으로 출력합니다.
+    String formattedTime = DateFormat('a h:mm', 'ko').format(dateTime);
+
+    return formattedTime; // 포매팅된 시간 문자열을 반환합니다.
+  }
+
 
   Widget ChatMessagesListWidget() {
     return Flexible(
@@ -519,25 +598,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-  // 현재 사용자 UID 가져오기
-  Future<User?> _getUID() async {
-    User? user = _firebaseAuth.currentUser;
-    return user;
-  }
-
-
-  // Timestamp 객체를 입력받아 문자열로 변환하는 함수를 정의합니다.
-  String _formatTimestamp(Timestamp timestamp) {
-    DateTime dateTime = timestamp.toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
-    // DateFormat을 사용하여 시간을 '오전/오후 h:mm' 형식으로 포매팅합니다.
-    // 'ko' 로케일을 사용하여 한국어 형식(예: 오전 10:30)으로 출력합니다.
-    String formattedTime = DateFormat('a h:mm', 'ko').format(dateTime);
-
-    return formattedTime; // 포매팅된 시간 문자열을 반환합니다.
-  }
-
-
-
   // 채팅 입력 위젯
   Widget ChatInputWidget() {
     return Container(
@@ -586,68 +646,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
-        // 채팅방 이름 표시
-        // backgroundColor: Color(0XFF98ABEE),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.navigation_rounded, color: Colors.black,),
-            onPressed: () async {
-              await _tmapDirections(); // 위치 데이터를 가져옵니다.
-              if (tmapDirections.length >= 2) {
-                // tmapDirections 리스트에서 위치 정보 사용
-                String currentLocation = tmapDirections[0];
-                String storeLocation = tmapDirections[1];
-                // Navigator를 사용하여 새 페이지로 이동
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => TMapView(
-                    currentLocation: currentLocation,
-                    storeLocation: storeLocation,
-                  ),
-                ));
-              }
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: <Widget>[
-          Divider(
-            height: 2.0, // Divider의 높이 설정
-            thickness: 3.0, // Divider의 두께 설정
-            color: Colors.grey, // Divider의 색상 설정
-          ),
-          Expanded(
-            child: _senderUid == null
-                ? Container(
-              child: CircularProgressIndicator(), // 로딩 표시
-            )
-                : Column(
-                    children: <Widget>[
-                      ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                      ChatInputWidget(), // 채팅 입력 위젯
-                  SizedBox(
-                  height: 10.0,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 // 채팅 메시지 레이아웃을 구성하는 함수
   Widget buildChatLayout(QueryDocumentSnapshot<Map<String, dynamic>> snapshot, bool shouldDisplayAvatar, bool isRead ) {
     bool isSentByMe = snapshot['senderUid'] == _senderUid;
@@ -684,16 +682,24 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 children: <Widget>[
                   // 이미지 전송
-                  if (snapshot['type'] == 'image')
+                  if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
                     GestureDetector(
                       onTap: () {
                         // 이미지 클릭 시 FullScreenImage 보여주기
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => FullScreenImage(photoUrl: snapshot['photoUrl']),
+                            builder: (context) =>
+                                FullScreenImage(photoUrl: snapshot['photoUrl']),
                           ),
                         );
+                      },
+
+                      onLongPress: () {
+                        print(snapshot.data());
+                        if (isSentByMe) {
+                          showMessageOptionsBottomSheet(context, snapshot);
+                        }
                       },
 
                       child: ClipRRect(
@@ -706,12 +712,74 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     ),
-
+                  },
+                  if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
+                    Container(
+                      // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
+                      margin: EdgeInsets.only(top: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                            Icon(
+                              Icons.error, color: Colors.white
+                            ),
+                            SizedBox(width: 10,),
+                            Text(
+                              '삭제된 메시지입니다.',
+                              style: TextStyle(
+                                  color: isSentByMe ? Colors.black54 : Colors.grey),
+                            )
+                        ],
+                      ),
+                    ),
+                  }
                 ],
               ),
             ),
+
             //텍스트 전송
-            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty)
+            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == false) ...{
+              GestureDetector(
+                onLongPress: () {
+                  if (isSentByMe) {
+                    showMessageOptionsBottomSheet(context, snapshot);
+                  }
+                },
+                child: Container(
+                  // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
+                  margin: EdgeInsets.only(top: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
+                  ),
+                  // constraints: BoxConstraints(
+                  //   maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  // ),
+                  child: Column(
+                    children: <Widget>[
+                      if (snapshot['type'] == 'text')
+                        Text(
+                          snapshot['message'],
+                          style: TextStyle(
+                              color: isSentByMe ? Colors.black : Colors.black),
+                        )
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 7),
+              Text(
+                _formatTimestamp(snapshot['timestamp']),
+                style: TextStyle(fontSize: 12.0, color: Colors.black87),
+              ),
+            },
+
+            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == true) ...{
               Container(
                 // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
                 margin: EdgeInsets.only(top: 10),
@@ -720,28 +788,86 @@ class _ChatScreenState extends State<ChatScreen> {
                   color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
                   borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                 ),
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.7,
-                ),
-                child: Column(
+                child: Row(
                   children: <Widget>[
-                    if (snapshot['type'] == 'text')
-                      Text(
-                        snapshot['message'],
-                        style: TextStyle(
-                            color: isSentByMe ? Colors.black : Colors.black),
-                      )
+                    Icon(
+                        Icons.error, color: Colors.white
+                    ),
+                    SizedBox(width: 10,),
+                    Text(
+                      '삭제된 메시지입니다.',
+                      style: TextStyle(
+                          color: isSentByMe ? Colors.black54 : Colors.grey),
+                    )
                   ],
                 ),
               ),
-            SizedBox(height: 7),
-            Text(
-              _formatTimestamp(snapshot['timestamp']),
-              style: TextStyle(fontSize: 12.0, color: Colors.black87),
-            ),
+            }
           ],
         ),
       ],
     );
   }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
+        // 채팅방 이름 표시
+        // backgroundColor: Color(0XFF98ABEE),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(
+          color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.navigation_rounded, color: Colors.deepOrangeAccent,),
+            onPressed: () async {
+              await _tmapDirections(); // 위치 데이터를 가져옵니다.
+              if (tmapDirections.length >= 2) {
+                // tmapDirections 리스트에서 위치 정보 사용
+                String currentLocation = tmapDirections[0];
+                String storeLocation = tmapDirections[1];
+                // Navigator를 사용하여 새 페이지로 이동
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => TMapView(
+                    currentLocation: currentLocation,
+                    storeLocation: storeLocation,
+                  ),
+                ));
+              }
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          Divider(
+            height: 2.0, // Divider의 높이 설정
+            thickness: 3.0, // Divider의 두께 설정
+            color: Colors.grey, // Divider의 색상 설정
+          ),
+          Expanded(
+            child: _senderUid == null
+                ? Container(
+              child: CircularProgressIndicator(), // 로딩 표시
+            )
+                : Column(
+              children: <Widget>[
+                ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                ChatInputWidget(), // 채팅 입력 위젯
+                SizedBox(
+                  height: 10.0,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

@@ -15,6 +15,7 @@ class Message {
   Timestamp timestamp;
   String? photoUrl; // 이미지 URL도 null일 수 있음 (텍스트 메시지일 경우)
   bool read;
+  bool isDeleted;
 
   // 생성자: 필수적인 속성들을 받아서 Message 객체를 생성
   Message({
@@ -24,9 +25,10 @@ class Message {
     required this.receiverUid,
     required this.type,
     this.message,
+    this.photoUrl,
     required this.timestamp,
     required this.read,
-    this.photoUrl,
+    required this.isDeleted
   });
 
   Message.withoutMessage({
@@ -39,6 +41,7 @@ class Message {
     required this.timestamp,
     required this.read,
     this.photoUrl,
+    required this.isDeleted
   });
 
   // Message 객체를 Map 형식으로 변환
@@ -53,6 +56,7 @@ class Message {
       'timestamp': timestamp,
       'photoUrl': photoUrl,
       'read': read,
+      'isDeleted' : isDeleted,
     };
   }
 
@@ -68,6 +72,7 @@ class Message {
       timestamp: map['timestamp'],
       photoUrl: map['photoUrl'],
       read: map['read'] ?? false, // 기본값을 false로 설정
+      isDeleted : map['isDeleted'] ?? false,
     );
   }
 }
