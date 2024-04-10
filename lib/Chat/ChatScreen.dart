@@ -64,7 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController = TextEditingController();
     _messageController.addListener(_checkFieldsFilled);
     _initializeChatDetails();
-    _markUnreadMessagesAsRead();
+    _checkAndUpdateMessageReadStatus();
     _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
   }
 
@@ -110,6 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
+  //채팅방 들어오는 여부에 따라 true 또는 false로 업데이트
   Future<void> _updateUserStatusInChatRoom(bool isInChatRoom) async {
     if (widget.receiverName != null) {
       await FirebaseFirestore.instance
@@ -140,6 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
       bool isInChatRoom = userStatusData['isInChatRoom'] ?? false;
       // 상대방이 채팅방에 있으면, 아직 읽지 않은 모든 메시지를 '읽음'으로 표시합니다.
       if (isInChatRoom) {
+        print(widget.receiverName);
         _markUnreadMessagesAsRead();
       }
     }
@@ -172,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-
+  // 채팅방 길찾기 기능
   Future<void> _tmapDirections() async {
     try {
       DocumentSnapshot tmapDirectionsSnapshot = await FirebaseFirestore.instance
@@ -654,23 +656,18 @@ class _ChatScreenState extends State<ChatScreen> {
     return Row(
       mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
+
+
         if (isSentByMe && !isMessageRead)
           Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
-          shouldDisplayAvatar
-          ? CircleAvatar(
+          CircleAvatar(
             backgroundImage: AssetImage('assets/ava.png'),
             backgroundColor: Colors.grey,
-            radius: 25.0,
-          )
-              : Opacity( // 투명 위젯 사용
-            opacity: 0.0,
-            child: Container(
-              width: 50.0, // CircleAvatar와 동일한 크기
-              height: 50.0,
-            ),
+            radius: 18.0,
           ),
+
 
         SizedBox(width: 10.0),
         Column(
@@ -678,68 +675,76 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             //사진 전송
             SizedBox(height: 10),
-            Container(
-              child: Column(
-                children: <Widget>[
-                  // 이미지 전송
-                  if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
-                    GestureDetector(
-                      onTap: () {
-                        // 이미지 클릭 시 FullScreenImage 보여주기
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                FullScreenImage(photoUrl: snapshot['photoUrl']),
-                          ),
-                        );
-                      },
 
-                      onLongPress: () {
-                        print(snapshot.data());
-                        if (isSentByMe) {
-                          showMessageOptionsBottomSheet(context, snapshot);
-                        }
-                      },
-
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.network(
-                          snapshot['photoUrl'],
-                          width: 200.0,
-                          height: 200.0,
-                          fit: BoxFit.cover,
-                        ),
+              // 이미지 전송, 사용자가 삭제 안했을때
+              if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
+                GestureDetector(
+                  onTap: () {
+                    // 이미지 클릭 시 FullScreenImage 보여주기
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FullScreenImage(photoUrl: snapshot['photoUrl']),
                       ),
-                    ),
+                    );
                   },
-                  if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
-                    Container(
-                      // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-                      margin: EdgeInsets.only(top: 10),
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                            Icon(
-                              Icons.error, color: Colors.white
-                            ),
-                            SizedBox(width: 10,),
-                            Text(
-                              '삭제된 메시지입니다.',
-                              style: TextStyle(
-                                  color: isSentByMe ? Colors.black54 : Colors.grey),
-                            )
-                        ],
-                      ),
+
+                  onLongPress: () {
+                    print(snapshot.data());
+                    if (isSentByMe) {
+                      showMessageOptionsBottomSheet(context, snapshot);
+                    }
+                  },
+
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.network(
+                      snapshot['photoUrl'],
+                      width: 200.0,
+                      height: 200.0,
+                      fit: BoxFit.cover,
                     ),
-                  }
-                ],
-              ),
-            ),
+                  ),
+                ),
+              },
+
+              // 이미지 전송, 사용자가 삭제 했을때
+              if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
+                Container(
+                  // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
+                  margin: EdgeInsets.only(top: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                        Icon(
+                          Icons.error, color: Colors.white
+                        ),
+                        SizedBox(width: 10,),
+                        Text(
+                          '삭제된 메시지입니다.',
+                          style: TextStyle(
+                              color: isSentByMe ? Colors.black54 : Colors.grey),
+                        )
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    SizedBox(height: 7),
+                    Text(
+                      _formatTimestamp(snapshot['timestamp']),
+                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                    ),
+                  ],
+                )
+              },
+
+
 
             //텍스트 전송
             if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == false) ...{
@@ -788,20 +793,34 @@ class _ChatScreenState extends State<ChatScreen> {
                   color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
                   borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                 ),
-                child: Row(
+                child: Column(
                   children: <Widget>[
-                    Icon(
-                        Icons.error, color: Colors.white
+                    Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.error, color: Colors.white
+                         ),
+                        SizedBox(width: 10,),
+                        Text(
+                          '삭제된 메시지입니다.',
+                          style: TextStyle(
+                              color: isSentByMe ? Colors.black54 : Colors.grey),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 10,),
-                    Text(
-                      '삭제된 메시지입니다.',
-                      style: TextStyle(
-                          color: isSentByMe ? Colors.black54 : Colors.grey),
-                    )
+
                   ],
                 ),
               ),
+              Column(
+                children: [
+                  SizedBox(height: 7),
+                  Text(
+                    _formatTimestamp(snapshot['timestamp']),
+                    style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                  ),
+                ],
+              )
             }
           ],
         ),
@@ -823,6 +842,7 @@ class _ChatScreenState extends State<ChatScreen> {
           color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
         ),
         actions: <Widget>[
+
           IconButton(
             icon: Icon(Icons.navigation_rounded, color: Colors.deepOrangeAccent,),
             onPressed: () async {
