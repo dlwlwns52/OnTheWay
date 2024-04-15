@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // case 'hanbat.ac.kr':
             //   Navigator.pushReplacement(
             //     context,
-            //     MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+            //     MaterialPageRoute(builder: (context) => Hanba()),
             //   );
             //   break;
           // 다른 도메인에 대한 처리...

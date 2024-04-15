@@ -149,8 +149,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: Text("회원가입"),
+        backgroundColor:  Color(0xFFFF8B13),
+        title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
       ),
       body: SingleChildScrollView(
         child : Form(
