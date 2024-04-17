@@ -55,9 +55,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
 
 
-
-
-
   @override
   void initState() {
     super.initState();
@@ -207,6 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 // 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
+// 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
   Future<List<String>> _pickImage() async {
     final ImagePicker _picker = ImagePicker(); // ImagePicker 객체를 생성합니다.
     final List<XFile>? selectedImages = await _picker.pickMultiImage(); // 사용자가 여러 이미지를 선택할 수 있게 합니다.
@@ -214,15 +212,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // 선택된 이미지들이 있는지 확인합니다.
     if (selectedImages != null && selectedImages.isNotEmpty) {
-      // 선택된 이미지 파일들을 File 타입으로 변환합니다.
       List<File> imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
 
       // 선택된 이미지를 보여주고 업로드를 진행할지 결정하는 UI
-      List<String>? result = await showDialog(
+      bool shouldUpload = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0), // 대화상자 모서리를 둥글게 합니다.
+            borderRadius: BorderRadius.circular(30.0),
           ),
           title: Text('사진 확인',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
@@ -235,8 +232,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: imageFiles.map((file) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(25.0), // 이미지 모서리를 둥글게 합니다.
-                    child: Image.file(file, fit: BoxFit.cover), // 이미지를 화면에 맞춰 표시합니다.
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: Image.file(file, fit: BoxFit.cover),
                   ),
                 )).toList(),
               ),
@@ -245,58 +242,68 @@ class _ChatScreenState extends State<ChatScreen> {
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: <Widget>[
             ElevatedButton.icon(
-              icon: Icon(Icons.send, color: Colors.white),
+              icon: Icon(Icons.send),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent, // 버튼 색상을 오렌지색으로 설정합니다.
+                primary: Colors.orangeAccent,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () async {
-                for (var imageFile in imageFiles) {
-                  // Firebase Storage에 이미지를 업로드합니다.
-                  Reference storageReference = FirebaseStorage.instance
-                      .ref()
-                      .child('images/${DateTime.now().millisecondsSinceEpoch}');
-                  UploadTask uploadTask = storageReference.putFile(imageFile);
-                  TaskSnapshot taskSnapshot = await uploadTask;
-                  String downloadUrl = await taskSnapshot.ref.getDownloadURL(); // 업로드된 이미지의 URL을 가져옵니다.
-                  uploadImageUrls.add(downloadUrl); // 가져온 URL을 리스트에 추가합니다.
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(
-                      "이미지가 전송되고 있습니다. 잠시만 기다려 주세요.",
-                      textAlign: TextAlign.center,
-                    ),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-                Navigator.of(context).pop(uploadImageUrls); // 업로드된 이미지 URL 리스트를 반환합니다.
-              },
+              onPressed: () => Navigator.of(context).pop(true),
             ),
-
             ElevatedButton.icon(
-              icon: Icon(Icons.cancel, color: Colors.white),
+              icon: Icon(Icons.cancel),
               label: Text('취소'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey, // 버튼 색상을 회색으로 설정합니다.
+                primary: Colors.grey,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () => Navigator.of(context).pop(), // 대화상자를 닫습니다.
+              onPressed: () => Navigator.of(context).pop(false),
             ),
-
           ],
         ),
       );
-      return result ?? []; // 대화상자로부터 반환된 결과를 반환하거나, 결과가 없으면 빈 리스트를 반환합니다.
+
+      // 사용자가 업로드를 선택한 경우
+      if (shouldUpload) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미지 업로드 중...", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // 이미지 업로드 비동기 처리
+        for (var imageFile in imageFiles) {
+          Reference storageReference = FirebaseStorage.instance
+              .ref()
+              .child('images/${DateTime.now().millisecondsSinceEpoch}');
+          UploadTask uploadTask = storageReference.putFile(imageFile);
+          TaskSnapshot taskSnapshot = await uploadTask;
+          String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+          uploadImageUrls.add(downloadUrl);
+        }
+
+        // // 모든 이미지 업로드 후 사용자에게 알림
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(
+        //     content: Text("이미지 업로드 완료!"),
+        //     duration: Duration(seconds: 2),
+        //   ),
+        // );
+        // Navigator.of(context).pop(uploadImageUrls);
+      } else {
+        Navigator.of(context).pop([]);
+      }
     }
     return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.
   }
+
 
 
 
@@ -475,10 +482,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.edit),
-                title: Text('수정'),
+                leading: Icon(Icons.clear),
+                title: Text('닫기'),
                 onTap: () {
-                  Navigator.of(context).pop("edit");
+                  Navigator.of(context).pop();
                 },
               ),
             ],
@@ -707,6 +714,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                 ),
+                Column(
+                  children: [
+                    SizedBox(height: 7),
+                    Text(
+                      _formatTimestamp(snapshot['timestamp']),
+                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                    ),
+                  ],
+                )
               },
 
               // 이미지 전송, 사용자가 삭제 했을때

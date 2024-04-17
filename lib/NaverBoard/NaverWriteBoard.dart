@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import '../Map/WriteMap/CurrentMapScreen.dart';
 import '../Map/WriteMap/StoreMapScreen.dart';
@@ -125,8 +124,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       if (existingPosts.docs.isNotEmpty && widget.post == null) {
         _showSnackBar('동일한 제목의 게시물이 이미 존재합니다.');
       } else {
-        String documentName =
-            widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
+        String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
         await db.collection('naver_posts').doc(documentName).set({
           'store_location' :_storeSelectedLocation ?? '가게 위치 미설정',
           'current_location' : _currentSelectedLocation ?? '현재 위치 미설정',
@@ -322,8 +320,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       if (_currentSelectedLocation != null && _currentSelectedLocation!.isNotEmpty) {
         currentLocationSet = true;
       }
-
-
     }
   }
 

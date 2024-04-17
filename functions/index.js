@@ -240,7 +240,7 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
           const message = {
               notification : {
                 title : `새로운 게시물이 생성되었습니다! `,
-                body : `위치 : ${currentLocation} → ${storeLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
+                body : `위치 : ${storeLocation} → ${currentLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
               },
                 tokens: tokens, // 알림을 받을 토큰 배열
             };

@@ -166,7 +166,7 @@ class NaverPostManager {
                 ),
                 child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
-                  helpPost(context, doc); // 도기와주기 기능 실행
+                  helpPost(context, doc); // 도와주기 기능 실행
                 },
               ),
 
@@ -342,7 +342,7 @@ class NaverPostManager {
 
 
       /*
-      채팅용
+      채팅용락
       */
 
 // 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.

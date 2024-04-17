@@ -1,75 +1,3 @@
-
-class ChatScreen extends StatefulWidget {
-  final String receiverName;
-  final String senderName;
-  final String receiverUid;
-  final String documentName;  // 채팅방의 문서 이름
-  // final String photoUrl;
-
-  ChatScreen({
-    required this.receiverName,
-    required this.senderName,
-    required this.receiverUid,
-    required this.documentName,  // 생성자에 documentName 추가
-    // required this.photoUrl,
-  });
-
-  @override
-  _ChatScreenState createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<
-      FormState>(); // 폼 상태를 관리하는 GlobalKey
-  Map<String, dynamic> map = {}; // 메시지 맵
-  late DocumentSnapshot<Map<String, dynamic>> documentSnapshot; // 문서 스냅샷
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // FirebaseAuth 인스턴스
-  late File imageFile; // 이미지 파일
-  List<File> imageFiles = [];
-  List<String> tmapDirections = [];
-
-  late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
-
-
-  //색상 변환
-  bool isFilled = false;
-  final ScrollController _scrollController = ScrollController();
-
-
-
-
-
-  @override
-  void initState() {
-    super.initState();
-    _messageController = TextEditingController();
-    _messageController.addListener(_checkFieldsFilled);
-    _initializeChatDetails();
-    _markUnreadMessagesAsRead();
-    _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
-  }
-
-  @override
-  void dispose() {
-    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
-    _scrollController.dispose(); // 스크롤 컨트롤러 해제
-    super.dispose();
-    // subscription?.cancel(); // 스트림 구독 취소
-  }
-
-
-/*
-사진 설정
-* */
-// // 사용자가 이미지를 선택하고 업로드하는 함수
-  Future<void> _pickImageAndUpload() async {
-    List<String> downloadUrls = (await _pickImage()) as List<String>; // 이미지를 선택하고 업로드한 후, 업로드된 이미지의 URL 리스트를 받아옵니다.
-    for (String downloadUrl in downloadUrls) {
-      _uploadImageToDb(downloadUrl); // 각 이미지 URL을 Firestore 데이터베이스에 업로드합니다.
-    }
-  }
-
-
 // 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
   Future<List<String>> _pickImage() async {
     final ImagePicker _picker = ImagePicker(); // ImagePicker 객체를 생성합니다.
@@ -78,19 +6,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // 선택된 이미지들이 있는지 확인합니다.
     if (selectedImages != null && selectedImages.isNotEmpty) {
-      // 선택된 이미지 파일들을 File 타입으로 변환합니다.
       List<File> imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
 
       // 선택된 이미지를 보여주고 업로드를 진행할지 결정하는 UI
-      List<String>? result = await showDialog(
+      bool shouldUpload = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0), // 대화상자 모서리를 둥글게 합니다.
+            borderRadius: BorderRadius.circular(30.0),
           ),
           title: Text('사진 확인',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
-            textAlign: TextAlign.center,),
+             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
+             textAlign: TextAlign.center,),
           content: Container(
             height: 300,
             width: double.infinity,
@@ -99,8 +26,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: imageFiles.map((file) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(25.0), // 이미지 모서리를 둥글게 합니다.
-                    child: Image.file(file, fit: BoxFit.cover), // 이미지를 화면에 맞춰 표시합니다.
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: Image.file(file, fit: BoxFit.cover),
                   ),
                 )).toList(),
               ),
@@ -109,225 +36,64 @@ class _ChatScreenState extends State<ChatScreen> {
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: <Widget>[
             ElevatedButton.icon(
-              icon: Icon(Icons.send, color: Colors.white),
+              icon: Icon(Icons.send),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent, // 버튼 색상을 오렌지색으로 설정합니다.
+                primary: Colors.orangeAccent,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () async {
-                print("1");
-                for (var imageFile in imageFiles) {
-                  // Firebase Storage에 이미지를 업로드합니다.
-                  Reference storageReference = FirebaseStorage.instance
-                      .ref()
-                      .child('images/${DateTime.now().millisecondsSinceEpoch}');
-                  UploadTask uploadTask = storageReference.putFile(imageFile);
-                  TaskSnapshot taskSnapshot = await uploadTask;
-                  String downloadUrl = await taskSnapshot.ref.getDownloadURL(); // 업로드된 이미지의 URL을 가져옵니다.
-                  uploadImageUrls.add(downloadUrl); // 가져온 URL을 리스트에 추가합니다.
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(
-                      "이미지가 전송되고 있습니다. 잠시만 기다려 주세요.",
-                      textAlign: TextAlign.center,
-                    ),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-                Navigator.of(context).pop(uploadImageUrls); // 업로드된 이미지 URL 리스트를 반환합니다.
-              },
+              onPressed: () => Navigator.of(context).pop(true),
             ),
-
             ElevatedButton.icon(
-              icon: Icon(Icons.cancel, color: Colors.white),
+              icon: Icon(Icons.cancel),
               label: Text('취소'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey, // 버튼 색상을 회색으로 설정합니다.
+                primary: Colors.grey,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리를 둥글게 합니다.
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () => Navigator.of(context).pop(), // 대화상자를 닫습니다.
+              onPressed: () => Navigator.of(context).pop(false),
             ),
-
           ],
         ),
       );
-      return result ?? []; // 대화상자로부터 반환된 결과를 반환하거나, 결과가 없으면 빈 리스트를 반환합니다.
+
+      // 사용자가 업로드를 선택한 경우
+      if (shouldUpload) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미지 업로드 중...", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // 이미지 업로드 비동기 처리
+        for (var imageFile in imageFiles) {
+          Reference storageReference = FirebaseStorage.instance
+              .ref()
+              .child('images/${DateTime.now().millisecondsSinceEpoch}');
+          UploadTask uploadTask = storageReference.putFile(imageFile);
+          TaskSnapshot taskSnapshot = await uploadTask;
+          String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+          uploadImageUrls.add(downloadUrl);
+        }
+
+        // // 모든 이미지 업로드 후 사용자에게 알림
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(
+        //     content: Text("이미지 업로드 완료!"),
+        //     duration: Duration(seconds: 2),
+        //   ),
+        // );
+        // Navigator.of(context).pop(uploadImageUrls);
+      } else {
+        Navigator.of(context).pop([]);
+      }
     }
     return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.
   }
-
-
-
-
-
-  void _uploadImageToDb(String downloadUrl) {
-    DateTime now = DateTime.now();
-    Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
-
-    if (_senderUid != null) {
-      Message message = Message.withoutMessage(
-        receiverName : widget.receiverName,
-        senderName : widget.senderName,
-        receiverUid: widget.receiverUid,
-        senderUid: _senderUid!,
-        photoUrl: downloadUrl,
-        timestamp: timestamp,
-        message: '사진',
-        read: false,
-        type: 'image',
-      );
-
-      // _addMessageToDb 함수를 사용하여 메시지 추가
-      _addMessageToDb(message);
-    }
-  }
-
-  // 현재까지 기본이미지 사용 -> 수정예정
-  // 발신자 기본 사진 URL 반환
-  Future<String> _getSenderPhotoUrl() async {
-    // Firestore에서 사용자 정보를 가져오는 로직 대신 기본 이미지 경로 반환
-    return 'assets/ava.png';
-  }
-
-  // 수신자 기본 사진 URL 반환
-  Future<String> _getReceiverPhotoUrl() async {
-    // Firestore에서 사용자 정보를 가져오는 로직 대신 기본 이미지 경로 반환
-    return 'assets/ava.png';
-  }
-
-  // 채팅 입력 위젯
-  Widget ChatInputWidget() {
-    return Container(
-      height: 60.0, // 높이 조정
-      margin: const EdgeInsets.symmetric(horizontal:8.0, vertical: 15),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(Icons.image, color: Colors.grey[600], size:35,), // 아이콘 색상 조정
-            onPressed: () {
-              _pickImageAndUpload(); // 이미지 선택
-            },
-          ),
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0), // 좌우 여백 추가
-              child: TextFormField(
-                controller: _messageController,
-                onFieldSubmitted: (value){
-                  _sendMessage();
-                },
-                decoration: InputDecoration(
-                  // hintText: "메시지 입력...",
-                  contentPadding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 15.0), // 패딩 조정
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0), // 둥근 모서리 적용
-                    borderSide: BorderSide.none, // 외곽선 제거
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[200], // 배경색 적용
-                ),
-              ),
-            ),
-          ),
-
-          IconButton(
-            icon: Icon(Icons.send,  color: isFilled ? Colors.orange :Colors.grey[600], size: 35,), // 아이콘 색상 조정
-            onPressed: () {
-              _sendMessage(); // 메시지 전송
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-
-      ),
-      body: Column(
-        children: <Widget>[
-          Divider(
-            height: 2.0, // Divider의 높이 설정
-            thickness: 3.0, // Divider의 두께 설정
-            color: Colors.grey, // Divider의 색상 설정
-          ),
-          Expanded(
-            child: _senderUid == null
-                ? Container(
-              child: CircularProgressIndicator(), // 로딩 표시
-            )
-                : Column(
-                    children: <Widget>[
-                      ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                      ChatInputWidget(), // 채팅 입력 위젯
-                  SizedBox(
-                  height: 10.0,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-// 채팅 메시지 레이아웃을 구성하는 함수
-  Widget buildChatLayout(QueryDocumentSnapshot<Map<String, dynamic>> snapshot, bool shouldDisplayAvatar, bool isRead ) {
-    bool isSentByMe = snapshot['senderUid'] == _senderUid;
-    bool isMessageRead = snapshot.data().containsKey('read') ? snapshot.data()['read'] as bool : false; // 읽음 상태
-
-    return
-        Column(
-          crossAxisAlignment: isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start, // Alignment 조정
-          children: <Widget>[
-            //사진 전송
-            SizedBox(height: 10),
-            Container(
-              child: Column(
-                children: <Widget>[
-                  // 이미지 전송
-                  if (snapshot['type'] == 'image')
-                    GestureDetector(
-                      onTap: () {
-                        // 이미지 클릭 시 FullScreenImage 보여주기
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FullScreenImage(photoUrl: snapshot['photoUrl']),
-                          ),
-                        );
-                      },
-
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.network(
-                          snapshot['photoUrl'],
-                          width: 200.0,
-                          height: 200.0,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-
-                ],
-              ),
-            ),
-
-      ],
-    );
-  }
-}

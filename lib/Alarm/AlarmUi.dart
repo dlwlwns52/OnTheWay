@@ -80,7 +80,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                     final timestamp = notification['timestamp'] as Timestamp;
                     final DateTime dateTime = timestamp.toDate();
                     final String timeAgo = getTimeAgo(dateTime);
-
+                    //닉네임
                     final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
                     final Color avatarColor = _getColorFromName(nickname); // 색상 결정
 
@@ -154,6 +154,24 @@ class _NotificationScreenState extends State<AlarmUi> {
         .delete()
         .then((_) => print("Document successfully deleted"))
         .catchError((error) => print("Failed to delete document: $error"));
+
+  }
+
+  // 수락시 게시글 삭제
+  Future<void> _deletePost(String docId) async{
+    DocumentSnapshot postId = await FirebaseFirestore.instance
+        .collection('helpActions')
+        .doc(docId)
+        .get();
+
+    String deletePostId = postId.get('post_id');
+
+    FirebaseFirestore.instance
+        .collection('naver_posts')
+        .doc(deletePostId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
   }
 
 
@@ -212,7 +230,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 ),
               ),
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-              onPressed: () {
+              onPressed: () async {
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
@@ -221,8 +239,8 @@ class _NotificationScreenState extends State<AlarmUi> {
                 builder: (context) => AllUsersScreen(),
                 ));
 
+                await _deletePost(documentId); // 수락시 게시글 삭제
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -266,6 +284,8 @@ class _NotificationScreenState extends State<AlarmUi> {
     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
         .update({'response': response});
   }
+  
+  
 
 
 }
