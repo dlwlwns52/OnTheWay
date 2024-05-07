@@ -103,7 +103,8 @@ class _MyAppState extends State<MyApp> {
                   return LoginScreen(); // 기본 게시판 페이지 // 테스트로 현재 게시판으로 이동
               }
             } else {
-              return LoginScreen(); // 로그인 화면
+              // return LoginScreen(); // 로그인 화면
+              return NaverBoardPage(); // 임시
             }
           } else {
             return LoginScreen(); // 오류 화면

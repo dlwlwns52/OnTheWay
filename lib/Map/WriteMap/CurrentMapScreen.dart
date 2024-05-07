@@ -24,7 +24,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
   void _moveToCurrentLocation() async {
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('위치데이터를 불러오는 중입니다\n 잠시만 기다려 주세요.',
+      SnackBar(content: Text('위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
         textAlign: TextAlign.center,),
           duration: Duration(milliseconds: 900),
       ),

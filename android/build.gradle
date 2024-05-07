@@ -1,32 +1,37 @@
-buildscript {
-    ext.kotlin_version = '1.7.10'
-    repositories {
-        google()
-        mavenCentral()
+buildscript {                                // 1. 빌드 스크립트 설정 블록을 정의합니다. 플러그인과 관련 설정을 포함합니다.
+    ext.kotlin_version = '1.9.0'             // 2. Kotlin 버전 정보를 변수로 정의합니다. 여기서 '1.9.0'은 사용할 Kotlin의 버전입니다.
+
+    repositories {                           // 3. 빌드 스크립트에 필요한 플러그인 또는 라이브러리를 찾을 저장소를 정의합니다.
+        google()                             // 4. Google의 Maven 저장소를 추가합니다. 안드로이드 SDK 관련 라이브러리가 포함되어 있습니다.
+        mavenCentral()                       // 5. Maven Central 저장소를 추가합니다. 다양한 라이브러리를 다운로드할 수 있습니다.
     }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.15'
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
+    dependencies {                           // 6. 빌드 스크립트에 필요한 플러그인 의존성을 추가합니다.
+        classpath 'com.android.tools.build:gradle:7.3.0'   // 7. 안드로이드 빌드 시스템을 위해 필요한 Gradle 플러그인 의존성입니다.
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"  // 8. Kotlin 코드 컴파일을 위한 Kotlin Gradle 플러그인입니다.
+        classpath 'com.google.gms:google-services:4.3.15'  // 9. Google 서비스와 통합하기 위한 플러그인입니다.
     }
 }
 
-rootProject.buildDir = '../build'
+allprojects {                               // 10. 모든 프로젝트에 대해 공통 설정을 지정합니다.
+    repositories {                          // 11. 모든 프로젝트에서 사용할 저장소를 정의합니다.
+        google()                            // 12. Google의 Maven 저장소를 사용합니다.
+        mavenCentral()                      // 13. Maven Central 저장소를 사용합니다.
+
+
+        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' } // 카카오 저장소 추가
+    }
+}
+
+rootProject.buildDir = '../build'            // 14. 루트 프로젝트의 빌드 디렉토리를 정의합니다.
+
+subprojects {                                // 15. 서브 프로젝트에 대한 설정을 지정합니다.
+    project.buildDir = "${rootProject.buildDir}/${project.name}"  // 16. 각 서브 프로젝트의 빌드 디렉토리를 루트 빌드 디렉토리 내부에 지정합니다.
+}
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
-    project.evaluationDependsOn(':app')
+    project.evaluationDependsOn(':app')      // 17. 모든 서브 프로젝트가 ':app' 프로젝트의 설정에 의존함을 지정합니다.
 }
 
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+tasks.register("clean", Delete) {            // 18. Gradle의 'clean' 작업을 등록합니다.
+    delete rootProject.buildDir              // 19. 'clean' 작업이 실행될 때 루트 프로젝트의 빌드 디렉토리를 삭제합니다.
 }

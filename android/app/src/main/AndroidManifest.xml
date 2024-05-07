@@ -1,8 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 권한 지정 영역 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 인터넷 사용 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 네트워크 상태 확인 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 와이파이 상태 확인 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 일반 위치 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 정밀 위치 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 백그라운드 위치 권한 -->
+
     <application
-        android:label="OnTheWay"
+        android:label="오다가다"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -12,7 +21,7 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
-            <!-- For Firebase Dynamic Link with page.link domain -->
+            <!-- Firebase Dynamic Link (page.link 도메인) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -22,7 +31,7 @@
                     android:scheme="https"/>
             </intent-filter>
 
-            <!-- For Firebase Dynamic Link with firebaseapp.com domain -->
+            <!-- Firebase Dynamic Link (firebaseapp.com 도메인) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -32,21 +41,85 @@
                     android:scheme="https"/>
             </intent-filter>
 
-            <!-- Default intent-filter -->
+            <!-- 기본 실행 액티비티 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <!-- Don't delete the meta-data below. This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <!-- Flutter 자동 생성 파일을 위한 메타데이터 -->
         <meta-data
             android:name="flutterEmbedding"
-            android:value="2"
-            />
-<!--        <meta-data-->
-<!--            android:name="com.kakao.sdk.AppKey"-->
-<!--            android:value="69a96da745eed8af5198d8de5d72a2eb" />-->
+            android:value="2"/>
+
+        <!-- 카카오 SDK 앱 키 (필요 시 주석 해제) -->
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="69a96da745eed8af5198d8de5d72a2eb" />
 
     </application>
 </manifest>
+
+
+    <!--<manifest xmlns:android="http://schemas.android.com/apk/res/android">-->
+
+<!--    &lt;!&ndash; 필요한 권한들을 지정하는 영역 &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.INTERNET" /> &lt;!&ndash; 인터넷 사용 권한 &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> &lt;!&ndash; 네트워크 상태 확인 권한 &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> &lt;!&ndash; 와이파이 상태 확인 권한 &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> &lt;!&ndash; 일반 위치 권한 (대략적인 위치) &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> &lt;!&ndash; 정밀 위치 권한 (정확한 위치) &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> &lt;!&ndash; 백그라운드 위치 권한 (Android 10 이상) &ndash;&gt;-->
+
+<!--    <application-->
+<!--        android:label="오다가다"-->
+<!--        android:name="${applicationName}"-->
+<!--        android:icon="@mipmap/ic_launcher">-->
+<!--        <activity-->
+<!--            android:name=".MainActivity"-->
+<!--            android:exported="true"-->
+<!--            android:launchMode="singleTop"-->
+<!--            android:theme="@style/LaunchTheme"-->
+<!--            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"-->
+<!--            android:hardwareAccelerated="true"-->
+<!--            android:windowSoftInputMode="adjustResize">-->
+
+<!--            &lt;!&ndash; For Firebase Dynamic Link with page.link domain &ndash;&gt;-->
+<!--            <intent-filter android:autoVerify="true">-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--                <category android:name="android.intent.category.BROWSABLE"/>-->
+<!--                <data-->
+<!--                    android:host="OnTheWay.page.link"-->
+<!--                    android:scheme="https"/>-->
+<!--            </intent-filter>-->
+
+<!--            &lt;!&ndash; For Firebase Dynamic Link with firebaseapp.com domain &ndash;&gt;-->
+<!--            <intent-filter android:autoVerify="true">-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--                <category android:name="android.intent.category.BROWSABLE"/>-->
+<!--                <data-->
+<!--                    android:host="OnTheWay.firebaseapp.com"-->
+<!--                    android:scheme="https"/>-->
+<!--            </intent-filter>-->
+
+<!--            &lt;!&ndash; Default intent-filter &ndash;&gt;-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN"/>-->
+<!--                <category android:name="android.intent.category.LAUNCHER"/>-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
+
+<!--        &lt;!&ndash; Don't delete the meta-data below. This is used by the Flutter tool to generate GeneratedPluginRegistrant.java &ndash;&gt;-->
+<!--        <meta-data-->
+<!--            android:name="flutterEmbedding"-->
+<!--            android:value="2"-->
+<!--            />-->
+<!--&lt;!&ndash;        <meta-data&ndash;&gt;-->
+<!--&lt;!&ndash;            android:name="com.kakao.sdk.AppKey"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:value="69a96da745eed8af5198d8de5d72a2eb" />&ndash;&gt;-->
+
+<!--    </application>-->
+<!--</manifest>-->
