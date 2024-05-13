@@ -276,7 +276,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                                   data['my_location'] ?? '내용 없음',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                    fontSize: isMyPost ? 20 : 18,
+                                                    fontSize: isMyPost ? 19 : 18,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.black, // 텍스트 색상 변경
                                                   ),
@@ -320,7 +320,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                                   data['store'] ?? '내용 없음',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                    fontSize: isMyPost ? 20 : 18,
+                                                    fontSize: isMyPost ? 19 : 18,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.black, // 텍스트 색상 변경
                                                   ),
