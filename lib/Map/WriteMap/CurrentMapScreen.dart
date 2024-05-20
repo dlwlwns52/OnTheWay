@@ -46,6 +46,14 @@ class _MapScreenState extends State<CurrentMapScreen> {
 
     // 지도의 중심을 업데이트
     _mapController.setCenter(newCenter);
+
+    //마커를 움직이라는 알림
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('푸른색 마커를 드래그하여 정확한 위치를 설정해 주세요!',
+        textAlign: TextAlign.center,),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override

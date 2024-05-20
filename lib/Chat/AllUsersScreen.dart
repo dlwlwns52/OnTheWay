@@ -457,6 +457,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                   }
                 });
               }
+
               // 마지막 메시지 시간 또는 채팅방 생성 시간을 사용하여 시간 표시
               final DateTime dateTime = lastMessageTime ?? userData['timestamp'].toDate();
               final String timeAgo = getTimeAgo(dateTime);

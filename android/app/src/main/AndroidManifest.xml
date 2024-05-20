@@ -9,9 +9,9 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 백그라운드 위치 권한 -->
 
     <application
-        android:label="오다가다"
+        android:label="온더웨이"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true" >
 
 
         <activity

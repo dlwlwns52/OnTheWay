@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-
-class TMapView extends StatefulWidget { // StatefulWidget을 상속받는 VideoCard 클래스를 정의합니다. 이는 상태가 변경될 수 있는 위젯을 만들기 위함입니다.
+class TMapView extends StatefulWidget {
   final String currentLocation;
   final String storeLocation;
 
   TMapView({required this.currentLocation, required this.storeLocation});
 
   @override
-  State<TMapView> createState() => _TMapViewState(); // VideoCard 위젯의 상태를 생성합니다.
+  State<TMapView> createState() => _TMapViewState();
 }
+
 class _TMapViewState extends State<TMapView> {
   late WebViewController controller;
 
-// JavaScript 함수를 호출하는 함수 예시
+  // JavaScript 함수를 호출하는 함수 예시
   void update(String startLocation, String endLocation) {
     // startLocation과 endLocation을 ','를 기준으로 분리하여 위도와 경도를 추출
     List<String> startCoords = startLocation.split(',');
     List<String> endCoords = endLocation.split(',');
 
     // JavaScript 함수 호출
-// JavaScript 함수 호출
     controller.runJavaScript(
-        "update('${startCoords[0]}', '${startCoords[1]}', '${endCoords[0]}', '${endCoords[1]}');");
-
+        "update('${startCoords[0]}', '${startCoords[1]}', '${endCoords[0]}', '${endCoords[1]}');"
+    );
   }
 
   @override
@@ -44,22 +43,38 @@ class _TMapViewState extends State<TMapView> {
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-            // if (request.url.startsWith('https://www.youtube.com/')) {
-            //   return NavigationDecision.prevent;
-            // }
             return NavigationDecision.navigate;
           },
         ),
       )
       ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app'));
+
+    // 길찾기 기능 참고용 안내 알림을 초기화 후 보여줌
+    // WidgetsBinding.instance.addPostFrameCallback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '길찾기 기능은 참고용으로만 사용해 주세요.\n감사합니다.',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
+
   }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // Scaffold를 사용하여 앱바와 뒤로가기 버튼을 추가합니다.
-      appBar: AppBar( // AppBar를 추가합니다.
+    return Scaffold(
+      appBar: AppBar(
         backgroundColor: Colors.deepOrangeAccent,
-        title: Text("길찾기", style: TextStyle(fontWeight: FontWeight.bold),),  // 앱바의 제목을 설정합니다.
+        title: Text(
+          "길찾기",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: Container(
         width: double.infinity,

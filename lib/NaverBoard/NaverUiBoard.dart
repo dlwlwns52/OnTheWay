@@ -12,7 +12,7 @@ import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
 import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
 import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
-
+import 'dart:io' show Platform;
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
 class NaverBoardPage extends StatefulWidget {
   @override

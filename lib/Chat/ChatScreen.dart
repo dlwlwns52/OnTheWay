@@ -138,7 +138,6 @@ class _ChatScreenState extends State<ChatScreen> {
       bool isInChatRoom = userStatusData['isInChatRoom'] ?? false;
       // 상대방이 채팅방에 있으면, 아직 읽지 않은 모든 메시지를 '읽음'으로 표시합니다.
       if (isInChatRoom) {
-        print(widget.receiverName);
         _markUnreadMessagesAsRead();
       }
     }
