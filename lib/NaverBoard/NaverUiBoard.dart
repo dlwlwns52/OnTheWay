@@ -53,6 +53,19 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
     return user?.email;
   }
 
+  //ios, 안드로이드 기기 텍스트 크기 다르게 하기
+  double getTextSize(bool isMyPost){
+    if(Platform.isIOS){ // ios
+      return isMyPost ? 19 : 18;
+    }
+    else if(Platform.isAndroid){ // Android
+      return isMyPost ? 15 : 15;
+    }
+    else{
+      return isMyPost ? 15 : 15; // 기본 텍스트 크기
+    }
+  }
+
 
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
@@ -276,7 +289,8 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                                   data['my_location'] ?? '내용 없음',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                    fontSize: isMyPost ? 19 : 18,
+                                                    // fontSize: isMyPost ? 19 : 18,
+                                                    fontSize: getTextSize(isMyPost),
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.black, // 텍스트 색상 변경
                                                   ),
@@ -320,7 +334,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                                   data['store'] ?? '내용 없음',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                    fontSize: isMyPost ? 19 : 18,
+                                                    fontSize: getTextSize(isMyPost),
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.black, // 텍스트 색상 변경
                                                   ),
@@ -336,7 +350,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                           data['cost'] ?? '추가 내용 없음',
                                           // 비용 정보 또는 '추가 내용 없음' 표시
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 18.0,
+                                          style: TextStyle(fontSize: 17.0,
                                               fontWeight: FontWeight.bold, color: Colors.black),
                                         ),
                                       ),

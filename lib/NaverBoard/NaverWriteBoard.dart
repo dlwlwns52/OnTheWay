@@ -21,11 +21,65 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
   final TextEditingController _requestController = TextEditingController();
   final FocusNode _buttonFocusNode = FocusNode();
 
+
   //위치 관련 변수
   String? _currentSelectedLocation; //위치 저장
   String? _storeSelectedLocation;
   bool currentLocationSet = false; //버튼 활성화
   bool storeLocationSet = false;
+
+  //스낵바가 이미 표시되었는지를 추적하는 플래그
+  bool _snackBarShown = false;
+
+//게시물 수정하기 누를때 전 정보를 불러옴
+  @override
+  void initState() {
+    super.initState();
+    if (widget.post != null) {
+      _locationController.text = widget.post!['my_location'] ?? '';
+      _storeController.text = widget.post!['store'] ?? '';
+      _costController.text = widget.post!['cost'] ?? '';
+      _requestController.text = widget.post!['Request'] ?? '';
+      _storeSelectedLocation = widget.post!['store_location'] ?? '';
+      _currentSelectedLocation = widget.post!['current_location'] ?? '';
+      // 위치 정보가 있다면 변수들을 true로 설정합니다.
+      if (_storeSelectedLocation != null && _storeSelectedLocation!.isNotEmpty) {
+        storeLocationSet = true;
+      }
+      if (_currentSelectedLocation != null && _currentSelectedLocation!.isNotEmpty) {
+        currentLocationSet = true;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    _storeController.dispose();
+    _costController.dispose();
+    _requestController.dispose();
+    _buttonFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _checkMaxLength(TextEditingController controller, int maxLength) {
+    if (controller.text.length == maxLength && !_snackBarShown) {
+      controller.text = controller.text.substring(0, maxLength);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '최대 ${maxLength}글자까지 입력 가능합니다. \n 상세내용은 채팅방을 이용해주세요.',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      _snackBarShown = true;
+    } else if (controller.text.length < maxLength){
+      _snackBarShown = false;
+    }
+  }
+
 
 
   //현재위치 받는 메소드
@@ -64,16 +118,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
     }
   }
 
-
-  @override
-  void dispose() {
-    _locationController.dispose();
-    _storeController.dispose();
-    _costController.dispose();
-    _requestController.dispose();
-    _buttonFocusNode.dispose();
-    super.dispose();
-  }
 
   String? getUserEmail() {
     final user = FirebaseAuth.instance.currentUser;
@@ -179,7 +223,8 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
-                  maxLength: 20,
+                  maxLength: 8,
+                  onChanged: (value) => _checkMaxLength(_locationController, 8),
                   onFieldSubmitted: (value) => _currentChooseLocation(),
                 ),
 
@@ -215,7 +260,8 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
-                  maxLength: 20,
+                  maxLength: 8,
+                  onChanged: (value) => _checkMaxLength(_storeController, 8),
                   onFieldSubmitted: (value) => _storeChooseLocation(),
                 ),
 
@@ -250,7 +296,8 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: null,
-                  maxLength: 20,
+                  maxLength: 5,
+                  onChanged: (value) => _checkMaxLength(_costController, 5),
                 ),
 
                 SizedBox(height: 16.0),
@@ -266,7 +313,8 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                   textInputAction: TextInputAction.done,
                   minLines: 7,
                   maxLines: null,
-                  maxLength: 100,
+                  maxLength: 30,
+                  onChanged: (value) => _checkMaxLength(_requestController, 30),
                   // onFieldSubmitted: (value) => _uploadPost(), // 요청사항 -> 게시하기
                 ),
               ],
@@ -302,25 +350,5 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
     );
   }
 
-  //게시물 수정하기 누를때 전 정보를 불러옴
-  @override
-  void initState() {
-    super.initState();
-    if (widget.post != null) {
-      _locationController.text = widget.post!['my_location'] ?? '';
-      _storeController.text = widget.post!['store'] ?? '';
-      _costController.text = widget.post!['cost'] ?? '';
-      _requestController.text = widget.post!['Request'] ?? '';
-      _storeSelectedLocation = widget.post!['store_location'] ?? '';
-      _currentSelectedLocation = widget.post!['current_location'] ?? '';
-      // 위치 정보가 있다면 변수들을 true로 설정합니다.
-      if (_storeSelectedLocation != null && _storeSelectedLocation!.isNotEmpty) {
-        storeLocationSet = true;
-      }
-      if (_currentSelectedLocation != null && _currentSelectedLocation!.isNotEmpty) {
-        currentLocationSet = true;
-      }
-    }
-  }
 
 }
