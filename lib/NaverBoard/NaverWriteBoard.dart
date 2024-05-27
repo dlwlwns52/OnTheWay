@@ -71,7 +71,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
             '최대 ${maxLength}글자까지 입력 가능합니다. \n 상세내용은 채팅방을 이용해주세요.',
             textAlign: TextAlign.center,
           ),
-          duration: Duration(seconds: 1),
+          duration: Duration(seconds: 10),
         ),
       );
       _snackBarShown = true;

@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베
 import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
 import '../Map/TMapView.dart';
+import '../Ranking/SchoolRanking.dart';
 import 'NaverWriteBoard.dart';
 import 'NaverPostManager.dart';
 import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
@@ -56,13 +57,13 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   //ios, 안드로이드 기기 텍스트 크기 다르게 하기
   double getTextSize(bool isMyPost){
     if(Platform.isIOS){ // ios
-      return isMyPost ? 19 : 18;
+      return isMyPost ? 18 : 18;
     }
     else if(Platform.isAndroid){ // Android
-      return isMyPost ? 15 : 15;
+      return isMyPost ? 16 : 16;
     }
     else{
-      return isMyPost ? 15 : 15; // 기본 텍스트 크기
+      return isMyPost ? 16 : 16; // 기본 텍스트 크기
     }
   }
 
@@ -71,74 +72,84 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFFF8B13),
-        // backgroundColor: Colors.deepOrange,
+      // appBar: AppBar(
+      //   backgroundColor: Color(0xFFFF8B13),
+      //   // backgroundColor: Colors.deepOrange,
+      //
+      //   // 앱 바의 배경색을 오렌지색으로 설정합니다.
+      //   title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold), ),
 
-        // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold), ),
-        // 앱 바의 타이틀을 '게시판'으로 설정합니다.
-        centerTitle: true,
 
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new), // 뒤로 가기 아이콘을 설정합니다.
-          onPressed: () {
-            // 아이콘 버튼이 눌렸을 때 수행할 동작을 정의합니다.
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(
-                builder: (context) => LoginScreen())); // 로그인 화면으로 이동합니다.
-          },
-        ),
-        actions: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(right: 10.0), // 오른쪽 패딩을 줄여 아이콘을 왼쪽으로 이동
-            child: Stack(
-              alignment: Alignment.topRight,
-              children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.notifications),
-                  onPressed: () {
-                    // 알림 화면으로 이동하면서 알림 목록을 전달합니다.
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AlarmUi(),
-                      ),
-                    );
-                    setState(() {
-                      alarm.resetNotificationCount(); // 알림 수를 초기화합니다.
-                    });
-                  },
-                ),
-                if (alarm.getNotificationCount() > 0)
-                  Positioned(
-                    right: 11,
-                    top: 11,
-                    child: Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: BoxConstraints(
-                        minWidth: 14,
-                        minHeight: 14,
-                      ),
-                      child: Text(
-                        '${alarm.getNotificationCount()}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [ Color(0xFFFF4500), Colors.yellow.shade700], // 진한 주황색에서 연한 주황색으로
+
             ),
           ),
-        ],
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold)),
+            centerTitle: true,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new),
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => LoginScreen()));
+              },
+            ),
+            actions: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(right: 10.0),
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.notifications),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => AlarmUi(),
+                          ),
+                        );
+                        setState(() {
+                          alarm.resetNotificationCount();
+                        });
+                      },
+                    ),
+                    if (alarm.getNotificationCount() > 0)
+                      Positioned(
+                        right: 11,
+                        top: 11,
+                        child: Container(
+                          padding: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: BoxConstraints(
+                            minWidth: 14,
+                            minHeight: 14,
+                          ),
+                          child: Text(
+                            '${alarm.getNotificationCount()}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-
 //게시판 몸통
       body:
       Column(
@@ -389,10 +400,15 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
             icon: Icon(Icons.create, color: Colors.black,),
             label: '새 게시글',
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.person, color: Colors.black,),
+          //   label: '프로필',
+          // ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colors.black,),
-            label: '프로필',
+            icon: Icon(Icons.school, color: Colors.black,),
+            label: '학교 랭킹',
           ),
+
         ],
         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
         unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
@@ -411,6 +427,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
             );
           }
           else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RankingPage()),
+            );
           }
 
         },
