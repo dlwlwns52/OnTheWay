@@ -846,62 +846,74 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
-        // 채팅방 이름 표시
-        // backgroundColor: Color(0XFF98ABEE),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
-        ),
-        actions: <Widget>[
-
-          IconButton(
-            icon: Icon(Icons.navigation_rounded, color: Colors.deepOrangeAccent,),
-            onPressed: () async {
-              await _tmapDirections(); // 위치 데이터를 가져옵니다.
-              if (tmapDirections.length >= 2) {
-                // tmapDirections 리스트에서 위치 정보 사용
-                String currentLocation = tmapDirections[0];
-                String storeLocation = tmapDirections[1];
-                // Navigator를 사용하여 새 페이지로 이동
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => TMapView(
-                    currentLocation: currentLocation,
-                    storeLocation: storeLocation,
-                  ),
-                ));
-              }
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: <Widget>[
-          Divider(
-            height: 2.0, // Divider의 높이 설정
-            thickness: 3.0, // Divider의 두께 설정
-            color: Colors.grey, // Divider의 색상 설정
-          ),
-          Expanded(
-            child: _senderUid == null
-                ? Container(
-              child: CircularProgressIndicator(), // 로딩 표시
-            )
-                : Column(
-              children: <Widget>[
-                ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                ChatInputWidget(), // 채팅 입력 위젯
-                SizedBox(
-                  height: 10.0,
-                ),
-              ],
+    return WillPopScope(
+      onWillPop: () async{
+        return true;
+      },
+      child: GestureDetector(
+        onHorizontalDragEnd: (details){
+          if (details.primaryVelocity! >  0){
+            Navigator.pop(context);
+          }
+        },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
+            // 채팅방 이름 표시
+            // backgroundColor: Color(0XFF98ABEE),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            iconTheme: IconThemeData(
+              color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
             ),
+            actions: <Widget>[
+
+              IconButton(
+                icon: Icon(Icons.navigation_rounded, color: Colors.deepOrangeAccent,),
+                onPressed: () async {
+                  await _tmapDirections(); // 위치 데이터를 가져옵니다.
+                  if (tmapDirections.length >= 2) {
+                    // tmapDirections 리스트에서 위치 정보 사용
+                    String currentLocation = tmapDirections[0];
+                    String storeLocation = tmapDirections[1];
+                    // Navigator를 사용하여 새 페이지로 이동
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => TMapView(
+                        currentLocation: currentLocation,
+                        storeLocation: storeLocation,
+                      ),
+                    ));
+                  }
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+          body: Column(
+            children: <Widget>[
+              Divider(
+                height: 2.0, // Divider의 높이 설정
+                thickness: 3.0, // Divider의 두께 설정
+                color: Colors.grey, // Divider의 색상 설정
+              ),
+              Expanded(
+                child: _senderUid == null
+                    ? Container(
+                  child: CircularProgressIndicator(), // 로딩 표시
+                )
+                    : Column(
+                  children: <Widget>[
+                    ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                    ChatInputWidget(), // 채팅 입력 위젯
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+    ),
     );
   }
 

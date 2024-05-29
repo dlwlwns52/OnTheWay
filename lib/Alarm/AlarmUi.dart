@@ -40,93 +40,105 @@ class _NotificationScreenState extends State<AlarmUi> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFF86F03),
-        title: Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
-            onPressed: () {
-              setState(() {
-                isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
-              });
-            },
+    return WillPopScope(
+      onWillPop: () async{
+        return true;
+      },
+      child: GestureDetector(
+        onHorizontalDragEnd: (details){
+          if (details.primaryVelocity! >  0){
+            Navigator.pop(context);
+          }
+        },
+        child:Scaffold(
+          appBar: AppBar(
+            backgroundColor: Color(0xFFF86F03),
+            title: Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
+                  });
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          SizedBox(height: 10),
-          Expanded(
-            child: StreamBuilder<List<DocumentSnapshot>>(
-              stream: notificationsStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('오류가 발생했습니다.'));
-                }
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                final notifications = snapshot.data!;
+          body: Column(
+            children: [
+              SizedBox(height: 10),
+              Expanded(
+                child: StreamBuilder<List<DocumentSnapshot>>(
+                  stream: notificationsStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('오류가 발생했습니다.'));
+                    }
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    final notifications = snapshot.data!;
 
-                return ListView.separated(
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
+                    return ListView.separated(
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
 
-                    //알림 온 시간 측정
-                    final DocumentSnapshot doc = notifications[index];
-                    final notification = doc.data() as Map<String, dynamic>;
-                    final timestamp = notification['timestamp'] as Timestamp;
-                    final DateTime dateTime = timestamp.toDate();
-                    final String timeAgo = getTimeAgo(dateTime);
-                    //닉네임
-                    final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
-                    final Color avatarColor = _getColorFromName(nickname); // 색상 결정
+                        //알림 온 시간 측정
+                        final DocumentSnapshot doc = notifications[index];
+                        final notification = doc.data() as Map<String, dynamic>;
+                        final timestamp = notification['timestamp'] as Timestamp;
+                        final DateTime dateTime = timestamp.toDate();
+                        final String timeAgo = getTimeAgo(dateTime);
+                        //닉네임
+                        final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
+                        final Color avatarColor = _getColorFromName(nickname); // 색상 결정
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: avatarColor, // 여기서 색상 적용
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: avatarColor, // 여기서 색상 적용
+                            child: Icon(Icons.person, color: Colors.white),
                           ),
-                          SizedBox(height: 6),
-                          Text(
-                            '도와주기를 요청하였습니다.',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                '도와주기를 요청하였습니다.',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                '$timeAgo',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 3),
-                          Text(
-                            '$timeAgo',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        _showAcceptDeclineDialog(context, nickname, doc.id);
+                          onTap: () {
+                            _showAcceptDeclineDialog(context, nickname, doc.id);
+                          },
+                          trailing: isDeleteMode ? IconButton(
+                            icon: Icon(Icons.close, color: Colors.black),
+                            onPressed: () {
+                              _deleteNotification(doc.id);
+                              _deleteChatActions(doc.id);
+                            },
+                          ) : null,
+                        );
                       },
-                      trailing: isDeleteMode ? IconButton(
-                        icon: Icon(Icons.close, color: Colors.black),
-                        onPressed: () {
-                          _deleteNotification(doc.id);
-                          _deleteChatActions(doc.id);
-                        },
-                      ) : null,
+                      separatorBuilder: (context, index) => Divider(),
                     );
                   },
-                  separatorBuilder: (context, index) => Divider(),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+    ),
     );
   }
 

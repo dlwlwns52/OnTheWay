@@ -35,6 +35,8 @@ dependencies:
   auto_size_text: ^3.0.0
   cupertino_icons: ^1.0.5
 
+  #애니메이션
+  lottie: ^2.7.0
   #채팅 오픈소스
   firebase_storage: ^11.6.0
   image_picker: ^1.0.7
@@ -54,3 +56,4 @@ flutter:
     - assets/blankimage.png
     - assets/avatar.png
     - assets/ava.png
+    - assets/lottie/Animation.json

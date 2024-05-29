@@ -348,6 +348,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       ),
 
     );
+
   }
 
 

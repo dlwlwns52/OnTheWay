@@ -419,337 +419,350 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Color(0xFFFF8B13),
-          elevation: 0,
-          title: Text("채팅",
-            style: TextStyle(fontWeight: FontWeight.bold),),
-          actions: <Widget>[
-          ],
+    return WillPopScope(
+      onWillPop: () async{
+        return true;
+      },
+      child: GestureDetector(
+        onHorizontalDragEnd: (details){
+          if (details.primaryVelocity! >  0){
+            Navigator.pop(context);
+          }
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Color(0xFFFF8B13),
+              elevation: 0,
+              title: Text("채팅",
+                style: TextStyle(fontWeight: FontWeight.bold),),
+              actions: <Widget>[
+              ],
 
-        ),
+            ),
 
-        body: acceptedChatActions != null
-            ? Container(
-          child: ListView.builder(
-            itemCount: acceptedChatActions.length,
-            itemBuilder: ((context, index) {
-              DocumentSnapshot userDoc = acceptedChatActions[index];
-              Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-              final DocumentSnapshot doc = acceptedChatActions[index];
-              final String documentName = userDoc.id; // 채팅방 문서 ID
+            body: acceptedChatActions != null
+                ? Container(
+              child: ListView.builder(
+                itemCount: acceptedChatActions.length,
+                itemBuilder: ((context, index) {
+                  DocumentSnapshot userDoc = acceptedChatActions[index];
+                  Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+                  final DocumentSnapshot doc = acceptedChatActions[index];
+                  final String documentName = userDoc.id; // 채팅방 문서 ID
 
-              // 로그인한 사람 이메일 확인
-              User? currentUser = FirebaseAuth.instance.currentUser;
-              String? currentUserEmail = currentUser?.email;
+                  // 로그인한 사람 이메일 확인
+                  User? currentUser = FirebaseAuth.instance.currentUser;
+                  String? currentUserEmail = currentUser?.email;
 
 
-              //알림 온 시간 측정
-              final DateTime? lastMessageTime = lastMessageTimes[documentName];
-              if (lastMessageTime == null) {
-                // 마지막 메시지 시간을 아직 가져오지 않았다면, 비동기로 가져옵니다.
-                fetchLastMessage(documentName).then((timestamp) {
-                  if (mounted) { // 위젯이 아직 화면에 존재하는지 확인
-                    setState(() {
-                      lastMessageTimes[documentName] = timestamp;
+                  //알림 온 시간 측정
+                  final DateTime? lastMessageTime = lastMessageTimes[documentName];
+                  if (lastMessageTime == null) {
+                    // 마지막 메시지 시간을 아직 가져오지 않았다면, 비동기로 가져옵니다.
+                    fetchLastMessage(documentName).then((timestamp) {
+                      if (mounted) { // 위젯이 아직 화면에 존재하는지 확인
+                        setState(() {
+                          lastMessageTimes[documentName] = timestamp;
+                        });
+                      }
                     });
                   }
-                });
-              }
 
-              // 마지막 메시지 시간 또는 채팅방 생성 시간을 사용하여 시간 표시
-              final DateTime dateTime = lastMessageTime ?? userData['timestamp'].toDate();
-              final String timeAgo = getTimeAgo(dateTime);
+                  // 마지막 메시지 시간 또는 채팅방 생성 시간을 사용하여 시간 표시
+                  final DateTime dateTime = lastMessageTime ?? userData['timestamp'].toDate();
+                  final String timeAgo = getTimeAgo(dateTime);
 
 
-              // 메시지 카운트 키 생성
-              String messageCountKey = "";
-              if (userData['helper_email'] == currentUserEmail) {
-                messageCountKey = "$documentName-${userData['helper_email']}";
-              }
-              else if (userData['owner_email'] == currentUserEmail) {
-                messageCountKey = "$documentName-${userData['owner_email']}";
-              }
-              // 메시지 카운트 가져오기
-              int messageCount = messageCounts[messageCountKey] ?? 0;
+                  // 메시지 카운트 키 생성
+                  String messageCountKey = "";
+                  if (userData['helper_email'] == currentUserEmail) {
+                    messageCountKey = "$documentName-${userData['helper_email']}";
+                  }
+                  else if (userData['owner_email'] == currentUserEmail) {
+                    messageCountKey = "$documentName-${userData['owner_email']}";
+                  }
+                  // 메시지 카운트 가져오기
+                  int messageCount = messageCounts[messageCountKey] ?? 0;
 
-             //마지막으로 온 메시지
-              String lastMessage = userData['lastMessage'] ?? "채팅방이 개설되었습니다.";
+                 //마지막으로 온 메시지
+                  String lastMessage = userData['lastMessage'] ?? "채팅방이 개설되었습니다.";
 
 
-              //나가기 버튼 사용시 상대방 대화 안보이게 하기
-              if (userData['helper_email'] == currentUserEmail && userData['isDeleted_${userData['helper_email_nickname']}'] == true) {
-                return Container(); // 또는 적절한 '삭제됨' UI를 표시
-              }
-              else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_${userData['owner_email_nickname']}'] == true) {
-                return Container(); // 또는 적절한 '삭제됨' UI를 표시
-              }
+                  //나가기 버튼 사용시 상대방 대화 안보이게 하기
+                  if (userData['helper_email'] == currentUserEmail && userData['isDeleted_${userData['helper_email_nickname']}'] == true) {
+                    return Container(); // 또는 적절한 '삭제됨' UI를 표시
+                  }
+                  else if (userData['owner_email'] == currentUserEmail && userData['isDeleted_${userData['owner_email_nickname']}'] == true) {
+                    return Container(); // 또는 적절한 '삭제됨' UI를 표시
+                  }
 
-              return Column(
-                children: [
-                  if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
-                    Dismissible(
-                        key: Key(doc.id),
-                        confirmDismiss: (direction) async {
-                          // 스와이프 후 삭제 확인 대화상자 표시
-                          helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                        },
-                        background: Container(
-                          color: Colors.red,
-                          child: Align(
-                            alignment: Alignment.center, // 왼쪽 정렬
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                  return Column(
+                    children: [
+                      if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
+                        Dismissible(
+                            key: Key(doc.id),
+                            confirmDismiss: (direction) async {
+                              // 스와이프 후 삭제 확인 대화상자 표시
+                              helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                            },
+                            background: Container(
+                              color: Colors.red,
+                              child: Align(
+                                alignment: Alignment.center, // 왼쪽 정렬
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                                  children: <Widget>[
+                                    Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
+                                    Text(
+                                      ' 삭제', // 텍스트
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            child: InkWell(
+                              onLongPress: () {
+                                helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                              },
+                          onTap: (() {
+                            Navigator.push(
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => ChatScreen(
+                                      senderName: userData['helper_email_nickname'],
+                                      receiverName : userData['owner_email_nickname'],
+                                      receiverUid: userData['ownerUid'],
+                                      documentName : doc.id,
+                                    )));
+                          }),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
                               children: <Widget>[
-                                Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
-                                Text(
-                                  ' 삭제', // 텍스트
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
+                                ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.transparent,
+                                    backgroundImage: userData['photoUrl'] is String
+                                        ? NetworkImage(userData['photoUrl'])
+                                        : AssetImage('assets/ava.png') as ImageProvider<Object>,
+                                    radius: 30,
+                                  ),
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        userData['owner_email_nickname'],
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        "$lastMessage",
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                Positioned(
+                                  right: 10,
+                                  child: Text(
+                                    '$timeAgo',
+                                    style: TextStyle(
+                                      color: Colors.grey[800],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                // 메시지 카운트를 표시하는 배지 추가
+                                if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
+                                  Positioned(
+                                    top: 25,
+                                    right: 20,
+                                    child: Container(
+                                      padding: EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent, // 배지의 배경 색상
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        messageCount.toString(),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        )
+                      )
+                      else if (userData['owner_email'] == currentUserEmail)
+                        Dismissible(
+                          key: Key(doc.id),
+                          confirmDismiss: (direction) async {
+                            // 스와이프 후 삭제 확인 대화상자 표시
+                            ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                          },
+                          background: Container(
+                            color: Colors.red,
+                            child: Align(
+                              alignment: Alignment.center, // 왼쪽 정렬
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                                children: <Widget>[
+                                  Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
+                                  Text(
+                                    ' 삭제', // 텍스트
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        child: InkWell(
+                          onLongPress: () {
+                            // print(doc.data());
+                            ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                          },
+                          onTap: (() {
+                            Navigator.push(
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => ChatScreen(
+                                      senderName: userData['owner_email_nickname'],
+                                      receiverName : userData['helper_email_nickname'],
+                                      receiverUid: userData['helperUid'],
+                                      documentName : doc.id,
+                                    )));
+                          }),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: <Widget>[
+                                ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.transparent,
+                                    backgroundImage: userData['photoUrl'] is String
+                                        ? NetworkImage(userData['photoUrl'])
+                                        : AssetImage('assets/ava.png') as ImageProvider<Object>,
+                                    radius: 30,
+                                  ),
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        userData['helper_email_nickname'],
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        "$lastMessage",
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 10,
+                                    child: Text(
+                                      '$timeAgo',
+                                      style: TextStyle(
+                                        color: Colors.grey[800],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                // 메시지 카운트를 표시하는 배지 추가
+                                if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
+                                  Positioned(
+                                    top: 25,
+                                    right: 20,
+                                    child: Container(
+                                      padding: EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent, // 배지의 배경 색상
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        messageCount.toString(),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
                         ),
-                        child: InkWell(
-                          onLongPress: () {
-                            helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                          },
-                      onTap: (() {
-                        Navigator.push(
-                            context,
-                            new MaterialPageRoute(
-                                builder: (context) => ChatScreen(
-                                  senderName: userData['helper_email_nickname'],
-                                  receiverName : userData['owner_email_nickname'],
-                                  receiverUid: userData['ownerUid'],
-                                  documentName : doc.id,
-                                )));
-                      }),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: <Widget>[
-                            ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                backgroundImage: userData['photoUrl'] is String
-                                    ? NetworkImage(userData['photoUrl'])
-                                    : AssetImage('assets/ava.png') as ImageProvider<Object>,
-                                radius: 30,
-                              ),
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    userData['owner_email_nickname'],
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    "$lastMessage",
-                                    style: TextStyle(
-                                      color: Colors.grey[800],
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              right: 10,
-                              child: Text(
-                                '$timeAgo',
-                                style: TextStyle(
-                                  color: Colors.grey[800],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            // 메시지 카운트를 표시하는 배지 추가
-                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
-                              Positioned(
-                                top: 25,
-                                right: 20,
-                                child: Container(
-                                  padding: EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent, // 배지의 배경 색상
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    messageCount.toString(),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
                       ),
-                    )
-                  )
-                  else if (userData['owner_email'] == currentUserEmail)
-                    Dismissible(
-                      key: Key(doc.id),
-                      confirmDismiss: (direction) async {
-                        // 스와이프 후 삭제 확인 대화상자 표시
-                        ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                      },
-                      background: Container(
-                        color: Colors.red,
-                        child: Align(
-                          alignment: Alignment.center, // 왼쪽 정렬
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
-                            children: <Widget>[
-                              Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
-                              Text(
-                                ' 삭제', // 텍스트
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    child: InkWell(
-                      onLongPress: () {
-                        // print(doc.data());
-                        ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                      },
-                      onTap: (() {
-                        Navigator.push(
-                            context,
-                            new MaterialPageRoute(
-                                builder: (context) => ChatScreen(
-                                  senderName: userData['owner_email_nickname'],
-                                  receiverName : userData['helper_email_nickname'],
-                                  receiverUid: userData['helperUid'],
-                                  documentName : doc.id,
-                                )));
-                      }),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: <Widget>[
-                            ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                backgroundImage: userData['photoUrl'] is String
-                                    ? NetworkImage(userData['photoUrl'])
-                                    : AssetImage('assets/ava.png') as ImageProvider<Object>,
-                                radius: 30,
-                              ),
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    userData['helper_email_nickname'],
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    "$lastMessage",
-                                    style: TextStyle(
-                                      color: Colors.grey[800],
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              right: 10,
-                                child: Text(
-                                  '$timeAgo',
-                                  style: TextStyle(
-                                    color: Colors.grey[800],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            // 메시지 카운트를 표시하는 배지 추가
-                            if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
-                              Positioned(
-                                top: 25,
-                                right: 20,
-                                child: Container(
-                                  padding: EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent, // 배지의 배경 색상
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    messageCount.toString(),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Divider(thickness: 1),
-                ],
-              );
-            }),
-          ),
-        )
-            : Center(
-          child: CircularProgressIndicator(), // 로딩 중 표시
-        ));
+                      // Divider(thickness: 1),
+                    ],
+                  );
+                }),
+              ),
+            )
+                : Center(
+              child: CircularProgressIndicator(), // 로딩 중 표시
+            )
+        ),
+    ),
+    );
   }
 }
 

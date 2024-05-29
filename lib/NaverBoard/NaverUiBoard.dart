@@ -86,7 +86,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [ Color(0xFFFF4500), Colors.yellow.shade700], // 진한 주황색에서 연한 주황색으로
-
+                // Color(0xFFFF8B13), Color(0xFFFFD700)
             ),
           ),
           child: AppBar(

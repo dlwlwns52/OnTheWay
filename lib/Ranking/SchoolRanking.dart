@@ -21,12 +21,18 @@ class _RankingPageState extends State<RankingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('학교별 랭킹'),
-      //   backgroundColor: Colors.deepPurple,
-      // ),
-      appBar: PreferredSize(
+    return WillPopScope(
+        onWillPop: () async{
+          return true;
+        },
+      child: GestureDetector(
+        onHorizontalDragEnd: (details){
+          if (details.primaryVelocity! >  0){
+            Navigator.pop(context);
+          }
+        },
+      child: Scaffold(
+          appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: Container(
           decoration: BoxDecoration(
@@ -37,7 +43,7 @@ class _RankingPageState extends State<RankingPage> {
             ),
           ),
           child: AppBar(
-            title: Text('학교별 랭킹'),
+            title: Text('학교별 랭킹', style: TextStyle(fontSize: 22),),
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
@@ -64,6 +70,8 @@ class _RankingPageState extends State<RankingPage> {
           return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple)));
         },
       ),
+    ),
+    ),
     );
   }
 
