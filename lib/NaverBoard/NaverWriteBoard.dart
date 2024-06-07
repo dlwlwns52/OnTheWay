@@ -305,6 +305,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 TextFormField(
                   controller: _requestController,
                   decoration: InputDecoration(
+                    hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
+                    floatingLabelBehavior: FloatingLabelBehavior.always, // 항상 라벨 보이기
+                    hintStyle: TextStyle(color: Colors.grey), // 힌트 텍스트 스타일
                     labelText: '요청사항',
                     contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
                     alignLabelWithHint: true,

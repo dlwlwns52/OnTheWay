@@ -14,6 +14,9 @@ import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
 import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
 import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
 import 'dart:io' show Platform;
+import 'package:lottie/lottie.dart';
+
+
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
 class NaverBoardPage extends StatefulWidget {
   @override
@@ -38,6 +41,12 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
       FirebaseAuth.instance.currentUser?.email ?? '',
           () => setState(() {}),context,
     );
+
+    alarm.onNotificationCountChanged = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
   }
 
   // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
@@ -72,84 +81,77 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Color(0xFFFF8B13),
-      //   // backgroundColor: Colors.deepOrange,
-      //
-      //   // 앱 바의 배경색을 오렌지색으로 설정합니다.
-      //   title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold), ),
-
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [ Color(0xFFFF4500), Colors.yellow.shade700], // 진한 주황색에서 연한 주황색으로
-                // Color(0xFFFF8B13), Color(0xFFFFD700)
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                'assets/lottie/orange.json',
+                fit: BoxFit.fill,
+              ),
             ),
-          ),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold)),
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new),
-              onPressed: () {
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => LoginScreen()));
-              },
-            ),
-            actions: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(right: 10.0),
-                child: Stack(
-                  alignment: Alignment.topRight,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.notifications),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => AlarmUi(),
-                          ),
-                        );
-                        setState(() {
-                          alarm.resetNotificationCount();
-                        });
-                      },
-                    ),
-                    if (alarm.getNotificationCount() > 0)
-                      Positioned(
-                        right: 11,
-                        top: 11,
-                        child: Container(
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 14,
-                            minHeight: 14,
-                          ),
-                          child: Text(
-                            '${alarm.getNotificationCount()}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
+            AppBar(
+              backgroundColor: Colors.transparent,
+              title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold)),
+              centerTitle: true,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                      context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                },
+              ),
+              actions: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: 10.0),
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.notifications),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AlarmUi(),
                             ),
-                            textAlign: TextAlign.center,
+                          );
+                          alarm.resetNotificationCount();
+                        },
+                      ),
+                      if (alarm.getNotificationCount() > 0)
+                        Positioned(
+                          right: 11,
+                          top: 11,
+                          child: Container(
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            constraints: BoxConstraints(
+                              minWidth: 14,
+                              minHeight: 14,
+                            ),
+                            child: Text(
+                              '${alarm.getNotificationCount()}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
+
 //게시판 몸통
       body:
       Column(
@@ -390,6 +392,8 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           ),
         ],
       ),
+
+
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(

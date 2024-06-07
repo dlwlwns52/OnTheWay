@@ -57,3 +57,12 @@ flutter:
     - assets/avatar.png
     - assets/ava.png
     - assets/lottie/Animation.json
+    - assets/lottie/BoardColor.json
+    - assets/lottie/Circle.json
+    - assets/lottie/AppbarColor.json
+
+    - assets/lottie/blue.json
+    - assets/lottie/pink.json
+    - assets/lottie/puple.json
+    - assets/lottie/orange.json
+    - assets/lottie/check.json

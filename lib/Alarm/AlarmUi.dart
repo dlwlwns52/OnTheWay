@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 import '../Chat/AllUsersScreen.dart';
 import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
@@ -20,8 +21,20 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.initState();
     // 현재 사용자의 이메일을 가져와서 NaverAlarm 클래스를 초기화합니다.
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
-    alarm = Alarm(currentUserEmail, () => setState(() {}), context);
+
+
+    alarm = Alarm(currentUserEmail, () {
+      if (mounted) {
+        setState(() {});
+      }
+    }, context);
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
+  }
+
+  @override
+  void dispose() {
+    // 여기에서 스트림 구독 취소 및 기타 정리 작업을 수행합니다.
+    super.dispose();
   }
 
   // 알림 목록을 스트림 형태로 불러오는 함수
@@ -50,20 +63,33 @@ class _NotificationScreenState extends State<AlarmUi> {
             Navigator.pop(context);
           }
         },
-        child:Scaffold(
-          appBar: AppBar(
-            backgroundColor: Color(0xFFF86F03),
-            title: Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
-                onPressed: () {
-                  setState(() {
-                    isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
-                  });
-                },
-              ),
-            ],
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Lottie.asset(
+                    'assets/lottie/BoardColor.json',
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                AppBar(
+                  backgroundColor: Colors.transparent,
+                  title: Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
+                  actions: <Widget>[
+                    IconButton(
+                      icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           body: Column(
             children: [

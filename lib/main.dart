@@ -71,13 +71,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     autoLoginResult = _autoLogin();
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (message.data['screen'] == 'AlarmUi') {
-        // `Navigator`를 사용하여 `AlarmUi` 화면으로 이동합니다.
-        // 이 예제에서는 `AlarmUi` 클래스를 직접 구현해야 합니다.
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => AlarmUi()));
-      }
-    });
+    // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    //   if (message.data['screen'] == 'AlarmUi' && mounted) {
+    //     Navigator.of(context).push(MaterialPageRoute(builder: (_) => NaverBoardPage()));
+    //   }
+    // });
+
   }
 
   @override

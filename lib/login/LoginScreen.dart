@@ -2,12 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
+import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
 import '../NaverBoard/NaverUiBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 
 class LoginScreen extends StatefulWidget {
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -46,135 +48,155 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      backgroundColor: Color(0xFFFF8B13),
-      body: Center(  // Center 위젯 추가
-        //로그인 창 크기설정
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          width: MediaQuery.of(context).size.width * 0.95, // 가로길이 설정
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // 이메일 입력
-                TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: '이메일:', // 레이블 텍스트 설정
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.orange), // 경계 색상 설정
-                    ),
-                  ),
-                  onFieldSubmitted: (value) { // 'next' 버튼이 클릭되면
-                    FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode); // 이메일 필드 -> 비밀번호 필드
-                  },
-                ),
-
-                SizedBox(height: 20), // 필드 사이에 간격
-
-                TextFormField(
-                  // 비밀번호를 입력받는 필드
-                  focusNode: _EmailToPasswordFocusNode,
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    labelText: '비밀번호:', // 레이블 텍스트 설정
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.orange), // 경계 색상 설정
-                    ),
-                  ),
-                  obscureText: true, // 비밀번호를 별표로 표시
-                  onFieldSubmitted: (value) => _login(), // 비밀번호 필드 -> 로그인
-                ),
-
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Checkbox(
-                      value: _isAutoLogin, // 체크박스 상태 값
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isAutoLogin = value ?? false; // 상태 변경
-                        });
-                      },
-                      activeColor: Colors.orange, // 체크된 상태의 색깔
-                    ),
-                    Text(
-                      '자동 로그인',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 5),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    ElevatedButton(
-                      child: Text('비밀번호 찾기'),
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.orange, // 버튼 배경색
-                        onPrimary: Colors.white, // 버튼 텍스트 색상
-                        shadowColor: Colors.orangeAccent, // 그림자 색
-                        elevation: 2, // 그림자 높이
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글기
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      child: Text('회원가입'),
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CreateAccount())
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.orange, // 버튼 배경색
-                        onPrimary: Colors.white, // 버튼 텍스트 색상
-                        shadowColor: Colors.orangeAccent, // 그림자 색
-                        elevation: 2, // 그림자 높이
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글기
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 20),
-
-                Container(
-                  height: 40,
-                  width: double.infinity, // 버튼의 가로 길이를 최대로 설정
-                  child: TextButton(
-                    child: Text("로그인", style: TextStyle(color: Colors.white)),
-                    onPressed:  _login,
-                    style: TextButton.styleFrom(
-                      backgroundColor: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey,
-                      side: BorderSide(color: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey, width: 2),
-                    ),
-                  ),
-                ),
-              ],
+      body: Stack(
+        children: [
+          // 배경 그래디언트 추가
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF8B13),Colors.deepPurpleAccent, Color(0xFFFF8B13)],
+                //Color(0xFFFF8B13)
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
-        ),
+          Lottie.asset(
+            'assets/lottie/Animation.json',
+            fit: BoxFit.fill,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              width: MediaQuery.of(context).size.width * 0.9,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    // 이메일 입력
+                    TextFormField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        labelText: '이메일:',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.orange),
+                        ),
+                      ),
+                      onFieldSubmitted: (value) {
+                        FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode);
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      focusNode: _EmailToPasswordFocusNode,
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: '비밀번호:',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.orange),
+                        ),
+                      ),
+                      obscureText: true,
+                      onFieldSubmitted: (value) => _login(),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Checkbox(
+                          value: _isAutoLogin,
+                          onChanged: (bool? value) {
+                            _isAutoLogin = value ?? false;
+                          },
+                          activeColor: Colors.orange,
+                        ),
+                        Text(
+                          '자동 로그인',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        ElevatedButton(
+                          child: Text('비밀번호 찾기'),
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.orange,
+                            onPrimary: Colors.white,
+                            shadowColor: Colors.orangeAccent,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          child: Text('회원가입'),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => CreateAccount())
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.orange,
+                            onPrimary: Colors.white,
+                            shadowColor: Colors.orangeAccent,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Container(
+                      height: 40,
+                      width: double.infinity,
+                      child: TextButton(
+                        child: Text("로그인", style: TextStyle(color: Colors.white)),
+                        onPressed: _login,
+                        style: TextButton.styleFrom(
+                          backgroundColor: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey,
+                          side: BorderSide(color: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+
 
   void _login() async{
     final FirebaseAuth _auth = FirebaseAuth.instance;

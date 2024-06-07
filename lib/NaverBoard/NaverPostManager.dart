@@ -116,90 +116,89 @@ class NaverPostManager {
         builder: (context) {
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20), // 다이얼로그 모서리 둥글게
             ),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.info, color: Colors.orangeAccent, size: 30),
-                SizedBox(width: 10),
-                Text(
-                  '요청사항',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
-                ),
-              ],
+            title: Text(
+              '요청사항',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             content: SingleChildScrollView(
               child: Column(
                 children: [
                   Text(
                     doc['Request'] ?? '요청사항 없음',
+                    style: TextStyle(fontSize: 18),
                     textAlign: TextAlign.left,
                   ),
                   SizedBox(height: 20),
-                  Lottie.asset(
-                    'assets/lottie/Animation.json', // Lottie 애니메이션 파일 경로
-                    width: 100,
-                    height: 100,
-                    // fit: BoxFit.fill,
-                  ),
+                  // Lottie.asset(
+                  //   'assets/lottie/Circle.json', // Lottie 애니메이션 파일 경로
+                  //   width: 100,
+                  //   height: 100,
+                  //   // fit: BoxFit.fill,
+                  // ),
                 ],
               ),
             ),
             actions: <Widget>[
+
               Container(
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Colors.orangeAccent,
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.blueGrey.withOpacity(0.25),
-                      spreadRadius: 1,
-                      offset: Offset(0, 1),
-                    ),
+                      BoxShadow(
+                        // color: Colors.orangeAccent.withOpacity(0.25),
+                        color: Colors.blueGrey.withOpacity(0.25),
+                        spreadRadius: 1,
+                        // blurRadius: 0,
+                        offset: Offset(0, 1), // 그림자 위치 조정
+                      ),
                   ],
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.navigation_sharp, color: Colors.white),
+                  icon: Icon(Icons.navigation_sharp,color: Colors.white,),
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location']),
-                    ));
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
+                      ));
                   },
                 ),
               ),
-              SizedBox(width: 20),
-              ElevatedButton(
+              SizedBox(width: 35), // 아이콘 버튼과 다음 위젯 사이의 간격 조절
+
+              ElevatedButton( //'도와주기' 버튼
                 style: ElevatedButton.styleFrom(
                   primary: Colors.orangeAccent,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
                 ),
-                child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
-                  helpPost(context, doc);
+                  helpPost(context, doc); // 도와주기 기능 실행
                 },
               ),
+
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.orangeAccent,
+                  primary: Colors.orangeAccent, // 버튼 색상 변경
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
                 ),
-                child: Text('닫기', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('닫기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // 대화 상자 닫기
                 },
               ),
             ],
           );
         },
       );
-
     }
   }
 
