@@ -37,11 +37,14 @@ dependencies:
 
   #애니메이션
   lottie: ^2.7.0
+
+
   #채팅 오픈소스
   firebase_storage: ^11.6.0
   image_picker: ^1.0.7
   rxdart: ^0.27.7
   flutter_chat_bubble: ^2.0.2
+
 
 dev_dependencies:
   flutter_test:
@@ -56,13 +59,17 @@ flutter:
     - assets/blankimage.png
     - assets/avatar.png
     - assets/ava.png
-    - assets/lottie/Animation.json
-    - assets/lottie/BoardColor.json
-    - assets/lottie/Circle.json
-    - assets/lottie/AppbarColor.json
 
+    - assets/lottie/Animation.json
+    - assets/lottie/Circle.json
+    -
+    - assets/lottie/BoardColor.json
+    - assets/lottie/AppbarColor.json
     - assets/lottie/blue.json
+    - assets/lottie/blue2.json
     - assets/lottie/pink.json
     - assets/lottie/puple.json
     - assets/lottie/orange.json
-    - assets/lottie/check.json
+    - assets/lottie/walk.json
+    - assets/lottie/Check.json
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lottie/lottie.dart';
 
 import '../Map/WriteMap/CurrentMapScreen.dart';
 import '../Map/WriteMap/StoreMapScreen.dart';
@@ -30,6 +31,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
 
   //스낵바가 이미 표시되었는지를 추적하는 플래그
   bool _snackBarShown = false;
+  bool _isUploading = false;
 
 //게시물 수정하기 누를때 전 정보를 불러옴
   @override
@@ -71,7 +73,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
             '최대 ${maxLength}글자까지 입력 가능합니다. \n 상세내용은 채팅방을 이용해주세요.',
             textAlign: TextAlign.center,
           ),
-          duration: Duration(seconds: 10),
+          duration: Duration(seconds: 2),
         ),
       );
       _snackBarShown = true;
@@ -180,7 +182,20 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
           'date': DateTime.now(),
         });
 
-        Navigator.of(context).pop();
+
+        //check 애니메이션
+        setState(() {
+          _isUploading = true;
+        });
+
+        Future.delayed(Duration(seconds: 1), () {
+          setState(() {
+            _isUploading = false;
+          });
+          Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
+          _showSnackBar("게시물이 업로드 되었습니다.");
+        });
+
       }
     } catch (e) {
       print(e);
@@ -203,127 +218,156 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('게시물 작성',style: TextStyle(fontWeight: FontWeight.bold), ),
-        backgroundColor:Color(0xFFFF8B13),
+      // appBar: AppBar(
+      //   title: Text('게시물 작성',style: TextStyle(fontWeight: FontWeight.bold), ),
+      //   backgroundColor:Color(0xFFFF8B13),
+      // ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                  'assets/lottie/blue2.json',
+                  fit: BoxFit.fill,
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 4,
+              shadowColor: Colors.indigo.withOpacity(0.5),
+              title: Text('게시물 작성', style: TextStyle(fontWeight: FontWeight.bold),),
+            ),
+          ],
+        ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              children: <Widget>[
-                //본인 위치 입력
-                TextFormField(
-                  controller: _locationController,
-                  decoration: InputDecoration(
-                    labelText: '본인 위치',
-                    // contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  maxLines: null,
-                  maxLength: 8,
-                  onChanged: (value) => _checkMaxLength(_locationController, 8),
-                  onFieldSubmitted: (value) => _currentChooseLocation(),
-                ),
-
-                // 본인 위치 지도로 설정 버튼
-                ElevatedButton.icon(
-                  onPressed: _currentChooseLocation, // 버튼 클릭 시 _chooseLocation 함수 호출
-                  icon: Icon(Icons.location_on, color: Colors.white), // 위치 아이콘 추가
-                  label: Text(
-                    '본인 위치 설정',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // 텍스트 색상
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    //본인 위치 입력
+                    TextFormField(
+                      controller: _locationController,
+                      decoration: InputDecoration(
+                        labelText: '본인 위치',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 8,
+                      onChanged: (value) => _checkMaxLength(_locationController, 8),
+                      onFieldSubmitted: (value) => _currentChooseLocation(),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: currentLocationSet ? Colors.orange : Colors.grey, // 버튼 배경색
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0), // 버튼 모서리 둥글게
+                    // 본인 위치 지도로 설정 버튼
+                    ElevatedButton.icon(
+                      onPressed: _currentChooseLocation,
+                      icon: Icon(Icons.location_on, color: Colors.white),
+                      label: Text(
+                        '본인 위치 설정',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        primary: currentLocationSet ? Colors.indigo : Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // 버튼 내부 패딩
-                  ),
-                ),
-
-                SizedBox(height: 8.0),
-
-               //주문 시킬 가게 입력
-                TextFormField(
-                  controller: _storeController,
-                  decoration: InputDecoration(
-                    labelText: '주문 시킬 가게',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  maxLines: null,
-                  maxLength: 8,
-                  onChanged: (value) => _checkMaxLength(_storeController, 8),
-                  onFieldSubmitted: (value) => _storeChooseLocation(),
-                ),
-
-                //가게 위치 지도로 설정 버튼
-                ElevatedButton.icon(
-                  onPressed: _storeChooseLocation, // 버튼 클릭 시 _chooseLocation 함수 호출
-                  icon: Icon(Icons.location_on, color: Colors.white), // 위치 아이콘 추가
-                  label: Text(
-                    '가게 위치 설정',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // 텍스트 색상
+                    SizedBox(height: 8.0),
+                    //주문 시킬 가게 입력
+                    TextFormField(
+                      controller: _storeController,
+                      decoration: InputDecoration(
+                        labelText: '주문 시킬 가게',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 8,
+                      onChanged: (value) => _checkMaxLength(_storeController, 8),
+                      onFieldSubmitted: (value) => _storeChooseLocation(),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: storeLocationSet ? Colors.orange : Colors.grey, // 버튼 배경색
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0), // 버튼 모서리 둥글게
+                    //가게 위치 지도로 설정 버튼
+                    ElevatedButton.icon(
+                      onPressed: _storeChooseLocation,
+                      icon: Icon(Icons.location_on, color: Colors.white),
+                      label: Text(
+                        '가게 위치 설정',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        primary: storeLocationSet ? Colors.orange : Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // 버튼 내부 패딩
-                  ),
+                    SizedBox(height: 16.0),
+                    TextFormField(
+                      controller: _costController,
+                      decoration: InputDecoration(
+                        labelText: '비용',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 7,
+                      onChanged: (value) => _checkMaxLength(_costController, 7),
+                    ),
+                    SizedBox(height: 16.0),
+                    TextFormField(
+                      controller: _requestController,
+                      decoration: InputDecoration(
+                        hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        hintStyle: TextStyle(color: Colors.grey),
+                        labelText: '요청사항',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        alignLabelWithHint: true,
+                      ),
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.done,
+                      minLines: 7,
+                      maxLines: null,
+                      maxLength: 30,
+                      onChanged: (value) => _checkMaxLength(_requestController, 30),
+                    ),
+                  ],
                 ),
-
-                SizedBox(height: 16.0),
-
-                TextFormField(
-                  controller: _costController,
-                  decoration: InputDecoration(
-                    labelText: '비용',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  maxLines: null,
-                  maxLength: 5,
-                  onChanged: (value) => _checkMaxLength(_costController, 5),
-                ),
-
-                SizedBox(height: 16.0),
-
-                TextFormField(
-                  controller: _requestController,
-                  decoration: InputDecoration(
-                    hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
-                    floatingLabelBehavior: FloatingLabelBehavior.always, // 항상 라벨 보이기
-                    hintStyle: TextStyle(color: Colors.grey), // 힌트 텍스트 스타일
-                    labelText: '요청사항',
-                    contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                    alignLabelWithHint: true,
-                  ),
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.done,
-                  minLines: 7,
-                  maxLines: null,
-                  maxLength: 30,
-                  onChanged: (value) => _checkMaxLength(_requestController, 30),
-                  // onFieldSubmitted: (value) => _uploadPost(), // 요청사항 -> 게시하기
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          if (_isUploading)
+            Opacity(
+              opacity: 0.5,
+              child: ModalBarrier(dismissible: false, color: Colors.grey),
+            ),
+          if (_isUploading)
+            Center(
+              child: ClipOval(
+                child: Lottie.asset(
+                  'assets/lottie/walk.json',
+                  width: 300,
+                  height: 300,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ),
+        ],
       ),
 
       bottomNavigationBar: BottomAppBar(
@@ -349,10 +393,6 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
           ),
         ),
       ),
-
     );
-
   }
-
-
 }

@@ -87,10 +87,11 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           children: [
             Positioned.fill(
               child: Lottie.asset(
-                'assets/lottie/orange.json',
+                'assets/lottie/blue2.json',
                 fit: BoxFit.fill,
               ),
             ),
+
             AppBar(
               backgroundColor: Colors.transparent,
               title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -260,7 +261,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                 borderRadius: BorderRadius.circular(15.0), // 라운드 모서리
                               ),
                               elevation: 3.0, // 그림자 효과
-                              color: isMyPost ? Colors.orange[100] : Colors.white,
+                              color: isMyPost ? Colors.indigo[50] : Colors.white,
                               child: Container(
                                 height: 100, // 카드의 높이 설정
                                 child: Padding(
@@ -286,7 +287,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                               child: Container(
                                                 padding: EdgeInsets.all(5.0), // 내부 여백
                                                 decoration: BoxDecoration(
-                                                  color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
+                                                  color: isMyPost ? Colors.indigo[50] : Colors.white, // 배경 색상
                                                   borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
                                                   boxShadow: isMyPost ? [] :[
                                                     BoxShadow(
@@ -332,7 +333,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                                               child: Container(
                                                 padding: EdgeInsets.all(5.0),
                                                 decoration: BoxDecoration(
-                                                  color: isMyPost ? Colors.orange[100] : Colors.white, // 배경 색상
+                                                  color: isMyPost ? Colors.indigo[50] : Colors.white, // 배경 색상
                                                   borderRadius: BorderRadius.circular(20),
                                                   boxShadow: isMyPost ? []
                                                     : [
@@ -376,7 +377,7 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
                           // 현재 게시물이 내 게시물이고 다음 게시물이 내 게시물이 아닐 때만 구분선을 추가
                           if (isMyPost && !nextPostIsMine)
                             Divider(
-                              color: Colors.orange[50], // 구분선의 색상 설정
+                              color: Colors.indigo[50], // 구분선의 색상 설정
                               thickness: 3.0, // 구분선의 두께 설정
                             ),
                         ],

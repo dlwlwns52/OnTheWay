@@ -2,7 +2,7 @@ import 'package:OnTheWay/Map/WriteMap/CurrentMapScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
-
+import 'package:lottie/lottie.dart' as lottie;
 
 
 class StoreMapScreen extends StatefulWidget {
@@ -61,11 +61,34 @@ class _MapScreenState extends State<StoreMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFFF8B13),
-        title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+    return  Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: lottie.Lottie.asset(
+                  'assets/lottie/AppbarColor.json',
+                  fit: BoxFit.fill,
+                  options: lottie.LottieOptions(
+
+                  )
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+              actions: <Widget>[
+              ],
+            ),
+          ],
+        ),
       ),
+      // appBar: AppBar(
+      //   backgroundColor: Color(0xFFFF8B13),
+      //   title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+      // ),
 
       body: Stack(
           children : [

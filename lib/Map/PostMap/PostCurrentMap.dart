@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:lottie/lottie.dart' as lottie;
 
 class PostCurrentMap extends StatefulWidget {
   final String documentId;
@@ -60,10 +61,35 @@ class _MapScreenState extends State<PostCurrentMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFFF8B13),
-        title: Text('사용자 위치', style: TextStyle(fontWeight: FontWeight.bold),),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: lottie.Lottie.asset(
+                'assets/lottie/AppbarColor.json',
+                fit: BoxFit.fill,
+                options: lottie.LottieOptions(
+
+                )
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              // elevation: 4,
+              // shadowColor: Colors.indigo.withOpacity(0.5),
+              title: Text('사용자 위치', style: TextStyle(fontWeight: FontWeight.bold),),
+              actions: <Widget>[
+              ],
+            ),
+          ],
+        ),
       ),
+
+      // appBar: AppBar(
+      //   backgroundColor: Color(0xFFFF8B13),
+      //   title: Text('사용자 위치', style: TextStyle(fontWeight: FontWeight.bold),),
+      // ),
 
       body: Stack(
         children: [

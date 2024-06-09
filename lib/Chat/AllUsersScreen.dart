@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'ChatScreen.dart';
@@ -430,14 +431,27 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           }
         },
         child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: Color(0xFFFF8B13),
-              elevation: 0,
-              title: Text("채팅",
-                style: TextStyle(fontWeight: FontWeight.bold),),
-              actions: <Widget>[
-              ],
-
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(kToolbarHeight),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Lottie.asset(
+                      'assets/lottie/blue.json',
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 4,
+                    shadowColor: Colors.black.withOpacity(0.5),
+                    title: Text("채팅",
+                      style: TextStyle(fontWeight: FontWeight.bold),),
+                    actions: <Widget>[
+                    ],
+                  ),
+                ],
+              ),
             ),
 
             body: acceptedChatActions != null

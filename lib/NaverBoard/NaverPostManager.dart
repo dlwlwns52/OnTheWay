@@ -147,7 +147,7 @@ class NaverPostManager {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.orangeAccent,
+                  color: Colors.indigo,
                   shape: BoxShape.circle,
                   boxShadow: [
                       BoxShadow(
@@ -172,7 +172,7 @@ class NaverPostManager {
 
               ElevatedButton( //'도와주기' 버튼
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.orangeAccent,
+                  primary: Colors.indigoAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
@@ -185,7 +185,7 @@ class NaverPostManager {
 
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.orangeAccent, // 버튼 색상 변경
+                  primary: Colors.indigoAccent, // 버튼 색상 변경
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
