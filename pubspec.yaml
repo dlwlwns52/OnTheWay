@@ -62,14 +62,16 @@ flutter:
 
     - assets/lottie/Animation.json
     - assets/lottie/Circle.json
-    -
     - assets/lottie/BoardColor.json
     - assets/lottie/AppbarColor.json
     - assets/lottie/blue.json
     - assets/lottie/blue2.json
+    - assets/lottie/blue3.json
     - assets/lottie/pink.json
     - assets/lottie/puple.json
     - assets/lottie/orange.json
     - assets/lottie/walk.json
     - assets/lottie/Check.json
+    - assets/lottie/CheckTest.json
+
 

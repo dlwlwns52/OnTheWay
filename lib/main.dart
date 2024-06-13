@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:lottie/lottie.dart';
 import 'Alarm/AlarmUi.dart';
 import 'NaverBoard/NaverUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -119,30 +120,29 @@ class LoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
 
-      body: Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.3),
+      body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, // 주 축(수직 방향)의 정렬을 설정합니다.
-          crossAxisAlignment: CrossAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
+          mainAxisAlignment: MainAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
-            Center(
-              child: AutoSizeText(
+            AutoSizeText(
                 'OnTheWay',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 60,
-                  color: Color(0xFFFF8B13),
+                  color: Colors.indigo,
                 ),
                 maxLines: 1,
               ),
-            ),
-
-
             SizedBox(height: 30),
+            Lottie.asset(
+                  'assets/lottie/walk.json',
+                  fit: BoxFit.cover,
+              ),
 
+            SizedBox(height: 100),
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
             ),
           ],
         ),

@@ -66,7 +66,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
           children: [
             Positioned.fill(
               child: lottie.Lottie.asset(
-                  'assets/lottie/AppbarColor.json',
+                  'assets/lottie/blue3.json',
                   fit: BoxFit.fill,
                   options: lottie.LottieOptions(
 
@@ -75,7 +75,8 @@ class _MapScreenState extends State<CurrentMapScreen> {
             ),
             AppBar(
               backgroundColor: Colors.transparent,
-              elevation: 0,
+              elevation: 1,
+              shadowColor: Colors.indigo.withOpacity(0.5),
               title: Text('현재 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
               actions: <Widget>[
               ],
@@ -151,7 +152,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-            color: Color(0xFFFF8B13), // 버튼 배경색
+              color: Colors.indigo[300], // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
           ),
@@ -190,7 +191,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
               ],
             ),
             style: ElevatedButton.styleFrom(
-              primary: Color(0xFFFF8B13),
+              primary: Colors.indigo[300],
               elevation: 0, // 경계선을 제거합니다.
             ),
           ),

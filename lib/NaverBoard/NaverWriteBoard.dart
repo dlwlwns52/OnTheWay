@@ -309,7 +309,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        primary: storeLocationSet ? Colors.orange : Colors.grey,
+                        primary: storeLocationSet ? Colors.indigo : Colors.grey,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
@@ -375,7 +375,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-            color: Colors.orange, // 버튼 배경색
+            color: Colors.indigo[300], // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
           ),

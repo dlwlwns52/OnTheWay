@@ -68,7 +68,7 @@ class _MapScreenState extends State<StoreMapScreen> {
           children: [
             Positioned.fill(
               child: lottie.Lottie.asset(
-                  'assets/lottie/AppbarColor.json',
+                  'assets/lottie/blue3.json',
                   fit: BoxFit.fill,
                   options: lottie.LottieOptions(
 
@@ -77,7 +77,8 @@ class _MapScreenState extends State<StoreMapScreen> {
             ),
             AppBar(
               backgroundColor: Colors.transparent,
-              elevation: 0,
+              elevation: 1,
+              shadowColor: Colors.indigo.withOpacity(0.5),
               title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
               actions: <Widget>[
               ],

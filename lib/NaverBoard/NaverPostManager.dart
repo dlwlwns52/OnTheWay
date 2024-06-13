@@ -27,7 +27,7 @@ class NaverPostManager {
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  primary: Colors.orangeAccent,
+                  primary: Colors.indigoAccent,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20))
               ),
@@ -42,7 +42,7 @@ class NaverPostManager {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  primary: Colors.orangeAccent,
+                  primary: Colors.indigoAccent,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20))
               ),
