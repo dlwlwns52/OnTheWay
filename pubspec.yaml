@@ -71,7 +71,8 @@ flutter:
     - assets/lottie/puple.json
     - assets/lottie/orange.json
     - assets/lottie/walk.json
-    - assets/lottie/Check.json
     - assets/lottie/CheckTest.json
+    - assets/lottie/login.json
+
 
 

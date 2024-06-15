@@ -24,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   //이메일, 비밀번호 텍스트 유무에 따라 로그인 버튼 색상 변하는 변수
   bool isEmailFilled = false;
   bool isPasswordFilled = false;
+  bool congraturation = true;
 
   void _checkFieldsFilled() {
     setState(() {
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _PasswordToLoginFocusNode.dispose();
     super.dispose();
   }
-
+  //
 
   @override
   Widget build(BuildContext context) {
@@ -55,22 +56,33 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           // 배경 그래디언트 추가
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFF8B13),Colors.deepPurpleAccent, Color(0xFFFF8B13)],
-                //Color(0xFFFF8B13)
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     gradient: LinearGradient(
+          //       colors: [Colors.indigo, Colors.white,Colors.indigo],
+          //       //Color(0xFFFF8B13)
+          //       begin: Alignment.topLeft,
+          //       end: Alignment.bottomRight,
+          //     ),
+          //   ),
+          // ),
+
           Lottie.asset(
-            'assets/lottie/Animation.json',
+            'assets/lottie/blue2.json',
             fit: BoxFit.fill,
             width: double.infinity,
             height: double.infinity,
           ),
+
+
+            // Lottie.asset(
+            //   'assets/lottie/Animation.json',
+            //   fit: BoxFit.fill,
+            //   width: double.infinity,
+            //   height: double.infinity,
+            // ),
+
+
 
           Center(
             child: Container(
@@ -113,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: '비밀번호:',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.orange),
+                          borderSide: BorderSide(color: Colors.indigo),
                         ),
                       ),
                       obscureText: true,
@@ -126,9 +138,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         Checkbox(
                           value: _isAutoLogin,
                           onChanged: (bool? value) {
-                            _isAutoLogin = value ?? false;
+                            setState(() {
+                              _isAutoLogin = value ?? false;
+                            });
                           },
-                          activeColor: Colors.orange,
+                          activeColor: Colors.indigoAccent,
                         ),
                         Text(
                           '자동 로그인',
@@ -144,9 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text('비밀번호 찾기'),
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.orange,
+                            primary: Colors.indigo,
                             onPrimary: Colors.white,
-                            shadowColor: Colors.orangeAccent,
+                            // shadowColor: Colors.black,
                             elevation: 2,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -162,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.orange,
+                            primary: Colors.indigo,
                             onPrimary: Colors.white,
                             shadowColor: Colors.orangeAccent,
                             elevation: 2,
@@ -175,17 +189,43 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SizedBox(height: 20),
                     Container(
-                      height: 40,
+                      height: 50,
                       width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: isEmailFilled && isPasswordFilled
+                              ? [Colors.indigoAccent, Colors.blueAccent, Colors.indigoAccent]
+                              : [Colors.grey, Colors.grey],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 4),
+                            blurRadius: 5.0,
+                          ),
+                        ],
+                      ),
                       child: TextButton(
-                        child: Text("로그인", style: TextStyle(color: Colors.white)),
                         onPressed: _login,
+                        child: Text(
+                          "로그인",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: TextButton.styleFrom(
-                          backgroundColor: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey,
-                          side: BorderSide(color: isEmailFilled && isPasswordFilled ? Colors.orange : Colors.grey, width: 2),
+                          // padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
+
                   ],
                 ),
               ),
@@ -247,7 +287,6 @@ class _LoginScreenState extends State<LoginScreen> {
             if (querySnapshot.docs.isNotEmpty) {
               // 해당 이메일을 가진 사용자 문서가 존재하는 경우
               DocumentSnapshot userDoc = querySnapshot.docs.first;
-              print(userDoc['nickname']);
               // 해당 이메일을 가진 사용자 문서가 존재하는 경우
               String userId = userDoc.id;
 

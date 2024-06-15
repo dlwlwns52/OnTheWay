@@ -153,7 +153,7 @@ class _MapScreenState extends State<StoreMapScreen> {
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-            color: Color(0xFFFF8B13), // 버튼 배경색
+            color: Colors.indigo[300], // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
           ),
@@ -192,7 +192,7 @@ class _MapScreenState extends State<StoreMapScreen> {
               ],
             ),
             style: ElevatedButton.styleFrom(
-              primary: Color(0xFFFF8B13),
+              primary: Colors.indigo[300],
               elevation: 0, // 경계선을 제거합니다.
             ),
           ),

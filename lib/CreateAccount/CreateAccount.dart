@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
 import '../login/LoginScreen.dart';
 import '../login/NavigateToBoard.dart';
@@ -148,9 +149,27 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor:  Color(0xFFFF8B13),
-        title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
+      // appBar: AppBar(
+      //   backgroundColor:  Color(0xFFFF8B13),
+      //   title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
+      // ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                'assets/lottie/login.json',
+                fit: BoxFit.fill,
+              ),
+            ),
+            AppBar(
+                backgroundColor:  Colors.transparent,
+                title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
+              ),
+          ],
+        ),
+
       ),
       body: SingleChildScrollView(
         child : Form(
@@ -395,7 +414,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         child: Container(
           margin: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.orange,
+            color: Colors.indigo[300],
             borderRadius: BorderRadius.circular(10.0),
           ),
           child: ElevatedButton(

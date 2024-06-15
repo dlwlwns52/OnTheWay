@@ -203,7 +203,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 // 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
-// 비동기 함수로 이미지를 선택하고 업로드하는 과정을 처리합니다.
   Future<List<String>> _pickImage() async {
     final ImagePicker _picker = ImagePicker(); // ImagePicker 객체를 생성합니다.
     final List<XFile>? selectedImages = await _picker.pickMultiImage(); // 사용자가 여러 이미지를 선택할 수 있게 합니다.
@@ -244,7 +243,7 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.send),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent,
+                primary: Colors.indigo,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -256,7 +255,7 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.cancel),
               label: Text('취소'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey,
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -296,6 +295,8 @@ class _ChatScreenState extends State<ChatScreen> {
         //   ),
         // );
         // Navigator.of(context).pop(uploadImageUrls);
+
+
       } else {
         Navigator.of(context).pop([]);
       }
@@ -643,7 +644,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
 
           IconButton(
-            icon: Icon(Icons.send,  color: isFilled ? Colors.orange :Colors.grey[600], size: 35,), // 아이콘 색상 조정
+            icon: Icon(Icons.send,  color: isFilled ? Colors.indigo[500] :Colors.grey[600], size: 35,), // 아이콘 색상 조정
             onPressed: () {
               _sendMessage(); // 메시지 전송
             },
@@ -665,7 +666,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
         if (isSentByMe && !isMessageRead)
-          Text('1', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          Text('1', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
           CircleAvatar(
@@ -731,7 +732,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   margin: EdgeInsets.only(top: 10),
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                    color: isSentByMe ? Colors.indigoAccent : Colors.grey[300],
                     borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                   ),
                   child: Row(
@@ -774,7 +775,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   margin: EdgeInsets.only(top: 10),
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                    color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                   ),
                   // constraints: BoxConstraints(
@@ -805,7 +806,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 margin: EdgeInsets.only(top: 10),
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSentByMe ? Colors.orangeAccent : Colors.grey[300],
+                  color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                 ),
                 child: Column(
@@ -869,7 +870,7 @@ class _ChatScreenState extends State<ChatScreen> {
             actions: <Widget>[
 
               IconButton(
-                icon: Icon(Icons.navigation_rounded, color: Colors.deepOrangeAccent,),
+                icon: Icon(Icons.navigation_rounded, color: Colors.indigoAccent,),
                 onPressed: () async {
                   await _tmapDirections(); // 위치 데이터를 가져옵니다.
                   if (tmapDirections.length >= 2) {

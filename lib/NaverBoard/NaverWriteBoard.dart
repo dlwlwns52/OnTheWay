@@ -52,6 +52,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
         currentLocationSet = true;
       }
     }
+
   }
 
   @override
@@ -215,184 +216,184 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('게시물 작성',style: TextStyle(fontWeight: FontWeight.bold), ),
-      //   backgroundColor:Color(0xFFFF8B13),
-      // ),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        // appBar: AppBar(
+        //   title: Text('게시물 작성',style: TextStyle(fontWeight: FontWeight.bold), ),
+        //   backgroundColor:Color(0xFFFF8B13),
+        // ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(kToolbarHeight),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Lottie.asset(
+                    'assets/lottie/blue2.json',
+                    fit: BoxFit.fill,
+                ),
+              ),
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 4,
+                shadowColor: Colors.indigo.withOpacity(0.5),
+                title: Text('게시물 작성', style: TextStyle(fontWeight: FontWeight.bold),),
+              ),
+            ],
+          ),
+        ),
+        body: Stack(
           children: [
-            Positioned.fill(
-              child: Lottie.asset(
-                  'assets/lottie/blue2.json',
-                  fit: BoxFit.fill,
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: <Widget>[
+                      //본인 위치 입력
+                      TextFormField(
+                        controller: _locationController,
+                        decoration: InputDecoration(
+                          labelText: '본인 위치',
+                          contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        maxLines: null,
+                        maxLength: 8,
+                        onChanged: (value) => _checkMaxLength(_locationController, 8),
+                        onFieldSubmitted: (value) => _currentChooseLocation(),
+                      ),
+                      // 본인 위치 지도로 설정 버튼
+                      ElevatedButton.icon(
+                        onPressed: _currentChooseLocation,
+                        icon: Icon(Icons.location_on, color: Colors.white),
+                        label: Text(
+                          '본인 위치 설정',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          primary: currentLocationSet ? Colors.indigo : Colors.grey,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                      ),
+                      SizedBox(height: 8.0),
+                      //주문 시킬 가게 입력
+                      TextFormField(
+                        controller: _storeController,
+                        decoration: InputDecoration(
+                          labelText: '주문 시킬 가게',
+                          contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        maxLines: null,
+                        maxLength: 8,
+                        onChanged: (value) => _checkMaxLength(_storeController, 8),
+                        onFieldSubmitted: (value) => _storeChooseLocation(),
+                      ),
+                      //가게 위치 지도로 설정 버튼
+                      ElevatedButton.icon(
+                        onPressed: _storeChooseLocation,
+                        icon: Icon(Icons.location_on, color: Colors.white),
+                        label: Text(
+                          '가게 위치 설정',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          primary: storeLocationSet ? Colors.indigo : Colors.grey,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                      ),
+                      SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _costController,
+                        decoration: InputDecoration(
+                          labelText: '비용',
+                          contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        maxLines: null,
+                        maxLength: 7,
+                        onChanged: (value) => _checkMaxLength(_costController, 7),
+                      ),
+                      SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _requestController,
+                        decoration: InputDecoration(
+                          hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          hintStyle: TextStyle(color: Colors.grey),
+                          labelText: '요청사항',
+                          contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                          alignLabelWithHint: true,
+                        ),
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.done,
+                        minLines: 7,
+                        maxLines: null,
+                        maxLength: 30,
+                        onChanged: (value) => _checkMaxLength(_requestController, 30),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 4,
-              shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('게시물 작성', style: TextStyle(fontWeight: FontWeight.bold),),
-            ),
+            if (_isUploading)
+              Opacity(
+                opacity: 0.5,
+                child: ModalBarrier(dismissible: false, color: Colors.grey),
+              ),
+            if (_isUploading)
+              Center(
+                child: ClipOval(
+                  child: Lottie.asset(
+                    'assets/lottie/CheckTest.json',
+                    width: 300,
+                    height: 300,
+                    fit: BoxFit.fill,
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    //본인 위치 입력
-                    TextFormField(
-                      controller: _locationController,
-                      decoration: InputDecoration(
-                        labelText: '본인 위치',
-                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                      ),
-                      textInputAction: TextInputAction.next,
-                      maxLines: null,
-                      maxLength: 8,
-                      onChanged: (value) => _checkMaxLength(_locationController, 8),
-                      onFieldSubmitted: (value) => _currentChooseLocation(),
-                    ),
-                    // 본인 위치 지도로 설정 버튼
-                    ElevatedButton.icon(
-                      onPressed: _currentChooseLocation,
-                      icon: Icon(Icons.location_on, color: Colors.white),
-                      label: Text(
-                        '본인 위치 설정',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        primary: currentLocationSet ? Colors.indigo : Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                    //주문 시킬 가게 입력
-                    TextFormField(
-                      controller: _storeController,
-                      decoration: InputDecoration(
-                        labelText: '주문 시킬 가게',
-                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                      ),
-                      textInputAction: TextInputAction.next,
-                      maxLines: null,
-                      maxLength: 8,
-                      onChanged: (value) => _checkMaxLength(_storeController, 8),
-                      onFieldSubmitted: (value) => _storeChooseLocation(),
-                    ),
-                    //가게 위치 지도로 설정 버튼
-                    ElevatedButton.icon(
-                      onPressed: _storeChooseLocation,
-                      icon: Icon(Icons.location_on, color: Colors.white),
-                      label: Text(
-                        '가게 위치 설정',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        primary: storeLocationSet ? Colors.indigo : Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      ),
-                    ),
-                    SizedBox(height: 16.0),
-                    TextFormField(
-                      controller: _costController,
-                      decoration: InputDecoration(
-                        labelText: '비용',
-                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                      ),
-                      textInputAction: TextInputAction.next,
-                      maxLines: null,
-                      maxLength: 7,
-                      onChanged: (value) => _checkMaxLength(_costController, 7),
-                    ),
-                    SizedBox(height: 16.0),
-                    TextFormField(
-                      controller: _requestController,
-                      decoration: InputDecoration(
-                        hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        hintStyle: TextStyle(color: Colors.grey),
-                        labelText: '요청사항',
-                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
-                        alignLabelWithHint: true,
-                      ),
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.done,
-                      minLines: 7,
-                      maxLines: null,
-                      maxLength: 30,
-                      onChanged: (value) => _checkMaxLength(_requestController, 30),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (_isUploading)
-            Opacity(
-              opacity: 0.5,
-              child: ModalBarrier(dismissible: false, color: Colors.grey),
-            ),
-          if (_isUploading)
-            Center(
-              child: ClipOval(
-                child: Lottie.asset(
-                  'assets/lottie/walk.json',
-                  width: 300,
-                  height: 300,
-                  fit: BoxFit.fill,
-                ),
-              ),
-            ),
-        ],
-      ),
 
-      bottomNavigationBar: BottomAppBar(
-        // color: Colors.transparent, // 배경 색상을 투명하게 설정
-        child: Container(
-          margin: EdgeInsets.all(16.0), // 여백 추가
-          decoration: BoxDecoration(
-            color: Colors.indigo[300], // 버튼 배경색
-            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
+        bottomNavigationBar: BottomAppBar(
+          // color: Colors.transparent, // 배경 색상을 투명하게 설정
+          child: Container(
+            margin: EdgeInsets.all(16.0), // 여백 추가
+            decoration: BoxDecoration(
+              color: Colors.indigo[300], // 버튼 배경색
+              borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
-          ),
-          child: ElevatedButton.icon(
-            onPressed: _uploadPost,
-            icon: Icon(Icons.send), // 버튼 아이콘
-            label: Text(
-              '게시하기',
-              style: TextStyle(fontSize: 18),
             ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.transparent, // 버튼 색상 투명하게 설정
-              shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
+            child: ElevatedButton.icon(
+              onPressed: _uploadPost,
+              icon: Icon(Icons.send), // 버튼 아이콘
+              label: Text(
+                '게시하기',
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.transparent, // 버튼 색상 투명하게 설정
+                shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}

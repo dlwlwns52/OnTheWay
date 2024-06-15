@@ -290,7 +290,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             ),
           ),
           content: Text(
-            '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
+            '대화내용 및 채팅 목록이 모두 삭제됩니다.',
             style: TextStyle(
               color: Colors.black87,
             ),
@@ -298,7 +298,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent,
+                primary: Colors.redAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -363,7 +363,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             ),
           ),
           content: Text(
-            '\'나가기\'를 누르시면 대화내용 및 채팅 목록이 모두 삭제됩니다.',
+            '대화내용 및 채팅 목록이 모두 삭제됩니다.\n',
             style: TextStyle(
               color: Colors.black87,
             ),
@@ -371,7 +371,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.orangeAccent,
+                primary: Colors.redAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
