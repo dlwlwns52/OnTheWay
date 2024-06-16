@@ -361,7 +361,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
               Center(
                 child: ClipOval(
                   child: Lottie.asset(
-                    'assets/lottie/CheckTest.json',
+                    'assets/lottie/walk.json',
                     width: 300,
                     height: 300,
                     fit: BoxFit.fill,

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import '../Board/UiBoard.dart';
 import '../login/LoginScreen.dart';
 import '../login/NavigateToBoard.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import '../CreateAccount/SchoolEmailDialog.dart';
+
 
 class CreateAccount extends StatefulWidget {
 
@@ -46,8 +47,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _passwordController.addListener(_onpasswordChanged);
     _confirmPasswordController.addListener(_confirmPasswordChanged);
     _emailUserController.addListener(_onEmaildChanged);
-    // WidgetsBinding.instance?.addObserver(this); // 생명 주기 관찰자 추가
-    // checkEmailVerification();
+
   }
 
 
@@ -56,7 +56,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _nicknameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    // WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
@@ -146,6 +145,21 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     });
   }
 
+  void _showSchoolEmailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SchoolEmailDialog(
+          onSelected: (String domain) {
+            setState(() {
+              _dropdownValue = domain;
+            });
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,7 +203,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                           style: TextStyle(
                             color: Colors.black,
                           ),
-                          cursorColor: Colors.orange,
+                          cursorColor: Colors.indigo,
                           cursorWidth: 3,
                           showCursor: true,
                           decoration: InputDecoration(
@@ -198,7 +212,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             border: OutlineInputBorder(),
                             focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Colors.orange,
+                                color: Colors.indigo,
                               ),
                             ),
                             errorText: _usernicknameErrorText,
@@ -232,7 +246,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       child: Text(
                         _buttonText,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black87),
+                        style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
                       ),
                       onPressed: _checkNicknameAvailabilityAndValidate,
                     ),
@@ -257,7 +271,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                           enabled: _isNicknameAvailable,
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
-                              color: Colors.orange,
+                              color: Colors.indigo,
                             ),
                           ),
                           errorText: _userEmailErrorText,
@@ -271,46 +285,15 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     SizedBox(width: 10),
 
                     GestureDetector(
-                      onTap: () async {
-                        String? newValue = await showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return SimpleDialog(
-                              title: Text('본인 학교 웹메일을 선택해주세요.'),
-                              children: <String>[
-                                //학교 웹메일 넣기
-                                '학교 메일 선택',
-                                'naver.com',
-                                'edu.hanbat.ac.kr',
-                                'yahoo.com',
-                                'aaa.com',
-                                // Add more domains here
-                              ]
-                                  .map((String domain) => SimpleDialogOption(
-                                child: Text(domain),
-                                onPressed: () {
-                                  Navigator.pop(context, domain);
-                                },
-                              ))
-                                  .toList(),
-                            );
-                          },
-                        );
-
-                        if (newValue != null) {
-                          setState(() {
-                            _dropdownValue = newValue;
-                          });
-                        }
-                      },
-
+                      onTap: () => _showSchoolEmailDialog(context),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 19),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 19),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: Text(_dropdownValue ??'학교 메일 선택'),
+                        child: Text(_dropdownValue ?? '학교 메일 선택'),
                       ),
                     ),
                   ],
@@ -328,7 +311,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   style: TextStyle(
                     color: Colors.black,
                   ),
-                  cursorColor: Colors.orange,
+                  cursorColor: Colors.indigo,
                   cursorWidth: 3,
                   showCursor: true,
                   enabled: _isNicknameAvailable,
@@ -338,7 +321,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.orange,
+                        color: Colors.indigo,
                       ),
                     ),
                     errorText: _userpasswordErrorText,
@@ -372,7 +355,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     style: TextStyle(
                       color: Colors.black,
                     ),
-                    cursorColor: Colors.orange,
+                    cursorColor: Colors.indigo,
                     cursorWidth: 3,
                     showCursor: true,
                     enabled: _isNicknameAvailable,
@@ -382,7 +365,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       border: OutlineInputBorder(),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: Colors.orange,
+                          color: Colors.indigo,
                         ),
                       ),
                       errorText: _confirmPasswordErrorText,
@@ -428,65 +411,114 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   context: context,
                   builder: (context) => AlertDialog(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)), // 모서리를 둥글게 처리
-                    title: Text('회원가입 완료', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold),),
-                    content: Text('회원가입을 완료 하시겠습니까?', textAlign: TextAlign.center),
+                      borderRadius: BorderRadius.circular(20),
+                    ), // 모서리를 둥글게 처리
+                    title: Text(
+                      '회원가입 완료',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    content: Text(
+                      '회원가입을 완료 하시겠습니까?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
                     actions: [
-                      TextButton(
-                        child: Text('확인', style: TextStyle(color: Colors.black),),
-                        onPressed: () async {
-                          Navigator.of(context).pop();  // 다이어로그 닫기
+                      Column(
+                        children:[
+                          Center(
+                            child: Lottie.asset(
+                              'assets/lottie/Animation.json',
+                              fit: BoxFit.contain,
+                              width: 200,
+                              height: 200,
+                            ),
+                      ),],),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            child: Text('확인', style: TextStyle(fontWeight: FontWeight.bold),),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.indigo[300], // 버튼 색상 설정
+                              onPrimary: Colors.white, // 텍스트 색상 설정
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop(); // 다이어로그 닫기
 
-                          String nickname = _nicknameController.text;
-                          String password = _passwordController.text;
-                          String email = _emailUserController.text + "@" + _dropdownValue!;
-                          try {
-                            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                              email: email,
-                              password: password,
-                            );
-                            DateTime now = DateTime.now();
-                            String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                              String nickname = _nicknameController.text;
+                              String password = _passwordController.text;
+                              String email = _emailUserController.text + "@" + _dropdownValue!;
+                              try {
+                                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                  email: email,
+                                  password: password,
+                                );
+                                DateTime now = DateTime.now();
+                                String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-                            User? currentUser = FirebaseAuth.instance.currentUser;
-                            String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기
+                                User? currentUser = FirebaseAuth.instance.currentUser;
+                                String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기
 
-                            final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-                            await usersCollection.doc(nickname).set({
-                              'uid': userUid,
-                              'nickname': nickname,
-                              'email': email,
-                              'joined_date': formattedDate,
-                            });
-                            // await getTokenAndSave();
+                                final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+                                await usersCollection.doc(nickname).set({
+                                  'uid': userUid,
+                                  'nickname': nickname,
+                                  'email': email,
+                                  'joined_date': formattedDate,
+                                });
+                                // await getTokenAndSave();
 
-                            // // 스낵바로 알림
-                            ScaffoldMessenger.of(rootContext).showSnackBar(
-                              SnackBar(content: Text('회원가입이 완료되었습니다.', textAlign: TextAlign.center,)),
-                            );
+                                // 스낵바로 알림
+                                ScaffoldMessenger.of(rootContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '회원가입이 완료되었습니다.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                );
 
-                            // BoardPage로 이동
-                            Navigator.pushReplacement(
-                              rootContext,
-                              MaterialPageRoute(builder: (context) => LoginScreen()),
-                            );
-                          }
-                          catch (e) {
-                            print("회원가입 실패: $e");
-                          }
-                        },
+                                // BoardPage로 이동
+                                Navigator.pushReplacement(
+                                  rootContext,
+                                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                                );
+                              } catch (e) {
+                                print("회원가입 실패: $e");
+                              }
+                            },
+                          ),
+                          ElevatedButton(
+                            child: Text('취소', style: TextStyle(fontWeight: FontWeight.bold),),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.grey, // 버튼 색상 설정
+                              onPrimary: Colors.white, // 텍스트 색상 설정
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
                       ),
-
-                      TextButton(
-                        child: Text('취소', style: TextStyle(color: Colors.black), ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-
                     ],
                   ),
                 );
+
               }
             },
 
@@ -531,33 +563,58 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           _buttonColor = Colors.red;
           _isNicknameAvailable = false;
         });
-
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('알림'),
-              content: Text("'" + nickname + "' " +'은 다른 사용자가 사용하고 있는 이름입니다. \n\n 다른 닉네임을 사용해 주시길 바랍니다.'),
-              actions: [
-                ElevatedButton(
-                    onPressed: () {
-                      _nicknameController.clear();
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('취소'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    )
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              title: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notification_important, color: Colors.indigo),
+                    SizedBox(width: 8),
+                    Text(
+                      '알림',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                  ],
                 ),
-              ],
+              ),
+              content: Text(
+                "'" + nickname + "' " +'은 다른 사용자가 사용하고 있는 이름입니다. \n\n 다른 닉네임을 사용해 주시길 바랍니다.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+                    actions: [
+                      ElevatedButton(
+                          onPressed: () {
+                            _nicknameController.clear();
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('취소'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo[300],
+                          )
+                      ),
+                    ],
             );
           },
         );
+
       } else {
         // 사용 가능한 이름
         setState(() {
-          _buttonText = '완료';
-          _buttonColor = Colors.orangeAccent;
+          _buttonText = '사용가능';
+          _buttonColor = Colors.indigo[200] ?? Colors.indigoAccent;
           _isNicknameAvailable = true;
         });
 
@@ -565,8 +622,33 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('알림'),
-              content: Text("'" + nickname + "' " +'은 사용가능한 이름입니다.\n\n 이 닉네임을 사용하시겠습니까?'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              title: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notification_important, color: Colors.indigo),
+                    SizedBox(width: 8),
+                    Text(
+                      '알림',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                  ],
+                ),
+              ),
+              content: Text(
+                "'" + nickname + "' 은 사용 가능한 이름입니다.\n\n 이 닉네임을 사용하시겠습니까?",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
               actions: [
                 ElevatedButton(
                   onPressed: () {
@@ -575,14 +657,20 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     Navigator.of(context).pop();
                   },
                   child: Text('확인'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.indigo[300],
+                    primary: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   ),
                 ),
               ],
             );
           },
         );
+
       }
     } catch (e) {
       print('닉네임 확인 오류: $e');

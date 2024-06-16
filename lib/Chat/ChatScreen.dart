@@ -272,7 +272,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("이미지 업로드 중...", textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 3),
           ),
         );
 
@@ -287,14 +287,14 @@ class _ChatScreenState extends State<ChatScreen> {
           uploadImageUrls.add(downloadUrl);
         }
 
-        // // 모든 이미지 업로드 후 사용자에게 알림
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: Text("이미지 업로드 완료!"),
-        //     duration: Duration(seconds: 2),
-        //   ),
-        // );
-        // Navigator.of(context).pop(uploadImageUrls);
+        // 모든 이미지 업로드 후 사용자에게 알림
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미지 업로드 완료!", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
 
 
       } else {
@@ -303,8 +303,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.
   }
-
-
 
 
 
