@@ -90,4 +90,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.2.0")) // Firebase 라이브러리 BOM
     implementation("com.google.firebase:firebase-analytics-ktx") // Firebase Analytics 라이브러리
     implementation("com.google.android.gms:play-services-auth:20.6.0") // Google Play 인증 서비스
+
+    implementation 'com.google.firebase:firebase-auth-ktx' // Firebase Auth 라이브러리
+    implementation 'com.google.firebase:firebase-firestore-ktx' // Firestore 라이브러리
+
 }

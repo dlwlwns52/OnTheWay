@@ -77,5 +77,20 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
+
+    <!-- Google Sign-In 추가 설정 -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1</string>
+            </array>
+        </dict>
+    </array>
+
 </dict>
 </plist>

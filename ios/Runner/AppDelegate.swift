@@ -4,7 +4,7 @@ import Firebase
 import UserNotifications
 import FirebaseMessaging
 import FirebaseCore //Cannot find 'FirebaseApp' in scope  에러로 추가
-
+import GoogleSignIn
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -15,6 +15,15 @@ import FirebaseCore //Cannot find 'FirebaseApp' in scope  에러로 추가
     ) -> Bool {
         // Firebase 초기화
         FirebaseApp.configure()
+        
+        // Google Sign-In 초기화
+        if let clientID = FirebaseApp.app()?.options.clientID {
+            let signInConfig = GIDConfiguration(clientID: clientID)
+            GIDSignIn.sharedInstance.configuration = signInConfig
+        } else {
+            fatalError("GoogleService-Info.plist에 clientID가 누락되었습니다.")
+        }
+        
         
         // Flutter 플러그인 등록
         GeneratedPluginRegistrant.register(with: self)

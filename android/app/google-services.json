@@ -13,7 +13,20 @@
           "package_name": "com.example.OnTheWay"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "40009619030-4od8hdk7vnsu129fup5roi8m0vj85onu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.OnTheWay",
+            "certificate_hash": "dca816a0f9c9dc1033090e1fae1eab2deca03547"
+          }
+        },
+        {
+          "client_id": "40009619030-0tsjhi16drorgvqpr2gfv3qfq06vq5dr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA_B7xJvnpvPcXqMit_rBQQPfIPsJqX9OM"
@@ -21,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "40009619030-0tsjhi16drorgvqpr2gfv3qfq06vq5dr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.onthewayNotebook"
+              }
+            }
+          ]
         }
       }
     }

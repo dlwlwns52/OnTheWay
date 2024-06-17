@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import '../login/LoginScreen.dart';
@@ -40,6 +41,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String? _dropdownValue = '학교 메일 선택';
   bool isEmailVerified = false;
 
+
+  //이메일인증
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
   @override
   void initState() {
     super.initState();
@@ -59,25 +64,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     super.dispose();
   }
 
-  Future<void> checkEmailVerification() async {
-    User? currentUser = _auth.currentUser;
-    await currentUser?.reload();
-    if (currentUser != null && currentUser.emailVerified) {
-      setState(() {
-        isEmailVerified = true;
-      });
-    }
-  }
-
-
-  // 생명 주기 상태 변경 시 호출되는 메서드
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      checkEmailVerification();
-    }
-  }
 
   _onNicknameChanged() {
     RegExp onlyConsonants = new RegExp(r'^[ㄱ-ㅎ]+$');
@@ -142,407 +128,140 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       } else {
         _userEmailErrorText = null;
       }
+      isEmailVerified = false; // 이메일 필드가 변경되면 인증 상태를 false로 설정
     });
   }
 
-  void _showSchoolEmailDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SchoolEmailDialog(
-          onSelected: (String domain) {
-            setState(() {
-              _dropdownValue = domain;
-            });
-          },
+// 이메일 중복 여부 확인
+  Future<bool> _checkEmailAvailability() async {
+    final email = _emailUserController.text.trim() + "@" + _dropdownValue!;
+
+    try {
+      // 이 코드에서 await는 FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get() 작업이 완료될 때까지 다음 코드로 넘어가지 않게 합니다. 이 get() 메서드는 네트워크를 통해 Firebase의 Firestore 데이터베이스에서 데이터를 가져오는 작업이므로, 이 작업이 얼마나 걸릴지 확실하지 않습니다.
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('현재 존재하는 이메일 입니다.', textAlign: TextAlign.center,),
+            // behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 1),
+          ),
         );
-      },
-    );
+        return false;
+      }
+      return true;
+    } catch (e) {
+      print('이메일 확인 오류: $e');
+      return false;
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor:  Color(0xFFFF8B13),
-      //   title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
-      // ),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Lottie.asset(
-                'assets/lottie/login.json',
-                fit: BoxFit.fill,
-              ),
-            ),
-            AppBar(
-                backgroundColor:  Colors.transparent,
-                title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
-              ),
-          ],
+  bool _nicknameValidateFields(){
+    RegExp onlyConsonants = RegExp(r'^[ㄱ-ㅎ]+$');
+    RegExp onlyVowels = RegExp(r'^[ㅏ-ㅣ]+$');
+    RegExp onlyNumbers = RegExp(r'^[0-9]+$');
+
+    if (_nicknameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
         ),
-
-      ),
-      body: SingleChildScrollView(
-        child : Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 30),
-              Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(15, 0, 10, 1),
-                      child: Container(
-                        height: 80, // 이 값을 조절하여 더 많은 공간을 확보하거나 줄일 수 있습니다.
-                        child: TextFormField(
-                          controller: _nicknameController,
-                          style: TextStyle(
-                            color: Colors.black,
-                          ),
-                          cursorColor: Colors.indigo,
-                          cursorWidth: 3,
-                          showCursor: true,
-                          decoration: InputDecoration(
-                            labelText: '닉네임',
-                            labelStyle: TextStyle(color: Colors.black54),
-                            border: OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.indigo,
-                              ),
-                            ),
-                            errorText: _usernicknameErrorText,
-                          ),
-                          validator: (value) {
-                            String pattern = r'[a-zA-Zㄱ-ㅎ가-힣-0-9]';
-                            RegExp regex = new RegExp(pattern);
-                            if (value == null || value.trim().isEmpty) {
-                              return '닉네임을 입력해주세요.';
-                            }
-                            return null;
-                          },
-                          onChanged: (value){
-                            setState(() {
-                              _isNicknameAvailable = false;
-                              _buttonText = '중복확인';
-                              _buttonColor = Colors.white70;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(1, 1, 10, 25), // 다른 에뮬레이터(기기)에 사용했을때 위치 변하면 수정 필요
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        alignment: Alignment.center,
-                        backgroundColor: MaterialStateProperty.all(_buttonColor),
-                      ),
-                      child: Text(
-                        _buttonText,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-                      ),
-                      onPressed: _checkNicknameAvailabilityAndValidate,
-                    ),
-                  ),
-                ],
-              ),
-
-
-
-              SizedBox(height: 30),
-
-              Container(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                        focusNode: _emailFocusNode,
-                        decoration: InputDecoration(
-                          labelText: '이메일',
-                          border: OutlineInputBorder(),
-                          enabled: _isNicknameAvailable,
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.indigo,
-                            ),
-                          ),
-                          errorText: _userEmailErrorText,
-                        ),
-                        controller: _emailUserController,
-                      ),
-                    ),
-
-                    SizedBox(width: 10),
-                    Text('@'),
-                    SizedBox(width: 10),
-
-                    GestureDetector(
-                      onTap: () => _showSchoolEmailDialog(context),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 19),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(_dropdownValue ?? '학교 메일 선택'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 30),
-
-              Container(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-                child: TextFormField(
-                  // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
-                  controller: _passwordController,
-                  focusNode: _passwordFocusNode,
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
-                  cursorColor: Colors.indigo,
-                  cursorWidth: 3,
-                  showCursor: true,
-                  enabled: _isNicknameAvailable,
-                  decoration: InputDecoration(
-                    labelText: '비밀번호',
-                    labelStyle: TextStyle(color: Colors.black54),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    errorText: _userpasswordErrorText,
-                  ),
-
-                  validator: (value) {
-                    String pattern = r'^[[A-Za-z\d@$!%*#?&_-]{8,16}$`';
-                    RegExp regex = new RegExp(pattern);
-                    if (value == null || value.trim().isEmpty) {
-                      return '비밀번호를 입력해주세요.';
-                    } else if (!regex.hasMatch(value)) {
-                      return '비밀번호는 5~18자의 영문 소문자, 숫자, 특수기호(_)만 사용 가능합니다.';
-                    }
-                    return null;
-                  },
-                  textInputAction: TextInputAction.next, // 'next' 버튼을 표시
-                  onFieldSubmitted: (value) { // 'next' 버튼이 클릭되면
-                    FocusScope.of(context).requestFocus(_confirmPasswordFocusNode); // 비밀번호 확인 필드로 포커스 이동
-                  },
-                ),
-              ),
-
-              SizedBox(height: 30),
-
-              Container(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-                child: TextFormField(
-                  // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
-                    controller: _confirmPasswordController,
-                    focusNode: _confirmPasswordFocusNode,
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    cursorColor: Colors.indigo,
-                    cursorWidth: 3,
-                    showCursor: true,
-                    enabled: _isNicknameAvailable,
-                    decoration: InputDecoration(
-                      labelText: '비밀번호 확인',
-                      labelStyle: TextStyle(color: Colors.black54),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.indigo,
-                        ),
-                      ),
-                      errorText: _confirmPasswordErrorText,
-                    ),
-
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return '비밀번호를 다시 확인해주세요.';
-                      } else if (value != _passwordController.text) {
-                        return '비밀번호가 일치하지 않습니다.';
-                      }
-                      return '비밀번호가 일치합니다.';
-                    },
-                    textInputAction: TextInputAction.next, // 'next' 버튼을 표시
-                    onFieldSubmitted: (value){
-                      FocusScope.of(context).requestFocus(_buttonFocusNode);
-                    }
-                ),
-
-              ),
-
-              SizedBox(height: 30),
-
-            ],
-          ),
+      );
+      return false;
+    } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
         ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.indigo[300],
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: ElevatedButton(
-            onPressed: () async {
-              if (_validateFields()) {
-                bool emailAvailable = await _checkEmailAvailability();
-                if (!emailAvailable) return;
-
-                final rootContext = context;
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ), // 모서리를 둥글게 처리
-                    title: Text(
-                      '회원가입 완료',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    content: Text(
-                      '회원가입을 완료 하시겠습니까?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    actions: [
-                      Column(
-                        children:[
-                          Center(
-                            child: Lottie.asset(
-                              'assets/lottie/Animation.json',
-                              fit: BoxFit.contain,
-                              width: 200,
-                              height: 200,
-                            ),
-                      ),],),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            child: Text('확인', style: TextStyle(fontWeight: FontWeight.bold),),
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.indigo[300], // 버튼 색상 설정
-                              onPrimary: Colors.white, // 텍스트 색상 설정
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                            ),
-                            onPressed: () async {
-                              Navigator.of(context).pop(); // 다이어로그 닫기
-
-                              String nickname = _nicknameController.text;
-                              String password = _passwordController.text;
-                              String email = _emailUserController.text + "@" + _dropdownValue!;
-                              try {
-                                await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                  email: email,
-                                  password: password,
-                                );
-                                DateTime now = DateTime.now();
-                                String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-
-                                User? currentUser = FirebaseAuth.instance.currentUser;
-                                String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기
-
-                                final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-                                await usersCollection.doc(nickname).set({
-                                  'uid': userUid,
-                                  'nickname': nickname,
-                                  'email': email,
-                                  'joined_date': formattedDate,
-                                });
-                                // await getTokenAndSave();
-
-                                // 스낵바로 알림
-                                ScaffoldMessenger.of(rootContext).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '회원가입이 완료되었습니다.',
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                );
-
-                                // BoardPage로 이동
-                                Navigator.pushReplacement(
-                                  rootContext,
-                                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                                );
-                              } catch (e) {
-                                print("회원가입 실패: $e");
-                              }
-                            },
-                          ),
-                          ElevatedButton(
-                            child: Text('취소', style: TextStyle(fontWeight: FontWeight.bold),),
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.grey, // 버튼 색상 설정
-                              onPrimary: Colors.white, // 텍스트 색상 설정
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-
-              }
-            },
-
-            child: Text(
-              '회원가입',
-              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.transparent,
-              shadowColor: Colors.transparent,
-            ),
-          ),
+      );
+      return false;
+    } else if (!RegExp(r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$').hasMatch(_nicknameController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('닉네임은 영문, 한글, 숫자만 사용 가능합니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
         ),
-      ),
-    );
+      );
+      return false;
+    }
+    return true;
   }
 
-  //위치 변경 조정
-  // 회원가입 로직을 처리하는 메서드 내에서 이메일 검증 후 navigateToBoard를 호출
-  void createAccountAndNavigate() {
-    String email = '${_emailUserController.text}@$_dropdownValue';
-    // 회원가입 로직...
-    // 성공적으로 회원가입이 되면, NavigateToBoard의 navigate 메소드를 호출
-    NavigateToBoard(context).navigate(email);
+  void _checkNicknameAvailabilityAndValidate() {
+    if(_nicknameValidateFields()) {
+      _checkNicknameAvailability();
+    }
+  }
+
+
+  bool _validateFields() {
+    if (_nicknameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (_emailUserController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if(isEmailVerified == false){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이메일 인증을 완료해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (_passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (!RegExp(r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$').hasMatch(_passwordController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호는 8~16자의 문자, 숫자, 적어도 한개의 특수기호를 사용해야 합니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+
+    if (_confirmPasswordController.text != _passwordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호가 일치하지 않습니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+
+    if (_dropdownValue == '학교 메일 선택') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 
 
@@ -594,18 +313,18 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   color: Colors.black87,
                 ),
               ),
-                    actions: [
-                      ElevatedButton(
-                          onPressed: () {
-                            _nicknameController.clear();
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('취소'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo[300],
-                          )
-                      ),
-                    ],
+              actions: [
+                ElevatedButton(
+                    onPressed: () {
+                      _nicknameController.clear();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('취소'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo[300],
+                    )
+                ),
+              ],
             );
           },
         );
@@ -677,182 +396,487 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     }
   }
 
+  //이메일 선택 메소드
+  void _showSchoolEmailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SchoolEmailDialog(
+          onSelected : (String domain) {
+            setState(() {
+              _dropdownValue = domain;
+            });
+          },
+        );
+      },
+    );
+  }
 
-  Future<bool> _checkEmailAvailability() async {
-    final email = _emailUserController.text.trim() + "@" + _dropdownValue!;
-
+  //이메일 인증
+  Future<void> _signInWithGoogle() async {
     try {
-      // 이 코드에서 await는 FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get() 작업이 완료될 때까지 다음 코드로 넘어가지 않게 합니다. 이 get() 메서드는 네트워크를 통해 Firebase의 Firestore 데이터베이스에서 데이터를 가져오는 작업이므로, 이 작업이 얼마나 걸릴지 확실하지 않습니다.
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
+      String userEmail = _emailUserController.text.trim();
+      if (_dropdownValue == null) {
+        setState(() {
+          _userEmailErrorText = '학교 메일을 선택해 주세요';
+        });
+        return;
+      }
 
-      if (snapshot.docs.isNotEmpty) {
+      String fullEmail = '$userEmail@$_dropdownValue';
+
+      // 이전에 로그인한 계정 로그아웃
+      await _googleSignIn.signOut();
+
+
+      GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // 사용자가 로그인 취소
+        return;
+      }
+
+      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null && user.email == fullEmail) {
+        // 성공적으로 로그인
+        setState(() {
+          isEmailVerified = true;
+          _userEmailErrorText = null; // 이메일 인증 성공 시 오류 메시지 제거
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('현재 존재하는 이메일 입니다.', textAlign: TextAlign.center,),
-            // behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 1),
+          SnackBar(content: Text('이메일 인증이 완료되었습니다.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
           ),
         );
-        return false;
+      } else {
+        // 이메일이 일치하지 않으면 로그아웃
+        await _auth.signOut();
+        setState(() {
+          _userEmailErrorText = '이메일이 일치하지 않습니다.';
+        });
       }
-      return true;
     } catch (e) {
-      print('이메일 확인 오류: $e');
-      return false;
-    }
-  }
-
-  bool _nicknameValidateFields(){
-    RegExp onlyConsonants = RegExp(r'^[ㄱ-ㅎ]+$');
-    RegExp onlyVowels = RegExp(r'^[ㅏ-ㅣ]+$');
-    RegExp onlyNumbers = RegExp(r'^[0-9]+$');
-
-    if (_nicknameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    } else if (!RegExp(r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$').hasMatch(_nicknameController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('닉네임은 영문, 한글, 숫자만 사용 가능합니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  void _checkNicknameAvailabilityAndValidate() {
-    if(_nicknameValidateFields()) {
-      _checkNicknameAvailability();
+      // 로그인 오류 처리
+      print(e);
     }
   }
 
 
-  Future<void> sendSignInWithEmailLink() async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    String email = _emailUserController.text + "@" + _dropdownValue!;
-
-    // 이메일 주소 형식 검사
-    if (!RegExp(r"^[a-zA-Z0-9]+$").hasMatch(_emailUserController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('유효한 이메일 주소를 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+  Widget _buildNicknameField() {
+    return Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(15, 0, 10, 1),
+            child: Container(
+              height: 80,
+              child: TextFormField(
+                controller: _nicknameController,
+                style: TextStyle(
+                  color: Colors.black,
+                ),
+                cursorColor: Colors.indigo,
+                cursorWidth: 3,
+                showCursor: true,
+                decoration: InputDecoration(
+                  labelText: '닉네임',
+                  labelStyle: TextStyle(color: Colors.black54),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.indigo,
+                    ),
+                  ),
+                  errorText: _usernicknameErrorText,
+                ),
+                validator: (value) {
+                  String pattern = r'[a-zA-Zㄱ-ㅎ가-힣-0-9]';
+                  RegExp regex = RegExp(pattern);
+                  if (value == null || value.trim().isEmpty) {
+                    return '닉네임을 입력해주세요.';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  setState(() {
+                    _isNicknameAvailable = false;
+                    _buttonText = '중복확인';
+                    _buttonColor = Colors.white70;
+                  });
+                },
+              ),
+            ),
+          ),
         ),
-      );
-      return;
-    }
-
-
-    // 선택되지 않은 학교 메일 처리
-    if (_dropdownValue == '학교 메일 선택') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+        Container(
+          padding: const EdgeInsets.fromLTRB(1, 1, 10, 25),
+          child: ElevatedButton(
+            style: ButtonStyle(
+              alignment: Alignment.center,
+              backgroundColor: MaterialStateProperty.all(_buttonColor),
+            ),
+            child: Text(
+              _buttonText,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+            ),
+            onPressed: _checkNicknameAvailabilityAndValidate,
+          ),
         ),
-      );
-      return;
-    }
-
-    ActionCodeSettings actionCodeSettings = ActionCodeSettings(
-      url: 'https://onthewayljj.page.link/c8Ci',
-      handleCodeInApp: true,
-      androidPackageName: 'com.example.OnTheWay',
-      androidInstallApp: true,
-      androidMinimumVersion: '12',
+      ],
     );
+  }
 
-    try {
-      // 이메일 인증 링크를 보냅니다.
-      await _auth.sendSignInLinkToEmail(
-        email: email,
-        actionCodeSettings: actionCodeSettings,
-      );
+  Widget _buildEmailField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: TextFormField(
+              focusNode: _emailFocusNode,
+              decoration: InputDecoration(
+                labelText: '이메일',
+                border: OutlineInputBorder(),
+                enabled: _isNicknameAvailable,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.indigo,
+                  ),
+                ),
+                errorText: _userEmailErrorText,
+              ),
+              controller: _emailUserController,
+            ),
+          ),
+          SizedBox(width: 10),
+          Text('@'),
+          SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => _showSchoolEmailDialog(context),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 19),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(_dropdownValue ?? '학교 메일 선택'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      // 이메일을 확인하도록 사용자에게 알림을 표시합니다.
-      final FlutterSecureStorage storage = FlutterSecureStorage();
-      await storage.write(key: 'email', value: email);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('회원가입 이메일이 전송되었습니다. 확인 후 인증해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+  Widget _buildEmailCheck() {
+    return Container(
+      width: 250,
+      child: ElevatedButton.icon(
+          onPressed: _signInWithGoogle,
+          icon: Icon(Icons.mark_email_read, color: Colors.white),
+          label: Text(
+            '이메일 인증',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            primary: isEmailVerified ? Colors.indigo : Colors.grey,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
         ),
-      );
-    } catch (e) {
-      // 오류 처리
-      print("오류 원인: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이메일 전송에 실패했습니다. 다시 시도해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+    );
+  }
+
+
+  Widget _buildPasswordField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
+      child: TextFormField(
+        obscureText: true,
+        controller: _passwordController,
+        focusNode: _passwordFocusNode,
+        style: TextStyle(
+          color: Colors.black,
+        ),
+        cursorColor: Colors.indigo,
+        cursorWidth: 3,
+        showCursor: true,
+        enabled: _isNicknameAvailable,
+        decoration: InputDecoration(
+          labelText: '비밀번호',
+          labelStyle: TextStyle(color: Colors.black54),
+          border: OutlineInputBorder(),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.indigo,
+            ),
+          ),
+          errorText: _userpasswordErrorText,
+        ),
+        validator: (value) {
+          String pattern = r'^[[A-Za-z\d@$!%*#?&_-]{8,16}$`';
+          RegExp regex = RegExp(pattern);
+          if (value == null || value.trim().isEmpty) {
+            return '비밀번호를 입력해주세요.';
+          } else if (!regex.hasMatch(value)) {
+            return '비밀번호는 5~18자의 영문 소문자, 숫자, 특수기호(_)만 사용 가능합니다.';
+          }
+          return null;
+        },
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
+          FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
+        },
+      ),
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
+      child: TextFormField(
+        obscureText: true,
+        controller: _confirmPasswordController,
+        focusNode: _confirmPasswordFocusNode,
+        style: TextStyle(
+          color: Colors.black,
+        ),
+        cursorColor: Colors.indigo,
+        cursorWidth: 3,
+        showCursor: true,
+        enabled: _isNicknameAvailable,
+        decoration: InputDecoration(
+          labelText: '비밀번호 확인',
+          labelStyle: TextStyle(color: Colors.black54),
+          border: OutlineInputBorder(),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.indigo,
+            ),
+          ),
+          errorText: _confirmPasswordErrorText,
+        ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return '비밀번호를 다시 확인해주세요.';
+          } else if (value != _passwordController.text) {
+            return '비밀번호가 일치하지 않습니다.';
+          }
+          return '비밀번호가 일치합니다.';
+        },
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
+          FocusScope.of(context).requestFocus(_buttonFocusNode);
+        },
+      ),
+    );
+  }
+
+  Widget _buildBottomAppBar(BuildContext context) {
+    return BottomAppBar(
+      child: Container(
+        margin: EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.indigo[300],
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: ElevatedButton(
+          onPressed: () => _onSignUpButtonPressed(context),
+          child: Text(
+            '회원가입',
+            style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          style: ElevatedButton.styleFrom(
+            primary: Colors.transparent,
+            shadowColor: Colors.transparent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSignUpButtonPressed(BuildContext context) async {
+    if (_validateFields()) {
+      bool emailAvailable = await _checkEmailAvailability();
+      if (!emailAvailable) return;
+
+      final rootContext = context;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            '회원가입 완료',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.indigo,
+            ),
+          ),
+          content: Text(
+            '회원가입을 완료 하시겠습니까?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            Column(
+              children: [
+                Center(
+                  child: Lottie.asset(
+                    'assets/lottie/Animation.json',
+                    fit: BoxFit.contain,
+                    width: 200,
+                    height: 200,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  child: Text(
+                    '확인',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.indigo[300],
+                    onPrimary: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  ),
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+
+                    String nickname = _nicknameController.text;
+                    String password = _passwordController.text;
+                    String email = _emailUserController.text + "@" + _dropdownValue!;
+                    try {
+                      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
+                      DateTime now = DateTime.now();
+                      String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+
+                      User? currentUser = FirebaseAuth.instance.currentUser;
+                      String userUid = currentUser?.uid ?? '';
+
+                      final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+                      await usersCollection.doc(nickname).set({
+                        'uid': userUid,
+                        'nickname': nickname,
+                        'email': email,
+                        'joined_date': formattedDate,
+                      });
+
+                      ScaffoldMessenger.of(rootContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '회원가입이 완료되었습니다.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+
+                      Navigator.pushReplacement(
+                        rootContext,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    } catch (e) {
+                      print("회원가입 실패: $e");
+                    }
+                  },
+                ),
+                ElevatedButton(
+                  child: Text(
+                    '취소',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey,
+                    onPrimary: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
       );
     }
   }
 
-
-  bool _validateFields() {
-
-    if (_emailUserController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                'assets/lottie/login.json',
+                fit: BoxFit.fill,
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
-      );
-      return false;
-    }
-    else if (_passwordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호를 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
+      ),
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              SizedBox(height: 30),
+              _buildNicknameField(),
+              SizedBox(height: 30),
+              _buildEmailField(),
+              SizedBox(height: 30),
+              _buildEmailCheck(),
+              SizedBox(height: 30),
+              _buildPasswordField(),
+              SizedBox(height: 30),
+              _buildConfirmPasswordField(),
+              SizedBox(height: 30),
+            ],
+          ),
         ),
-      );
-      return false;
-    }
-
-    else if (!RegExp(r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$').hasMatch(_passwordController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호는 8~16자의 문자, 숫자, 적어도 한개의 특수기호를 사용해야 합니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-
-
-    if (_confirmPasswordController.text != _passwordController.text) {
-      print("2");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호가 일치하지 않습니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-
-
-    if (_dropdownValue == '학교 메일 선택') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-    return true;
+      ),
+      bottomNavigationBar: _buildBottomAppBar(context),
+    );
   }
+
 
   // Future<void> saveTokenToDatabase(String? token) async {
   //   // 사용자가 로그인한 경우에만 토큰을 저장합니다.
