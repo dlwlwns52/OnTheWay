@@ -30,6 +30,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   bool _isNicknameAvailable = false; // 입력 필드 활성화 여부 설정
   String _buttonText = '중복확인';
   Color _buttonColor = Colors.white70;
+  Color _buttonTextColor = Colors.black87;
+
+
   String? _usernicknameErrorText; // 닉네임 제한 ( 영문 대소문자 알파벳, 한글 음절, 일반적인 하이픈 기호, 그리고 숫자를 모두 허용)
   String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
   String? _confirmPasswordErrorText; // password 와 동일한가 확인
@@ -334,6 +337,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         setState(() {
           _buttonText = '사용가능';
           _buttonColor = Colors.indigo[200] ?? Colors.indigoAccent;
+          // _buttonTextColor = Colors.white; // 텍스트 색상 변경
           _isNicknameAvailable = true;
         });
 
@@ -518,14 +522,25 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         Container(
           padding: const EdgeInsets.fromLTRB(1, 1, 10, 25),
           child: ElevatedButton(
-            style: ButtonStyle(
-              alignment: Alignment.center,
-              backgroundColor: MaterialStateProperty.all(_buttonColor),
+            style: ElevatedButton.styleFrom(
+              primary: _buttonColor,
+              onPrimary: _buttonTextColor,
+              minimumSize: Size(110, 55),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              elevation: 2,
+              shadowColor: Colors.indigo.withOpacity(0.5),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             child: Text(
               _buttonText,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: _buttonTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+              ),
             ),
             onPressed: _checkNicknameAvailabilityAndValidate,
           ),
@@ -577,9 +592,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   Widget _buildEmailCheck() {
     return Container(
-      width: 250,
+      width: 330,
+      height: 60,
       child: ElevatedButton.icon(
-          onPressed: _signInWithGoogle,
+          onPressed: _emailUserController.text.isNotEmpty ? _signInWithGoogle : null,
           icon: Icon(Icons.mark_email_read, color: Colors.white),
           label: Text(
             '이메일 인증',

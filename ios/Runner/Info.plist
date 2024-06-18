@@ -78,7 +78,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 
-
     <!-- Google Sign-In 추가 설정 -->
     <key>CFBundleURLTypes</key>
     <array>
@@ -91,6 +90,7 @@
             </array>
         </dict>
     </array>
+
 
 </dict>
 </plist>
