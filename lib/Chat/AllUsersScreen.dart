@@ -298,7 +298,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.redAccent,
+                backgroundColor: Colors.redAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -325,7 +325,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey,
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -371,7 +371,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.redAccent,
+                backgroundColor: Colors.redAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -398,7 +398,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey,
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

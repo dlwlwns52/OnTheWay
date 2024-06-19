@@ -382,7 +382,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   child: Text('확인'),
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.indigo[300],
-                    primary: Colors.white,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
@@ -523,8 +523,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           padding: const EdgeInsets.fromLTRB(1, 1, 10, 25),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              primary: _buttonColor,
-              onPrimary: _buttonTextColor,
+              backgroundColor: _buttonColor,
+              foregroundColor: _buttonTextColor,
               minimumSize: Size(110, 55),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0),
@@ -606,7 +606,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             ),
           ),
           style: ElevatedButton.styleFrom(
-            primary: isEmailVerified ? Colors.indigo : Colors.grey,
+            backgroundColor: isEmailVerified ? Colors.indigo : Colors.grey,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30.0),
             ),
@@ -716,7 +716,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
-            primary: Colors.transparent,
+            backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),
         ),
@@ -774,8 +774,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.indigo[300],
-                    onPrimary: Colors.white,
+                    backgroundColor: Colors.indigo[300],
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -830,8 +830,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.grey,
-                    onPrimary: Colors.white,
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

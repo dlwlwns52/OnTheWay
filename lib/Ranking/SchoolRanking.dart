@@ -157,7 +157,7 @@ class _RankingPageState extends State<RankingPage> {
                   icon: Icon(Icons.close, color: Colors.white),
                   label: Text('닫기', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.deepPurple,
+                    backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

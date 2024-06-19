@@ -243,7 +243,7 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.send),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.indigo,
+                backgroundColor: Colors.indigo,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

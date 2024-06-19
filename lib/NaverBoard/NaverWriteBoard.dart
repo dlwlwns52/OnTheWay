@@ -189,11 +189,11 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
           _isUploading = true;
         });
 
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(Duration(seconds: 10), () {
+          Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
           setState(() {
             _isUploading = false;
           });
-          Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
           _showSnackBar("게시물이 업로드 되었습니다.");
         });
 
@@ -276,7 +276,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: currentLocationSet ? Colors.indigo : Colors.grey,
+                          backgroundColor: currentLocationSet ? Colors.indigo : Colors.grey,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -310,7 +310,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: storeLocationSet ? Colors.indigo : Colors.grey,
+                          backgroundColor: storeLocationSet ? Colors.indigo : Colors.grey,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -352,19 +352,17 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 ),
               ),
             ),
+
             if (_isUploading)
-              Opacity(
-                opacity: 0.5,
-                child: ModalBarrier(dismissible: false, color: Colors.grey),
-              ),
-            if (_isUploading)
-              Center(
-                child: ClipOval(
+              Container(
+                color: Colors.grey.withOpacity(0.5),
+                child: Center(
                   child: Lottie.asset(
-                    'assets/lottie/walk.json',
+                    'assets/lottie/send2.json',
                     width: 300,
                     height: 300,
                     fit: BoxFit.fill,
+                    repeat: false,
                   ),
                 ),
               ),
@@ -388,7 +386,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 style: TextStyle(fontSize: 18),
               ),
               style: ElevatedButton.styleFrom(
-                primary: Colors.transparent, // 버튼 색상 투명하게 설정
+                backgroundColor: Colors.transparent, // 버튼 색상 투명하게 설정
                 shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
               ),
             ),

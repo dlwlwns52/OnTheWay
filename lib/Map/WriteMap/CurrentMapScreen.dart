@@ -191,7 +191,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
               ],
             ),
             style: ElevatedButton.styleFrom(
-              primary: Colors.indigo[300],
+              backgroundColor: Colors.indigo[300],
               elevation: 0, // 경계선을 제거합니다.
             ),
           ),

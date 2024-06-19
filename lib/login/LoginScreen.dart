@@ -158,8 +158,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text('비밀번호 찾기'),
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.indigo,
-                            onPrimary: Colors.white,
+                            backgroundColor: Colors.indigo,
+                            foregroundColor: Colors.white,
                             // shadowColor: Colors.black,
                             elevation: 2,
                             shape: RoundedRectangleBorder(
@@ -176,8 +176,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.indigo,
-                            onPrimary: Colors.white,
+                            backgroundColor: Colors.indigo,
+                            foregroundColor: Colors.white,
                             shadowColor: Colors.orangeAccent,
                             elevation: 2,
                             shape: RoundedRectangleBorder(
@@ -322,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
               print('No user found with email: $email');
             }
           }
-
+          if (!mounted) return; // 위젯이 언마운트된 경우 종료합니다.
 
           switch (domain.toLowerCase()) {
             case 'naver.com':
@@ -381,9 +381,13 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
-    setState(() {
-      isLoginPressed = false; // 로그인 시도 종료시 다시 상태를 false로 바꿈
-    });
+    finally {
+      if (mounted) {
+        setState(() {
+          isLoginPressed = false; // 로그인 시도 종료시 다시 상태를 false로 바꿈
+        });
+      }
+    }
   }
 
 

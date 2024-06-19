@@ -262,7 +262,7 @@ class _NotificationScreenState extends State<AlarmUi> {
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.indigo[400],
+                backgroundColor: Colors.indigo[400],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                 ),
@@ -290,7 +290,7 @@ class _NotificationScreenState extends State<AlarmUi> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey,
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                 ),

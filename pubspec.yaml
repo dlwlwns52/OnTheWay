@@ -76,6 +76,7 @@ flutter:
     - assets/lottie/walk.json
     - assets/lottie/CheckTest.json
     - assets/lottie/login.json
+    - assets/lottie/send2.json
 
 
 
