@@ -456,15 +456,21 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 인증이 완료되었습니다.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 3),
           ),
         );
       } else {
         // 이메일이 일치하지 않으면 로그아웃
         await _auth.signOut();
         setState(() {
-          _userEmailErrorText = '이메일이 일치하지 않습니다.';
+          _userEmailErrorText = "다시 시도해주세요.";
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이메일이 일치하지 않습니다.', textAlign: TextAlign.center,),
+            // behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 1),
+          ),
+        );
       }
     } catch (e) {
       // 로그인 오류 처리

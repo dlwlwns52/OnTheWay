@@ -77,6 +77,8 @@ flutter:
     - assets/lottie/CheckTest.json
     - assets/lottie/login.json
     - assets/lottie/send2.json
+    - assets/lottie/loading.json
+    - assets/lottie/loading_indigo.json
 
 
 

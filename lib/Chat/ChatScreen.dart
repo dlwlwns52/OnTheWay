@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 import '../Map/TMapView.dart';
 
@@ -31,7 +32,7 @@ class ChatScreen extends StatefulWidget {
   _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final GlobalKey<FormState> _formKey = GlobalKey<
       FormState>(); // 폼 상태를 관리하는 GlobalKey
   Map<String, dynamic> map = {}; // 메시지 맵
@@ -41,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late File imageFile; // 이미지 파일
   List<File> imageFiles = [];
   List<String> tmapDirections = [];
+  bool _isImageUploading = false;
 
   late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
 
@@ -54,24 +56,58 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isFilled = false;
   final ScrollController _scrollController = ScrollController();
 
+  //채팅방에 있는 동안 메시지 확인 체크
+  late StreamSubscription<QuerySnapshot> _messageSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // 생명주기 이벤트 옵저버 추가
     _messageController = TextEditingController();
     _messageController.addListener(_checkFieldsFilled);
     _initializeChatDetails();
     _checkAndUpdateMessageReadStatus();
     _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
+    _startListeningToMessages(); // 메시지 변경 사항을 실시간으로 듣기
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // 생명주기 이벤트 옵저버 제거
     _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
     _scrollController.dispose(); // 스크롤 컨트롤러 해제
+    _messageSubscription.cancel(); // Firestore Listener 해제
     super.dispose();
     // subscription?.cancel(); // 스트림 구독 취소
   }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        print("앱이 활성화되었습니다.");
+        _updateUserStatusInChatRoom(true); // 앱이 다시 활성화될 때 업데이트
+        break;
+      case AppLifecycleState.inactive:
+        print("앱이 비활성화되었습니다.");
+        // 앱이 비활성화될 때 수행할 작업
+        break;
+      case AppLifecycleState.paused:
+        print("앱이 일시 중지되었습니다.");
+        _updateUserStatusInChatRoom(false); // 앱이 백그라운드로 가거나 종료될 때 업데이트
+        break;
+      case AppLifecycleState.detached:
+        print("앱이 종료되었습니다.");
+        _updateUserStatusInChatRoom(false); // 앱이 백그라운드로 가거나 종료될 때 업데이트
+        break;
+      case AppLifecycleState.hidden:
+        print("앱이 숨겨졌습니다.");
+        _updateUserStatusInChatRoom(false); // 앱이 숨겨졌을 때 업데이트
+        break;
+    }
+  }
+
 
 
   void _checkFieldsFilled() {
@@ -122,7 +158,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 //
-// 상대방의 채팅방 상태를 확인하는 함수
+// 들어갈때 상대방의 채팅방 상태를 확인하는 함수
   Future<void> _checkAndUpdateMessageReadStatus() async {
     // 파이어스토어에서 상대방의 사용자 상태 문서를 가져옵니다.
     DocumentSnapshot userStatusSnapshot = await FirebaseFirestore.instance
@@ -143,7 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-
+// read 가 0 이면 true 로 설정
   Future<void> _markUnreadMessagesAsRead() async {
     try {
       // 현재 사용자의 UID를 사용하여 아직 읽지 않은 메시지를 조회하고 업데이트합니다.
@@ -169,6 +205,24 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  //채팅방에 있는 동안 count 0 설정하는 함수
+  void _startListeningToMessages(){
+    _messageSubscription = FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(widget.documentName)
+        .collection('messages')
+        .where('read', isEqualTo: false)
+        .snapshots()
+        .listen((snapshot) {
+      for (var doc in snapshot.docs) {
+        doc.reference.update({'read': true});
+      }
+      FirebaseFirestore.instance
+          .collection('ChatActions')
+          .doc(widget.documentName)
+          .update({'messageCount_${widget.senderName}': 0});
+    });
+  }
 
   // 채팅방 길찾기 기능
   Future<void> _tmapDirections() async {
@@ -276,6 +330,10 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
 
+        setState(() {
+          _isImageUploading = true;
+        });
+
         // 이미지 업로드 비동기 처리
         for (var imageFile in imageFiles) {
           Reference storageReference = FirebaseStorage.instance
@@ -286,6 +344,10 @@ class _ChatScreenState extends State<ChatScreen> {
           String downloadUrl = await taskSnapshot.ref.getDownloadURL();
           uploadImageUrls.add(downloadUrl);
         }
+
+        setState(() {
+          _isImageUploading = false;
+        });
 
         // 모든 이미지 업로드 후 사용자에게 알림
         ScaffoldMessenger.of(context).showSnackBar(
@@ -415,7 +477,6 @@ class _ChatScreenState extends State<ChatScreen> {
         isDeleted : false,
       );
 
-      _checkAndUpdateMessageReadStatus();
       // _addMessageToDb 함수를 사용하여 메시지 추가
       _addMessageToDb(message);
 
@@ -667,11 +728,25 @@ class _ChatScreenState extends State<ChatScreen> {
           Text('1', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
 
         if (!isSentByMe )
+          // Stack(
+          //   children:[
           CircleAvatar(
             backgroundImage: AssetImage('assets/ava.png'),
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.transparent,
             radius: 18.0,
           ),
+
+          // CircleAvatar(
+          //   child: Lottie.asset(
+          //     'assets/lottie/walk.json',
+          //     fit: BoxFit.contain,
+          //
+          //   ),
+          //   // backgroundColor: Colors.grey,
+          //   //   radius: 18.0
+          // )
+          //     ],
+          // ),
 
 
         SizedBox(width: 10.0),
@@ -730,7 +805,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   margin: EdgeInsets.only(top: 10),
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSentByMe ? Colors.indigoAccent : Colors.grey[300],
+                    color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
                   ),
                   child: Row(
@@ -887,29 +962,45 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
           ),
-          body: Column(
-            children: <Widget>[
-              Divider(
-                height: 2.0, // Divider의 높이 설정
-                thickness: 3.0, // Divider의 두께 설정
-                color: Colors.grey, // Divider의 색상 설정
-              ),
-              Expanded(
-                child: _senderUid == null
-                    ? Container(
-                  child: CircularProgressIndicator(), // 로딩 표시
-                )
-                    : Column(
-                  children: <Widget>[
-                    ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                    ChatInputWidget(), // 채팅 입력 위젯
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                  ],
+          body: Stack(
+            children:[
+              Column(
+              children: <Widget>[
+                Divider(
+                  height: 2.0, // Divider의 높이 설정
+                  thickness: 3.0, // Divider의 두께 설정
+                  color: Colors.grey, // Divider의 색상 설정
                 ),
-              ),
-            ],
+                Expanded(
+                  child: _senderUid == null
+                      ? Container(
+                    child: CircularProgressIndicator(), // 로딩 표시
+                  )
+                      : Column(
+                    children: <Widget>[
+                      ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                      ChatInputWidget(), // 채팅 입력 위젯
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+              if (_isImageUploading)
+                Container(
+                  color: Colors.grey.withOpacity(0.5),
+                  child: Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading_indigo.json',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.contain
+                    ),
+                  ),
+                ),
+           ],
           ),
         ),
     ),
