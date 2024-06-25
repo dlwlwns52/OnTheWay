@@ -202,6 +202,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
       'isDeleted_$helperNickname': true
     });
+    await _deleteUserStatusChatRoom(documentId, helperNickname);
   }
 
   //owner의 isDeleted_ 활성화
@@ -209,9 +210,21 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId).update({
       'isDeleted_$ownerNickname' : true
     });
+    await _deleteUserStatusChatRoom(documentId, ownerNickname);
   }
 
-  //helper의 isDeleted_ 와 owner의 isDeleted_ 두개다 모두 활성화 시 문서삭제
+  //나가기를 눌렀을 때 각 닉네임을 가진 사람의 상태 정보 삭제
+  Future<void> _deleteUserStatusChatRoom(String documentId, String nickname) async {
+    await FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(nickname)
+        .collection('chatRooms')
+        .doc(documentId)
+        .delete();
+  }
+
+
+// helper의 isDeleted_ 와 owner의 isDeleted_ 두 개 다 모두 활성화 시 문서 삭제
   Future<void> deleteChatRoomIfBothDeleted(String documentId, String helperNickname, String ownerNickname) async {
     // 채팅방 문서 참조
     DocumentReference chatRoomRef = FirebaseFirestore.instance.collection('ChatActions').doc(documentId);
@@ -226,7 +239,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
       bool isHelperDeleted = chatRoomData['isDeleted_$helperNickname'] ?? false;
       bool isOwnerDeleted = chatRoomData['isDeleted_$ownerNickname'] ?? false;
 
-
       if (isHelperDeleted && isOwnerDeleted) {
         // 채팅방에 있는 모든 이미지 URL 가져오기
         QuerySnapshot messagesImageSnapshot = await chatRoomRef.collection('messages')
@@ -236,21 +248,18 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
         // Firebase Storage에서 이미지 삭제
         for (var doc in messagesImageSnapshot.docs) {
           var messageData = doc.data() as Map<String, dynamic>;
-            var photoUrl = messageData['photoUrl'];
-            if (photoUrl != null) {
-              try {
-                await FirebaseStorage.instance.refFromURL(photoUrl).delete();
-              } catch (e) {
-                print("Error deleting image from Storage: $e");
-              }
+          var photoUrl = messageData['photoUrl'];
+          if (photoUrl != null) {
+            try {
+              await FirebaseStorage.instance.refFromURL(photoUrl).delete();
+            } catch (e) {
+              print("Error deleting image from Storage: $e");
             }
+          }
         }
 
-
-        QuerySnapshot messagesSnapshot = await chatRoomRef.collection('messages').get();
-        for (var doc in messagesSnapshot.docs){
-          await doc.reference.delete();
-        }
+        // 서브컬렉션의 모든 문서 삭제
+        await _deleteSubCollection(chatRoomRef);
 
         // 두 사용자 모두 채팅방을 삭제했다면 문서 삭제
         await chatRoomRef.delete();
@@ -258,18 +267,18 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     }
   }
 
-  Future<void> deleteSubCollection(DocumentReference parentDocRef) async{
-    //서브컬렉션 참조
+// 서브컬렉션의 모든 문서를 삭제하는 메서드
+  Future<void> _deleteSubCollection(DocumentReference parentDocRef) async {
+    // 서브컬렉션 참조
     CollectionReference subcollectionRef = parentDocRef.collection('messages');
 
-    //서브컬렉션의 모든 문서 가져오기
+    // 서브컬렉션의 모든 문서 가져오기
     QuerySnapshot subcollectionSnapshot = await subcollectionRef.get();
 
-    //각 문서 삭제
-    for (var doc in subcollectionSnapshot.docs){
+    // 각 문서 삭제
+    for (var doc in subcollectionSnapshot.docs) {
       await doc.reference.delete();
     }
-
   }
 
   // helper 채팅방 나가기 dialog

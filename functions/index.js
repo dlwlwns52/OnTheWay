@@ -169,7 +169,7 @@ exports.notifyChatRoomCreated = functions.firestore
 // 4번째 함수 채팅 메시지 푸시알림
 exports.sendPushNotification = functions.firestore // Cloud Functions를 사용하여 Firestore 이벤트를 감지합니다.
     .document('ChatActions/{chatId}/messages/{messageId}') // 'ChatActions/{chatId}/messages/{messageId}' 경로의 문서에 변화가 있을 때 함수가 트리거됩니다.
-    .onCreate((snapshot, context) => { // 새 문서가 생성될 때 실행되는 함수입니다.
+    .onCreate(async (snapshot, context) => { // 새 문서가 생성될 때 실행되는 함수입니다.
         const messageData = snapshot.data(); // 생성된 문서의 데이터를 가져옵니다.
         const receiverName = messageData.receiverName; // 메시지의 수신자 닉네임을 가져옵니다.
         const senderName = messageData.senderName; // 메시지의 발신자 닉네임을 가져옵니다.
@@ -177,6 +177,16 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
         // 수신자의 FCM 토큰을 가져오는 부분입니다.
         // 사용자의 FCM 토큰을 'users' 컬렉션에서 관리한다고 가정합니다.
         const tokenRef = admin.firestore().collection('users').doc(receiverName).get(); 
+
+        //userStatus 상태 확인
+        const userStatusRef = admin.firestore().collection('userStatus').doc(receiverName).collection('chatRooms').doc(context.params.chatId);
+        const userStatusSnapshot = await userStatusRef.get();
+        
+        if (userStatusSnapshot.exists && userStatusSnapshot.data().isInChatRoom) {
+          // 수신자가 채팅방에 있는 경우 푸시 알림을 보내지 않습니다.
+          console.log('수신자가 채팅방에 있습니다. 푸시 알림을 보내지 않습니다.');
+          return null;
+      }
 
         return tokenRef.then(tokenDoc => { // 토큰 문서를 가져온 후 처리합니다.
             if (tokenDoc.exists) { // 토큰 문서가 존재하는 경우

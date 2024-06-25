@@ -135,15 +135,19 @@ class LoadingScreen extends StatelessWidget {
                 maxLines: 1,
               ),
             SizedBox(height: 30),
-            Lottie.asset(
-                  'assets/lottie/walk.json',
-                  fit: BoxFit.cover,
+            Container(
+              width: 200,
+            height: 200,
+            child: Lottie.asset(
+                  'assets/lottie/loading_indigo.json',
+                  fit: BoxFit.contain,
               ),
+            ),
 
             SizedBox(height: 100),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
-            ),
+            // CircularProgressIndicator(
+            //   valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
+            // ),
           ],
         ),
       ),

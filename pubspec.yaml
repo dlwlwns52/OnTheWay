@@ -48,6 +48,7 @@ dependencies:
   #이메일인증
   google_sign_in: ^6.1.6
 
+  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
   flutter_test:

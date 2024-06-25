@@ -5,6 +5,7 @@ import 'package:OnTheWay/Chat/message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -57,28 +58,33 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
 
   //채팅방에 있는 동안 메시지 확인 체크
-  late StreamSubscription<QuerySnapshot> _messageSubscription;
+  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _messageSubscription;
+
+  //채팅방 나가면 채팅 못하게 하게
+  late bool _isUserDeleted;
+  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userDeleteSubscription;
 
   @override
   void initState() {
     super.initState();
+    _isUserDeleted = false;
     WidgetsBinding.instance.addObserver(this); // 생명주기 이벤트 옵저버 추가
     _messageController = TextEditingController();
     _messageController.addListener(_checkFieldsFilled);
     _initializeChatDetails();
-    _checkAndUpdateMessageReadStatus();
     _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
     _startListeningToMessages(); // 메시지 변경 사항을 실시간으로 듣기
+    _startListeningToUserDelete();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this); // 생명주기 이벤트 옵저버 제거
-    _updateUserStatusInChatRoom(false); // 채팅방에서 나갔음을 업데이트
     _scrollController.dispose(); // 스크롤 컨트롤러 해제
-    _messageSubscription.cancel(); // Firestore Listener 해제
+    _messageSubscription?.cancel(); // Firestore Listener 해제
+    _userDeleteSubscription?.cancel();
+    _updateUserStatusInChatRoom(false);
     super.dispose();
-    // subscription?.cancel(); // 스트림 구독 취소
   }
 
   @override
@@ -145,84 +151,76 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   //채팅방 들어오는 여부에 따라 true 또는 false로 업데이트
   Future<void> _updateUserStatusInChatRoom(bool isInChatRoom) async {
-    if (widget.receiverName != null) {
+    if (widget.documentName != null) {
       await FirebaseFirestore.instance
-          .collection('userStatus') // 별도의 'userStatus' 컬렉션 사용
-          .doc(widget.senderName) // 사용자의 UID를 문서 ID로 사용
+          .collection('userStatus')
+          .doc(widget.senderName)
+          .collection('chatRooms')
+          .doc(widget.documentName) // 채팅방 ID를 문서 ID로 사용
           .set({
-          'isInChatRoom': isInChatRoom,
-          'timestamp': DateTime.timestamp()
-          });
+        'isInChatRoom': isInChatRoom,
+        'timestamp': DateTime.now()
+      });
     }
   }
 
-
-//
-// 들어갈때 상대방의 채팅방 상태를 확인하는 함수
-  Future<void> _checkAndUpdateMessageReadStatus() async {
-    // 파이어스토어에서 상대방의 사용자 상태 문서를 가져옵니다.
-    DocumentSnapshot userStatusSnapshot = await FirebaseFirestore.instance
-        .collection('userStatus')
-        .doc(widget.receiverName)
-        .get();
-
-    // 문서가 존재하는지 확인합니다.
-    if (userStatusSnapshot.exists) {
-      // 문서 데이터를 Map<String, dynamic>으로 캐스팅합니다.
-      Map<String, dynamic> userStatusData = userStatusSnapshot.data() as Map<String, dynamic>;
-      // 사용자가 채팅방에 있는지 여부를 확인합니다.
-      bool isInChatRoom = userStatusData['isInChatRoom'] ?? false;
-      // 상대방이 채팅방에 있으면, 아직 읽지 않은 모든 메시지를 '읽음'으로 표시합니다.
-      if (isInChatRoom) {
-        _markUnreadMessagesAsRead();
-      }
-    }
-  }
-
-// read 가 0 이면 true 로 설정
-  Future<void> _markUnreadMessagesAsRead() async {
-    try {
-      // 현재 사용자의 UID를 사용하여 아직 읽지 않은 메시지를 조회하고 업데이트합니다.
-      QuerySnapshot<Map<String, dynamic>> unreadMessages = await FirebaseFirestore.instance
-          .collection('ChatActions')
-          .doc(widget.documentName)
-          .collection('messages')
-          .where('read', isEqualTo: false)
-          .get();
-
-      for (var message in unreadMessages.docs) {
-        await message.reference.update({'read': true});
-      }
-
-      // read로 바뀌면 안읽은 메시지 0으로 초기화
-      await FirebaseFirestore.instance
-          .collection('ChatActions')
-          .doc(widget.documentName)
-          .update({'messageCount_$senderName': 0});
-
-    } catch (error) {
-      print("Error marking messages as read: $error");
-    }
-  }
-
-  //채팅방에 있는 동안 count 0 설정하는 함수
-  void _startListeningToMessages(){
-    _messageSubscription = FirebaseFirestore.instance
+//상대방이 채팅방 나가면 해당 데이터 가져오는 함수
+  void _startListeningToUserDelete() {
+    _userDeleteSubscription = FirebaseFirestore.instance
         .collection('ChatActions')
         .doc(widget.documentName)
-        .collection('messages')
-        .where('read', isEqualTo: false)
         .snapshots()
         .listen((snapshot) {
-      for (var doc in snapshot.docs) {
-        doc.reference.update({'read': true});
+          if (snapshot.exists) {
+            var data = snapshot.data();
+            setState(() {
+              _isUserDeleted = data?['isDeleted_${widget.receiverName}'] ?? false;
+            });
+          } else {
+            setState(() {
+              _isUserDeleted = false;
+            });
+          }
+        });
+  }
+
+
+  // //채팅방에 있는 동안 count 0 설정하는 함수
+  void _startListeningToMessages() {
+    // 상대방의 userStatus를 실시간으로 감지합니다.
+    _messageSubscription = FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(widget.receiverName)
+        .collection('chatRooms')
+        .doc(widget.documentName)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        var data = snapshot.data();
+        if (data != null && data['isInChatRoom'] == true) {
+          // 상대방이 채팅방에 있을 때 메시지 카운트를 0으로 설정
+          FirebaseFirestore.instance
+              .collection('ChatActions')
+              .doc(widget.documentName)
+              .update({'messageCount_${widget.senderName}': 0});
+
+          // 읽지 않은 메시지를 읽음으로 표시
+          FirebaseFirestore.instance
+              .collection('ChatActions')
+              .doc(widget.documentName)
+              .collection('messages')
+              .where('read', isEqualTo: false)
+              .get()
+              .then((unreadMessages) {
+            for (var message in unreadMessages.docs) {
+              message.reference.update({'read': true});
+            }
+          });
+        }
       }
-      FirebaseFirestore.instance
-          .collection('ChatActions')
-          .doc(widget.documentName)
-          .update({'messageCount_${widget.senderName}': 0});
     });
   }
+
 
   // 채팅방 길찾기 기능
   Future<void> _tmapDirections() async {
@@ -420,18 +418,19 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .collection('messages');
 
     // 메시지를 messages 서브컬렉션에 추가
-    messages.add(messageMap).whenComplete(() async{
-      FirebaseFirestore.instance.collection('ChatActions').doc(widget.documentName).update({
+    messages.add(messageMap).whenComplete(() async {
+      await FirebaseFirestore.instance.collection('ChatActions').doc(widget.documentName).update({
         'lastMessage': message.message,
       });
 
-
-      //상대방의 userStatus를 확인하고 messageCount를 업데이트합니다.
+      // 상대방의 userStatus를 확인하고 messageCount를 업데이트합니다.
       DocumentReference userStatusRef = FirebaseFirestore.instance
-        .collection('userStatus')
-        .doc(widget.receiverName);
+          .collection('userStatus')
+          .doc(widget.receiverName)
+          .collection('chatRooms')
+          .doc(widget.documentName);
 
-      //메시지 온 횟수 추적
+      // 메시지 온 횟수 추적
       DocumentReference userMessageCount = FirebaseFirestore.instance
           .collection('ChatActions')
           .doc(widget.documentName);
@@ -439,14 +438,33 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       DocumentSnapshot userStatusSnapshot = await userStatusRef.get();
       DocumentSnapshot userCountSnapshot = await userMessageCount.get();
 
-      if (userStatusSnapshot.exists){
-        var statusData = userStatusSnapshot.data() as Map<String, dynamic>; //타입캐스팅
-        var countData = userCountSnapshot.data() as Map<String, dynamic>; //타입캐스팅
-        bool isRead = statusData['read'] ?? false;
-        if(!isRead){//false인 경우 즉 상대방이 채팅에 없을 경우 messageCount 증가
-          int messageCount = countData['messageCount_$receiverName'] ?? 0;
-          userMessageCount.update({'messageCount_$receiverName': messageCount + 1});
+      if (userStatusSnapshot.exists) {
+        var statusData = userStatusSnapshot.data() as Map<String, dynamic>; // 타입 캐스팅
+        var countData = userCountSnapshot.data() as Map<String, dynamic>; // 타입 캐스팅
+
+        bool isInChatRoom = statusData['isInChatRoom'] ?? false;
+
+        if (isInChatRoom) {
+          // 상대방이 채팅방에 있는 경우 messageCount를 0으로 설정
+          await userMessageCount.update({'messageCount_${widget.receiverName}': 0});
+          QuerySnapshot<Map<String, dynamic>> unreadMessages = await FirebaseFirestore.instance
+              .collection('ChatActions')
+              .doc(widget.documentName)
+              .collection('messages')
+              .where('read', isEqualTo: false)
+              .get();
+          for (var message in unreadMessages.docs) {
+            await message.reference.update({'read': true});
+          }
+
+        } else {
+          // 상대방이 채팅방에 없는 경우 messageCount 증가
+          int messageCount = countData['messageCount_${widget.receiverName}'] ?? 0;
+          await userMessageCount.update({'messageCount_${widget.receiverName}': messageCount + 1});
         }
+      } else {
+        // userStatus 문서가 존재하지 않는 경우 (초기 상태)
+        await userMessageCount.update({'messageCount_${widget.receiverName}': 1});
       }
     });
   }
@@ -579,85 +597,124 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     return formattedTime; // 포매팅된 시간 문자열을 반환합니다.
   }
 
-
   Widget ChatMessagesListWidget() {
     return Flexible(
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());
         },
-        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('ChatActions')
-              .doc(widget.documentName)
-              .collection('messages')
-              .orderBy('timestamp', descending: false)
-              .snapshots(),
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('ChatActions')
+                    .doc(widget.documentName)
+                    .collection('messages')
+                    .orderBy('timestamp', descending: false)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+                    }
+                  });
 
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
-            }
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (_scrollController.hasClients) {
-                _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-              }
-            });
+                  List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
+                  // 날짜 구분을 위한 로직 추가
+                  List<Widget> messageWidgets = [];
+                  DateTime? lastDate;
+                  for (int i = 0; i < messages.length; i++) {
+                    final message = messages[i];
+                    final messageDate = (message['timestamp'] as Timestamp).toDate();
 
-            List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
-            // 날짜 구분을 위한 로직 추가
-            List<Widget> messageWidgets = [];
-            DateTime? lastDate;
-            for (int i = 0; i < messages.length; i++) {
-              final message = messages[i];
-              final messageDate = (message['timestamp'] as Timestamp).toDate();
+                    if (lastDate == null || messageDate.day != lastDate.day) {
+                      if (i > 0) { // 메시지가 있으면 바로 위, 없으면 상단 중앙에 표시
+                        messageWidgets.add(SizedBox(height: 20)); // 메시지 간격 조정용
+                      }
+                      messageWidgets.add(
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), // 내부 여백 조정
+                              decoration: BoxDecoration(
+                                color: Colors.white, // 배경색
+                                border: Border.all(color: Colors.black, width: 1), // 테두리 색
+                                borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
+                              ),
+                              child: Text(
+                                DateFormat('yyyy년 M월 d일').format(messageDate),
+                                style: TextStyle(
+                                  color: Colors.black, // 텍스트 색상
+                                  fontWeight: FontWeight.bold, // 글자 굵기
+                                ),
+                              ),
+                            ),
+                          )
+                      );
+                      if (i > 0) {
+                        messageWidgets.add(SizedBox(height: 10)); // 날짜와 메시지 사이 간격 조정용
+                      }
+                    }
+                    lastDate = messageDate;
 
-              if (lastDate == null || messageDate.day != lastDate.day) {
-                if (i > 0) { // 메시지가 있으면 바로 위, 없으면 상단 중앙에 표시
-                  messageWidgets.add(SizedBox(height: 20)); // 메시지 간격 조정용
-                }
-                messageWidgets.add(
-                    Center(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), // 내부 여백 조정
-                        decoration: BoxDecoration(
-                          color: Colors.white, // 배경색
-                          border: Border.all(color: Colors.black, width: 1), // 오렌지색 테두리
-                          borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                        ),
-                        child: Text(
-                          DateFormat('yyyy년 M월 d일').format(messageDate),
-                          style: TextStyle(
-                            color: Colors.black, // 텍스트 색상
-                            fontWeight: FontWeight.bold, // 글자 굵기
+                    // 메시지 위젯 추가
+                    bool shouldDisplayAvatar = i == 0 || messages[i - 1]['senderUid'] != messages[i]['senderUid'];
+                    bool isRead = messages[i]['read'] as bool;
+                    messageWidgets.add(chatMessageItem(message, shouldDisplayAvatar, isRead));
+                  }
+
+                  if (_isUserDeleted) {
+                    messageWidgets.add(
+                      Center(
+                        child: Container(
+                          padding: EdgeInsets.all(12.0),
+                          margin: EdgeInsets.symmetric(vertical: 20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.indigo[50], // 인디고 색상 적용
+                            borderRadius: BorderRadius.circular(50.0), // 둥근 모서리 적용
+                            border: Border.all(color: Colors.indigo, width: 1), // 인디고 색상 테두리
+
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.infoCircle, // 아이콘 추가
+                                color: Colors.indigo,
+                              ),
+                              SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
+                              Text(
+                                "${widget.receiverName}님이 채팅방을 나갔습니다.",
+                                style: TextStyle(
+                                  color: Colors.indigo, // 인디고 색상 텍스트
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16.0, // 텍스트 크기 조정
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    )
+                    );
+                  }
 
-                );
-                if (i > 0) {
-                  messageWidgets.add(SizedBox(height: 10)); // 날짜와 메시지 사이 간격 조정용
-                }
-              }
-              lastDate = messageDate;
-
-              // 메시지 위젯 추가
-              bool shouldDisplayAvatar = i == 0 || messages[i - 1]['senderUid'] != messages[i]['senderUid'];
-              bool isRead = messages[i]['read'] as bool;
-              messageWidgets.add(chatMessageItem(message, shouldDisplayAvatar, isRead));
-            }
-
-            return ListView(
-              controller: _scrollController,
-              padding: EdgeInsets.all(10.0),
-              children: messageWidgets,
-            );
-          },
+                  return ListView(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(10.0),
+                    children: messageWidgets,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
 
   Widget chatMessageItem(
       QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot,
@@ -676,9 +733,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         children: <Widget>[
           IconButton(
             icon: Icon(Icons.image, color: Colors.grey[600], size:35,), // 아이콘 색상 조정
-            onPressed: () {
+            onPressed: _isUserDeleted ? null : () {
               _pickImageAndUpload(); // 이미지 선택
             },
+
           ),
           Flexible(
             child: Padding(
@@ -686,10 +744,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               child: TextFormField(
                 controller: _messageController,
                 onFieldSubmitted: (value){
-                  _sendMessage();
+                  if (!_isUserDeleted) {
+                    _sendMessage();
+                  }
                 },
                 decoration: InputDecoration(
-                  // hintText: "메시지 입력...",
+                  hintText: _isUserDeleted ?"메시지를 보낼 수 없습니다." :' ' ,
                   contentPadding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 15.0), // 패딩 조정
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0), // 둥근 모서리 적용
@@ -698,6 +758,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   filled: true,
                   fillColor: Colors.grey[200], // 배경색 적용
                 ),
+                enabled: !_isUserDeleted,
               ),
             ),
           ),
