@@ -810,6 +810,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                         'nickname': nickname,
                         'email': email,
                         'joined_date': formattedDate,
+                        'grade' : 3.0,
                       });
 
                       ScaffoldMessenger.of(rootContext).showSnackBar(

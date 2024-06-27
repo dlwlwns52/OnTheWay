@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Chat/AllUsersScreen.dart';
@@ -125,24 +126,85 @@ class _NotificationScreenState extends State<AlarmUi> {
                             backgroundColor: avatarColor, // 여기서 색상 적용
                             child: Icon(Icons.person, color: Colors.white),
                           ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                '도와주기를 요청하였습니다.',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                '$timeAgo',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                              ),
-                            ],
+                          title: Row(
+                              children : [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                                    ),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      '도와주기를 요청하였습니다.',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      '$timeAgo',
+                                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                Spacer(),
+                                Column(
+                                  // crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    FutureBuilder<String>(
+                                      future: getGradeByNickname(notification['helper_email_nickname']),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return CircularProgressIndicator();
+                                        } else if (snapshot.hasError) {
+                                          return Text('에러가 발생하였습니다.');
+                                        } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
+                                          return Text('에러가 발생하였습니다.');
+                                        } else {
+                                          // double grade = double.parse(snapshot.data!);
+                                          return
+                                            isDeleteMode  ? Text('') :  Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(color: Colors.indigo, width: 2),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  color: Colors.white.withOpacity(0.1),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.school_outlined, color: Colors.indigo),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                      'A+',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.indigo,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 7),
+                                                    Column(
+                                                        children : [
+                                                          SizedBox(height: 12,),
+
+                                                      Text(
+                                                        snapshot.data!,
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.indigoAccent,
+                                                          fontSize: 8,
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                  ]
+                                                ),
+                                              );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                )
+                              ],
                           ),
                           onTap: () {
                             _showAcceptDeclineDialog(context, nickname, doc.id);
@@ -162,6 +224,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 ),
               ),
             ],
+
           ),
         ),
     ),
@@ -315,6 +378,21 @@ class _NotificationScreenState extends State<AlarmUi> {
         );
       },
     );
+  }
+
+  //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
+  Future<String> getGradeByNickname(String helperEmailNickname) async{
+    final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+
+    DocumentSnapshot documentSnapshot = await usersCollection.doc(helperEmailNickname).get();
+
+    if(documentSnapshot.exists){
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+      return data['grade'].toString();
+    }
+    else {
+     return '정보 없음';
+    }
   }
 
 

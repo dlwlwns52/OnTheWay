@@ -188,17 +188,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     SizedBox(height: 20),
+
                     Container(
                       height: 50,
                       width: double.infinity,
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          colors: isEmailFilled && isPasswordFilled
-                              ? [Colors.indigoAccent, Colors.blueAccent, Colors.indigoAccent]
-                              : [Colors.grey, Colors.grey],
-                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -207,24 +203,37 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                      child: TextButton(
-                        onPressed: _login,
-                        child: Text(
-                          "로그인",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          // padding: EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isEmailFilled && isPasswordFilled
+                                  ? [Colors.indigoAccent, Colors.blueAccent, Colors.indigoAccent]
+                                  : [Colors.grey, Colors.grey],
+                            ),
                             borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: InkWell(
+                            onTap: _login,
+                            borderRadius: BorderRadius.circular(12),
+                            splashColor: Colors.indigo.withOpacity(0.2),
+                            highlightColor: Colors.indigo.withOpacity(0.2),
+                            child: Center(
+                              child: Text(
+                                "로그인",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
+
 
                   ],
                 ),

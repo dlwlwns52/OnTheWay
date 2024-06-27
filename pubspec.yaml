@@ -48,8 +48,9 @@ dependencies:
   #이메일인증
   google_sign_in: ^6.1.6
 
+  #학점 관리
   font_awesome_flutter: ^10.7.0
-
+  flutter_rating_bar: ^4.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,6 +77,7 @@ flutter:
     - assets/lottie/orange.json
     - assets/lottie/walk.json
     - assets/lottie/CheckTest.json
+    - assets/lottie/CheckTest2.json
     - assets/lottie/login.json
     - assets/lottie/send2.json
     - assets/lottie/loading.json

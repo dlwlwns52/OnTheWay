@@ -124,12 +124,13 @@ class LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
+            SizedBox(height: 60),
             AutoSizeText(
                 'OnTheWay',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 60,
+                  fontSize: 70,
                   color: Colors.indigo,
                 ),
                 maxLines: 1,
@@ -137,11 +138,11 @@ class LoadingScreen extends StatelessWidget {
             SizedBox(height: 30),
             Container(
               width: 200,
-            height: 200,
-            child: Lottie.asset(
-                  'assets/lottie/loading_indigo.json',
-                  fit: BoxFit.contain,
-              ),
+              height: 200,
+              child: Lottie.asset(
+                    'assets/lottie/loading_indigo.json',
+                    fit: BoxFit.contain,
+                ),
             ),
 
             SizedBox(height: 100),

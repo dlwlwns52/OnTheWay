@@ -148,15 +148,15 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
       return;
     }
 
-    if(currentLocationSet == false){
-      _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
-      return;
-    }
-
-    if(storeLocationSet == false){
-      _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
-      return;
-    }
+    // if(currentLocationSet == false){
+    //   _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
+    //   return;
+    // }
+    //
+    // if(storeLocationSet == false){
+    //   _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
+    //   return;
+    // }
 
     try {
       FirebaseFirestore db = FirebaseFirestore.instance;
@@ -358,9 +358,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 color: Colors.grey.withOpacity(0.5),
                 child: Center(
                   child: Lottie.asset(
-                    'assets/lottie/loading_indigo.json',
-                    width: 200,
-                    height: 200,
+                    'assets/lottie/CheckTest2.json',
+                    width: 400,
+                    height: 400,
                     fit: BoxFit.contain
                     ,
                   ),
