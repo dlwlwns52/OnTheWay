@@ -1,3 +1,4 @@
+import 'package:OnTheWay/Alarm/Grade.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -159,26 +160,30 @@ class _NotificationScreenState extends State<AlarmUi> {
                                         } else if (snapshot.hasError) {
                                           return Text('에러가 발생하였습니다.');
                                         } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
-                                          return Text('에러가 발생하였습니다.');
+                                          return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
                                         } else {
                                           // double grade = double.parse(snapshot.data!);
+                                          double gradeValue = double.parse(snapshot.data!);
+                                          Grade grade = Grade(gradeValue);
                                           return
                                             isDeleteMode  ? Text('') :  Container(
                                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  border: Border.all(color: Colors.indigo, width: 2),
+                                                  // border: Border.all(color: grade.color, width: 2),
+                                                  border: grade.border,
                                                   borderRadius: BorderRadius.circular(8),
-                                                  color: Colors.white.withOpacity(0.1),
+                                                  // color: Colors.black.withOpacity(0.1),
+                                                  color: grade.color2.withOpacity(0.05),
                                                 ),
                                                 child: Row(
                                                   children: [
-                                                    Icon(Icons.school_outlined, color: Colors.indigo),
+                                                    Icon(Icons.school_outlined, color: grade.color),
                                                     SizedBox(width: 8),
                                                     Text(
-                                                      'A+',
+                                                      grade.letter,
                                                       style: TextStyle(
                                                         fontWeight: FontWeight.bold,
-                                                        color: Colors.indigo,
+                                                        color: grade.color,
                                                         fontSize: 13,
                                                       ),
                                                     ),
@@ -186,15 +191,14 @@ class _NotificationScreenState extends State<AlarmUi> {
                                                     Column(
                                                         children : [
                                                           SizedBox(height: 12,),
-
-                                                      Text(
-                                                        snapshot.data!,
-                                                        style: TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          color: Colors.indigoAccent,
-                                                          fontSize: 8,
-                                                        ),
-                                                      ),
+                                                          Text(
+                                                            gradeValue.toStringAsFixed(2),
+                                                            style: TextStyle(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: grade.color,
+                                                              fontSize: 8,
+                                                            ),
+                                                          ),
                                                     ]),
                                                   ]
                                                 ),

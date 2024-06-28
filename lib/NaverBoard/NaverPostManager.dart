@@ -102,7 +102,7 @@ class NaverPostManager {
 
 
 
-  void helpAndExit(BuildContext context, DocumentSnapshot doc) {
+  void helpAndExit(BuildContext context, DocumentSnapshot doc, Function(bool) _pushHelpButton) {
     String? userEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일 가져오기
     bool isMyPost = userEmail == doc['user_email']; // 현재 게시물이 로그인한 사용자의 것인지 확인
 
@@ -179,7 +179,7 @@ class NaverPostManager {
                 ),
                 child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
-                  helpPost(context, doc); // 도와주기 기능 실행
+                  helpPost(context, doc, _pushHelpButton); // 도와주기 기능 실행
                 },
               ),
 
@@ -209,7 +209,7 @@ class NaverPostManager {
   }
 
 
-  void helpPost(BuildContext context, DocumentSnapshot doc) async {
+  void helpPost(BuildContext context, DocumentSnapshot doc, Function(bool) _pushHelpButton) async {
     try {
 // 현재 로그인된 사용자 가져오기
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -342,16 +342,21 @@ class NaverPostManager {
         'timestamp': now,
       });
 
-
       // 대화상자를 닫고 스낵바 표시
       Navigator.of(context).pop();
+
       // 성공 메시지 표시
       await ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("'도와주기'요청이 전송됐습니다.",textAlign: TextAlign.center,),
+          content: Text("도와주기'요청이 전송됐습니다.",textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
-      ).closed;
+      );
+
+      _pushHelpButton(true);
+      await Future.delayed(Duration(seconds: 3));
+      _pushHelpButton(false);
+
 
 
       /*

@@ -189,7 +189,7 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
           _isUploading = true;
         });
 
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(Duration(seconds: 2), () {
           Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
           setState(() {
             _isUploading = false;
@@ -358,9 +358,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 color: Colors.grey.withOpacity(0.5),
                 child: Center(
                   child: Lottie.asset(
-                    'assets/lottie/CheckTest2.json',
-                    width: 400,
-                    height: 400,
+                    'assets/lottie/check2.json',
+                    width: 300,
+                    height: 300,
                     fit: BoxFit.contain
                     ,
                   ),

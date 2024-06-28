@@ -66,7 +66,6 @@ flutter:
     - assets/ava.png
 
     - assets/lottie/Animation.json
-    - assets/lottie/Circle.json
     - assets/lottie/BoardColor.json
     - assets/lottie/AppbarColor.json
     - assets/lottie/blue.json
@@ -76,12 +75,12 @@ flutter:
     - assets/lottie/puple.json
     - assets/lottie/orange.json
     - assets/lottie/walk.json
-    - assets/lottie/CheckTest.json
-    - assets/lottie/CheckTest2.json
     - assets/lottie/login.json
     - assets/lottie/send2.json
-    - assets/lottie/loading.json
     - assets/lottie/loading_indigo.json
+    - assets/lottie/check1.json
+    - assets/lottie/check2.json
+    - assets/lottie/check_help.json
 
 
 
