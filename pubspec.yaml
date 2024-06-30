@@ -21,6 +21,7 @@ dependencies:
   webview_flutter_wkwebview: ^3.10.2
   webview_flutter_android: ^3.16.0
   webview_cookie_manager: ^2.0.6
+#  flutter_inappwebview: ^6.0.0
 
   firebase_core: ^2.21.0
   firebase_auth: "^4.7.2"

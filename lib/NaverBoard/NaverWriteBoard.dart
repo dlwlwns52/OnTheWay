@@ -358,9 +358,9 @@ class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
                 color: Colors.grey.withOpacity(0.5),
                 child: Center(
                   child: Lottie.asset(
-                    'assets/lottie/check2.json',
-                    width: 300,
-                    height: 300,
+                    'assets/lottie/check1.json',
+                    width: 200,
+                    height: 200,
                     fit: BoxFit.contain
                     ,
                   ),

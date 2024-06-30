@@ -6,24 +6,69 @@
 <title>simpleMap</title>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM"></script>
+<style>
+  #map_div {
+    width: 100%;
+    height: 100vh;
+  }
+  
+</style>
 <script type="text/javascript">
 	var map;
 	var marker_s, marker_e, marker_p1, marker_p2;
-	var totalMarkerArr = [];
 	var drawInfoArr = [];
 	var resultdrawArr = [];
+
+	var currentLocationMarker; //현재위치 마커
+	var currentLat, currentLon; // 현재 위치 저장
 
 	function initTmap() {
 		// 1. 지도 띄우기
 		map = new Tmapv2.Map("map_div", {
-		center : new Tmapv2.LatLng(36.351073954997, 127.29801308566),
+			center : new Tmapv2.LatLng(36.351073954997, 127.29801308566),
 			width : "100%",
 			height : "100vh",
 			zoom : 17,
 			zoomControl : true,
 			scrollwheel : true
 		});
-    }
+
+		// 현재 위치 가져와서 지도에 표시
+		if (navigator.geolocation) {
+			// 사용자의 위치가 변경될 때마다 위치를 업데이트하는 watchPosition 사용
+			navigator.geolocation.watchPosition(function(position) {
+				currentLat = position.coords.latitude;
+				currentLon = position.coords.longitude;
+
+				// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
+				if (currentLocationMarker) {
+					currentLocationMarker.setPosition(new Tmapv2.LatLng(currentLat, currentLon));
+				} else {
+					currentLocationMarker = new Tmapv2.Marker({
+						position: new Tmapv2.LatLng(currentLat, currentLon),
+						icon: "/resources/images/common/current_location_marker.png", // 현재 위치 마커 아이콘
+						iconSize: new Tmapv2.Size(72, 72), // 마커 아이콘 크기
+						map: map
+					});
+				}
+			}, function(error) {
+				console.error("Error occurred. Error code: " + error.code);
+			}, {
+				enableHighAccuracy: true, // 높은 정확도 요청
+				maximumAge: 30000, // 위치 정보를 최대 30초 동안 캐시
+				timeout: 27000 // 위치 정보를 가져오는데 최대 27초 허용
+			});
+		} else {
+			alert("Geolocation is not supported by this browser.");
+		}
+	}
+
+	function moveToCurrentLocation() {
+		if (currentLat && currentLon) {
+			map.setCenter(new Tmapv2.LatLng(currentLat, currentLon));
+			map.setZoom(20); 
+		}
+	}
 
     // 2. 시작, 도착 심볼찍기
     function update(startLat, startLng, endLat, endLng){
@@ -83,8 +128,12 @@
 							+ ((resultData[0].properties.totalTime) / 60)
 									.toFixed(0) + "분";
 
-					$("#result").text(tDistance + tTime);
-					
+			
+					// Flutter로 데이터 전송
+					if (window.flutter_inappwebview) {
+						window.flutter_inappwebview.callHandler('sendDataToFlutter', JSON.stringify({ distance: tDistance, time: tTime }));
+					}
+
 					//기존 그려진 라인 & 마커가 있다면 초기화
 					if (resultdrawArr.length > 0) {
 						for ( var i in resultdrawArr) {
@@ -202,8 +251,8 @@
 			<div id="map_div"></div>
 		</div>
 		<div class="map_act_btn_wrap clear_box"></div>
-		<p id="result"></p>
 		<br />
+
 </body>
 </html>
 		

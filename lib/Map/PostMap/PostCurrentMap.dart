@@ -67,7 +67,7 @@ class _MapScreenState extends State<PostCurrentMap> {
           children: [
             Positioned.fill(
               child: lottie.Lottie.asset(
-                'assets/lottie/AppbarColor.json',
+                'assets/lottie/blue3.json',
                 fit: BoxFit.fill,
                 options: lottie.LottieOptions(
 

@@ -7,6 +7,7 @@ import FirebaseCore //Cannot find 'FirebaseApp' in scope  에러로 추가
 import GoogleSignIn
 
 @UIApplicationMain
+
 @objc class AppDelegate: FlutterAppDelegate {
 
     override func application(
