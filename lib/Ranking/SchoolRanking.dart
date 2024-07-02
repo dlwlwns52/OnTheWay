@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RankingPage extends StatefulWidget {
+  final String userId;
+  RankingPage({required this.userId});
+
   @override
   _RankingPageState createState() => _RankingPageState();
 }
@@ -9,9 +12,10 @@ class RankingPage extends StatefulWidget {
 class _RankingPageState extends State<RankingPage> {
   Future<List<MapEntry<String, dynamic>>> _fetchScores() async {
     DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('Ranking')
-        .doc('score')
+        .collection('SchoolScores')
+        .doc(widget.userId)
         .get();
+
 
     Map<String, int> scores = Map.from(snapshot.data() as Map<String, dynamic>);
     var sortedScores = scores.entries.toList()

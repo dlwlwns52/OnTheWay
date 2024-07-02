@@ -6,11 +6,11 @@ import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
 import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
-import '../Map/TMapView.dart';
+
 import '../Ranking/SchoolRanking.dart';
-import 'NaverWriteBoard.dart';
-import 'NaverPostManager.dart';
-import '../Alarm/Alarm.dart'; // NaverAlarm 클래스를 임포트합니다.
+import 'HanbatWriteBoard.dart';
+import 'HanbatPostManager.dart';
+import '../Alarm/Alarm.dart';
 import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
 import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
 import 'dart:io' show Platform;
@@ -18,17 +18,17 @@ import 'package:lottie/lottie.dart';
 
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
-class NaverBoardPage extends StatefulWidget {
+class HanbatBoardPage extends StatefulWidget {
   @override
-  _NaverBoardPageState createState() => _NaverBoardPageState(); // 상태(State) 객체를 생성합니다.
+  _HanbatBoardPageState createState() => _HanbatBoardPageState(); // 상태(State) 객체를 생성합니다.
 }
 
 // _BoardPageState 클래스는 BoardPage의 상태를 관리합니다.
-class _NaverBoardPageState extends State<NaverBoardPage> {
-  // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수 있게 합니다.
+class _HanbatBoardPageState extends State<HanbatBoardPage> {
+  // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수락 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // PostManager 인스턴스 생성
-  final postManager = NaverPostManager();
+  final postManager = HanbatPostManager();
   // final Alarm = Alarm(); // NaverAlarm 인스턴스를 생성합니다.
   late Alarm alarm;
   // 도와주기시 애니메이션 클릭
@@ -70,6 +70,12 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
     return user?.email;
   }
 
+  String? _extractCurrentUserEmailDomain() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.email?.split('@').last;
+  }
+
+
   //ios, 안드로이드 기기 텍스트 크기 다르게 하기
   double getTextSize(bool isMyPost){
     if(Platform.isIOS){ // ios
@@ -81,6 +87,19 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
     else{
       return isMyPost ? 16 : 16; // 기본 텍스트 크기
     }
+  }
+
+  //랭킹 페이지로 이동시 아이디 확인 안되면 새엇ㅇ
+  void showCustomSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+          textAlign: TextAlign.center,
+        ),
+        duration: Duration(seconds: 1),
+      ),
+    );
   }
 
 
@@ -419,6 +438,8 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
 
 
       bottomNavigationBar: BottomNavigationBar(
+
+        type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.forum_rounded, color: Colors.black),
@@ -436,6 +457,10 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
             icon: Icon(Icons.school, color: Colors.black,),
             label: '학교 랭킹',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: Colors.black,),
+            label: '프로필',
+          ),
 
         ],
         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
@@ -451,14 +476,32 @@ class _NaverBoardPageState extends State<NaverBoardPage> {
           } else if (index == 1) {
             Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NaverNewPostScreen()),
+                MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
             );
           }
           else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RankingPage()),
-            );
+            String? userId = _extractCurrentUserEmailDomain();
+            if (userId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RankingPage(userId: userId)),
+              );
+            } else {
+              // userId가 null일 경우의 처리
+              showCustomSnackBar(context);
+            }
+          }
+          else if (index == 3) {
+            String? userId = _extractCurrentUserEmailDomain();
+            if (userId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RankingPage(userId: userId)),
+              );
+            } else {
+              // userId가 null일 경우의 처리
+              showCustomSnackBar(context);
+            }
           }
 
         },

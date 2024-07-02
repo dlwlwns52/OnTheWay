@@ -129,10 +129,10 @@
 									.toFixed(0) + "분";
 
 			
-					// Flutter로 데이터 전송
-					if (window.flutter_inappwebview) {
-						window.flutter_inappwebview.callHandler('sendDataToFlutter', JSON.stringify({ distance: tDistance, time: tTime }));
-					}
+					// Flutter로 데이터 전송 -> 아직까지는 안됨
+					// if (window.flutter_inappwebview) {
+					// 	window.flutter_inappwebview.callHandler('sendDataToFlutter', JSON.stringify({ distance: tDistance, time: tTime }));
+					// }
 
 					//기존 그려진 라인 & 마커가 있다면 초기화
 					if (resultdrawArr.length > 0) {

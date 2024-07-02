@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class TMapView extends StatefulWidget {
@@ -13,6 +14,8 @@ class TMapView extends StatefulWidget {
 
 class _TMapViewState extends State<TMapView> {
   late WebViewController controller;
+  String distance = '';
+  String time = '';
 
   // JavaScript 함수를 호출하는 함수 예시
   void update(String startLocation, String endLocation) {
@@ -24,6 +27,11 @@ class _TMapViewState extends State<TMapView> {
     controller.runJavaScript(
         "update('${startCoords[0]}', '${startCoords[1]}', '${endCoords[0]}', '${endCoords[1]}');"
     );
+  }
+
+  //현재위치 호출
+  void moveToCurrentLocation() {
+    controller.runJavaScript("moveToCurrentLocation();");
   }
 
   @override
@@ -58,7 +66,7 @@ class _TMapViewState extends State<TMapView> {
             '길찾기 기능은 참고용으로만 사용해 주세요.\n감사합니다.',
             textAlign: TextAlign.center,
           ),
-          duration: Duration(seconds: 2),
+          duration: Duration(seconds: 1),
         ),
       );
     });
@@ -69,11 +77,28 @@ class _TMapViewState extends State<TMapView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.deepOrangeAccent,
-        title: Text(
-          "길찾기",
-          style: TextStyle(fontWeight: FontWeight.bold),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                  'assets/lottie/blue3.json',
+                  fit: BoxFit.fill,
+                  options: LottieOptions(
+
+                  )
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 1,
+              shadowColor: Colors.indigo.withOpacity(0.5),
+              title: Text('길찾기', style: TextStyle(fontWeight: FontWeight.bold),),
+              actions: <Widget>[
+              ],
+            ),
+          ],
         ),
       ),
       body: Container(
@@ -85,6 +110,45 @@ class _TMapViewState extends State<TMapView> {
               child: WebViewWidget(controller: controller),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          margin: EdgeInsets.all(16.0), // 여백 추가
+          decoration: BoxDecoration(
+            color: Colors.indigo[300], // 버튼 배경색
+            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
+
+          ),
+          //저장하기 버튼
+          child: ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '현재 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
+                    textAlign: TextAlign.center,
+                  ),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+              moveToCurrentLocation();
+            },
+
+            // 위치 값 저장
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.pin_drop), // 저장 아이콘
+                SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
+                Text('현재 위치로 이동', style: TextStyle(fontSize: 18),),
+              ],
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.indigo[300],
+              elevation: 0, // 경계선을 제거합니다.
+            ),
+          ),
         ),
       ),
     );

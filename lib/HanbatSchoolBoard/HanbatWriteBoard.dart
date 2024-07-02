@@ -6,16 +6,16 @@ import 'package:lottie/lottie.dart';
 import '../Map/WriteMap/CurrentMapScreen.dart';
 import '../Map/WriteMap/StoreMapScreen.dart';
 
-class NaverNewPostScreen extends StatefulWidget {
+class HanbatNewPostScreen extends StatefulWidget {
   final DocumentSnapshot? post;
 
-  NaverNewPostScreen({this.post});
+  HanbatNewPostScreen({this.post});
 
   @override
-  _NaverNewPostScreenState createState() => _NaverNewPostScreenState();
+  _HanbatNewPostScreenState createState() => _HanbatNewPostScreenState();
 }
 
-class _NaverNewPostScreenState extends State<NaverNewPostScreen> {
+class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _storeController = TextEditingController();
   final TextEditingController _costController = TextEditingController();

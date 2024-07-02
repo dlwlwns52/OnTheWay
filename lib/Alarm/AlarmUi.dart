@@ -9,6 +9,7 @@ import '../Chat/AllUsersScreen.dart';
 import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
 
 class AlarmUi extends StatefulWidget {
+
   @override
   _NotificationScreenState createState() => _NotificationScreenState();
 }
@@ -128,87 +129,87 @@ class _NotificationScreenState extends State<AlarmUi> {
                             child: Icon(Icons.person, color: Colors.white),
                           ),
                           title: Row(
-                              children : [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-                                    ),
-                                    SizedBox(height: 6),
-                                    Text(
-                                      '도와주기를 요청하였습니다.',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
-                                    ),
-                                    SizedBox(height: 3),
-                                    Text(
-                                      '$timeAgo',
-                                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                                Spacer(),
-                                Column(
-                                  // crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    FutureBuilder<String>(
-                                      future: getGradeByNickname(notification['helper_email_nickname']),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return CircularProgressIndicator();
-                                        } else if (snapshot.hasError) {
-                                          return Text('에러가 발생하였습니다.');
-                                        } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
-                                          return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
-                                        } else {
-                                          // double grade = double.parse(snapshot.data!);
-                                          double gradeValue = double.parse(snapshot.data!);
-                                          Grade grade = Grade(gradeValue);
-                                          return
-                                            isDeleteMode  ? Text('') :  Container(
-                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  // border: Border.all(color: grade.color, width: 2),
-                                                  border: grade.border,
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  // color: Colors.black.withOpacity(0.1),
-                                                  color: grade.color2.withOpacity(0.05),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.school_outlined, color: grade.color),
-                                                    SizedBox(width: 8),
-                                                    Text(
-                                                      grade.letter,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: grade.color,
-                                                        fontSize: 13,
-                                                      ),
+                            children : [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    '도와주기를 요청하였습니다.',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    '$timeAgo',
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              Spacer(),
+                              Column(
+                                // crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  FutureBuilder<String>(
+                                    future: getGradeByNickname(notification['helper_email_nickname']),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (snapshot.hasError) {
+                                        return Text('에러가 발생하였습니다.');
+                                      } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
+                                        return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
+                                      } else {
+                                        // double grade = double.parse(snapshot.data!);
+                                        double gradeValue = double.parse(snapshot.data!);
+                                        Grade grade = Grade(gradeValue);
+                                        return
+                                          isDeleteMode  ? Text('') :  Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              // border: Border.all(color: grade.color, width: 2),
+                                              border: grade.border,
+                                              borderRadius: BorderRadius.circular(8),
+                                              // color: Colors.black.withOpacity(0.1),
+                                              color: grade.color2.withOpacity(0.05),
+                                            ),
+                                            child: Row(
+                                                children: [
+                                                  Icon(Icons.school_outlined, color: grade.color),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    grade.letter,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: grade.color,
+                                                      fontSize: 13,
                                                     ),
-                                                    SizedBox(width: 7),
-                                                    Column(
-                                                        children : [
-                                                          SizedBox(height: 12,),
-                                                          Text(
-                                                            gradeValue.toStringAsFixed(2),
-                                                            style: TextStyle(
-                                                              fontWeight: FontWeight.bold,
-                                                              color: grade.color,
-                                                              fontSize: 8,
-                                                            ),
+                                                  ),
+                                                  SizedBox(width: 7),
+                                                  Column(
+                                                      children : [
+                                                        SizedBox(height: 12,),
+                                                        Text(
+                                                          gradeValue.toStringAsFixed(2),
+                                                          style: TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: grade.color,
+                                                            fontSize: 8,
                                                           ),
-                                                    ]),
-                                                  ]
-                                                ),
-                                              );
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                )
-                              ],
+                                                        ),
+                                                      ]),
+                                                ]
+                                            ),
+                                          );
+                                      }
+                                    },
+                                  ),
+                                ],
+                              )
+                            ],
                           ),
                           onTap: () {
                             _showAcceptDeclineDialog(context, nickname, doc.id);
@@ -231,7 +232,7 @@ class _NotificationScreenState extends State<AlarmUi> {
 
           ),
         ),
-    ),
+      ),
     );
   }
 
@@ -336,15 +337,16 @@ class _NotificationScreenState extends State<AlarmUi> {
               ),
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () async {
+                await _HelperCount(documentId);
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
 
                 Navigator.of(context).push(MaterialPageRoute(//채팅 목록창으로 이동
-                builder: (context) => AllUsersScreen(),
+                  builder: (context) => AllUsersScreen(),
                 ));
 
-                await _deletePost(documentId); // 수락시 게시글 삭제
+                // await _deletePost(documentId); // 수락시 게시글 삭제
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -384,6 +386,72 @@ class _NotificationScreenState extends State<AlarmUi> {
     );
   }
 
+  // 수락시 상대방 및 본인 도와주기 횟수 카운트!
+  Future<void> _HelperCount(String docId) async{
+    try {
+      DocumentSnapshot postId = await FirebaseFirestore.instance
+          .collection('helpActions')
+          .doc(docId)
+          .get();
+
+      if (!postId.exists) {
+        print("Document does not exist.");
+        return;
+      }
+
+      String helper_email = postId.get('helper_email');
+      String owner_email = postId.get('owner_email');
+
+      String helperDomain = _extractDomain(helper_email);
+      String ownerDomain = _extractDomain(owner_email);
+
+      String helperId = _extractId(helper_email);
+      String ownerId = _extractId(owner_email);
+
+      // // // 도메인별로 점수 증가
+      await _updateIndividualCount(helperId, helperDomain);
+
+      await _updateIndividualCount(ownerId, ownerDomain);
+
+
+
+    } catch (e) {
+      print("Error in _HelperCount: $e");
+    }
+  }
+
+  // 도메인 추출
+  String _extractDomain(String email)  {
+    return email.split('@').last;
+  }
+  // 아이디 추출
+   String _extractId(String email)  {
+      return email.split('@').first;
+  }
+
+  // 도메인 별로 카운트
+  Future<void> _updateIndividualCount(String Id, String domain) async {
+    try {
+      DocumentReference schoolRef = FirebaseFirestore.instance
+          .collection('schoolScores')
+          .doc(domain);
+
+      DocumentSnapshot schoolSnapshot = await schoolRef.get();
+
+      if (!schoolSnapshot.exists) {
+        // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
+        await schoolRef.set({Id: 1});
+      } else {
+        // 문서가 존재하면 해당 이메일의 값을 업데이트
+        int currentCount = (schoolSnapshot.data() as Map<String, dynamic>)[Id] ?? 0;
+        await schoolRef.update({Id: currentCount + 1});
+      }
+    } catch (e) {
+      print("Error in _updateIndividualCount: $e");
+    }
+  }
+
+
   //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
   Future<String> getGradeByNickname(String helperEmailNickname) async{
     final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
@@ -395,7 +463,7 @@ class _NotificationScreenState extends State<AlarmUi> {
       return data['grade'].toString();
     }
     else {
-     return '정보 없음';
+      return '정보 없음';
     }
   }
 
@@ -404,9 +472,8 @@ class _NotificationScreenState extends State<AlarmUi> {
     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
         .update({'response': response});
   }
-  
-  
+
+
 
 
 }
-

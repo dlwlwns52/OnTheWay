@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:OnTheWay/NaverBoard/NaverWriteBoard.dart';
+import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Map/TMapView.dart';
 
 
 
-class NaverPostManager {
+class HanbatPostManager {
   FirebaseFirestore db = FirebaseFirestore.instance;
 
 
@@ -74,7 +74,7 @@ class NaverPostManager {
     // 게시물 수정 화면으로 이동하는 메서드 정의
     Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
       MaterialPageRoute(
-        builder: (context) => NaverNewPostScreen(post: doc),
+        builder: (context) => HanbatNewPostScreen(post: doc),
       ),
     ).then((_) {
       // 화면이 닫힌 후에 이 부분이 실행됩니다.

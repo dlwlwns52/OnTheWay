@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:lottie/lottie.dart';
 import 'Alarm/AlarmUi.dart';
-import 'NaverBoard/NaverUiBoard.dart';
+import 'HanbatSchoolBoard/HanbatUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -96,7 +96,7 @@ class _MyAppState extends State<MyApp> {
             if (isAutoLogin) {
               switch (domain) {
                 case 'naver.com':
-                  return NaverBoardPage();
+                  return HanbatBoardPage();
               // 여기에 다른 도메인별 게시판 페이지 조건을 추가
 
                 default:
@@ -104,7 +104,7 @@ class _MyAppState extends State<MyApp> {
               }
             } else {
               // return LoginScreen(); // 로그인 화면
-              return NaverBoardPage(); // 임시
+              return HanbatBoardPage(); // 임시
             }
           } else {
             return LoginScreen(); // 오류 화면

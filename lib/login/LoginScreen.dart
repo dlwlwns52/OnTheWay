@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
-import '../NaverBoard/NaverUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatUiBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 
@@ -337,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
             case 'naver.com':
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => NaverBoardPage()),
+                MaterialPageRoute(builder: (context) => HanbatBoardPage()),
               );
               break;
             // case 'hanbat.ac.kr':
