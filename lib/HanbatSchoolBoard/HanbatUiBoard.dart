@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베
 import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
 
+import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'HanbatWriteBoard.dart';
 import 'HanbatPostManager.dart';
@@ -70,11 +71,6 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     return user?.email;
   }
 
-  String? _extractCurrentUserEmailDomain() {
-    final user = FirebaseAuth.instance.currentUser;
-    return user?.email?.split('@').last;
-  }
-
 
   //ios, 안드로이드 기기 텍스트 크기 다르게 하기
   double getTextSize(bool isMyPost){
@@ -88,6 +84,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
       return isMyPost ? 16 : 16; // 기본 텍스트 크기
     }
   }
+
 
   //랭킹 페이지로 이동시 아이디 확인 안되면 새엇ㅇ
   void showCustomSnackBar(BuildContext context) {
@@ -238,8 +235,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     DocumentSnapshot>>( // Firestore 데이터 스트림을 사용하여 게시물 목록을 갱신하는 위젯
                   stream: getPosts(), // getPosts() 함수로부터 Firestore 데이터 스트림을 얻어옴
                   builder: (context, snapshot) { // 스트림의 상태에 따라 화면을 동적으로 구성하는 빌더 함수
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
+                    if (snapshot.connectionState == ConnectionState.waiting) { // 데이터가 아직 로딩 중인 경우
                       return Center(
                           child: CircularProgressIndicator()); // 로딩 중을 나타내는 화면을 반환
                     } else if (snapshot.hasError) { // 데이터 로딩 중에 오류가 발생한 경우
@@ -438,7 +434,6 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
 
       bottomNavigationBar: BottomNavigationBar(
-
         type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -446,13 +441,13 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             label: '채팅',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.hourglass_empty_rounded, color: Colors.black,), //search
+            label: '진행 상황',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.create, color: Colors.black,),
             label: '새 게시글',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.person, color: Colors.black,),
-          //   label: '프로필',
-          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.school, color: Colors.black,),
             label: '학교 랭킹',
@@ -472,36 +467,34 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               context,
               MaterialPageRoute(builder: (context) => AllUsersScreen()),
             );
-            //새 게시글 만드는 곳으로 이동
-          } else if (index == 1) {
+            //진행 상황
+          }
+          else if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
+            );
+          }
+          //새 게시글 만드는 곳으로 이동
+          else if (index == 2) {
             Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
             );
           }
-          else if (index == 2) {
-            String? userId = _extractCurrentUserEmailDomain();
-            if (userId != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RankingPage(userId: userId)),
-              );
-            } else {
-              // userId가 null일 경우의 처리
-              showCustomSnackBar(context);
-            }
-          }
+          // 학교 랭킹
           else if (index == 3) {
-            String? userId = _extractCurrentUserEmailDomain();
-            if (userId != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RankingPage(userId: userId)),
-              );
-            } else {
-              // userId가 null일 경우의 처리
-              showCustomSnackBar(context);
-            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+            );
+          }
+          // 프로필
+          else if (index == 4) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => UserProfileScreen()),
+            );
           }
 
         },

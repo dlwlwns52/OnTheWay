@@ -254,6 +254,9 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                       TextFormField(
                         controller: _locationController,
                         decoration: InputDecoration(
+                          hintText: '세부 주소는 채팅을 통해 제공하실 수 있습니다. ',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          hintStyle: TextStyle(color: Colors.grey),
                           labelText: '본인 위치',
                           contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
                         ),

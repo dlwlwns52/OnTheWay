@@ -1,177 +1,228 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class RankingPage extends StatefulWidget {
-  final String userId;
-  RankingPage({required this.userId});
+import 'IndividualRankingPage.dart';
 
-  @override
-  _RankingPageState createState() => _RankingPageState();
-}
-
-class _RankingPageState extends State<RankingPage> {
-  Future<List<MapEntry<String, dynamic>>> _fetchScores() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('SchoolScores')
-        .doc(widget.userId)
-        .get();
+class SchoolRankingScreen extends StatelessWidget {
 
 
-    Map<String, int> scores = Map.from(snapshot.data() as Map<String, dynamic>);
-    var sortedScores = scores.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return sortedScores;
+  // 도메인과 학교 이름 매핑 - !! 학교 추가시 작성
+  final List<Map<String, String>> _domains = [
+    {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
+    {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
+    {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
+
+    //임시
+    {'name': '카카오대학교', 'domain': 'kakao.com'},
+    {'name': '네이버대학교', 'domain': 'naver.com'},
+    // 도메인 추가
+  ];
+
+  //학교 이름 리턴
+  String _getSchoolName(String domain) {
+    var school = _domains.firstWhere((element) => element['domain'] == domain, orElse: () => {'name': domain});
+    return school['name']!;
+  }
+
+  //학교 도메인 반환
+  String _getDomain(String Name) {
+    var school = _domains.firstWhere((element) => element['name'] == Name, orElse: () => {'name': Name});
+    return school['domain']!;
+  }
+
+  // 학교 도메인 , 학교 이름, 총 점수 반환
+  Future<List<Map<String, dynamic>>> _getSchoolTotals() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('schoolScores').get();
+
+      List<Map<String, dynamic>> schoolTotals = snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        int total = data.values.fold(0, (sum, value) => sum + (value as int));
+        return {'domain': doc.id, 'name': _getSchoolName(doc.id), 'total': total};
+      }).toList();
+
+      schoolTotals.sort((a, b) => b['total'].compareTo(a['total']));
+
+      return schoolTotals;
+
+    } catch (e) {
+      print("Error in _getSchoolTotals: $e");
+      return [];
+    }
+  }
+
+
+  Widget _buildLeading(int index) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: _getGradient(index), // 등수에 따른 그라디언트 적용
+        border: Border.all(color: Colors.white, width: 2.0),
+      ),
+      child: CircleAvatar(
+        radius: 25,
+        backgroundColor: Colors.transparent,
+        child: Text(
+          '${index + 1}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
+  LinearGradient _getGradient(int index) {
+    switch (index) {
+      case 0: // 1등
+        return LinearGradient(
+          colors: [Colors.amber, Colors.amber, Colors.grey.shade200, Colors.amber, Colors.amber,],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 1: // 2등
+        return LinearGradient(
+          colors: [Colors.grey, Colors.grey, Colors.grey.shade300,  Colors.grey, Colors.blueGrey],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 2: // 3등
+        return LinearGradient(
+          colors: [Colors.brown,Colors.brown, Colors.grey.shade300, Colors.brown, Colors.brown],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      default: // 4등부터
+        return LinearGradient(
+          colors: [Colors.purple.shade300, Colors.purple.shade300, Colors.grey.shade300, Colors.purple.shade300, Colors.purple.shade300,],
+          // colors: [Colors.indigo.shade300, Colors.indigo.shade300, Colors.grey.shade300, Colors.indigo.shade300, Colors.indigo.shade300,],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+    }
+  }
+
+  Color _getColor(int index) {
+    switch (index) {
+      case 0:
+        return Color(0xffe8bd50);
+      case 1:
+        return Colors.grey;
+      case 2:
+        return Colors.brown.shade300;
+      default:
+        return Colors.purple.shade300;
+    }
+  }
+
+  double _getSizeForRank(int index) {
+    switch (index) {
+      case 0:
+        return 24; // 1등
+      case 1:
+        return 23; // 2등
+      case 2:
+        return 22; // 3등
+      default:
+        return 21; // 4등부터
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async{
-          return true;
-        },
+      onWillPop: () async {
+        return true;
+      },
       child: GestureDetector(
-        onHorizontalDragEnd: (details){
-          if (details.primaryVelocity! >  0){
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
             Navigator.pop(context);
           }
         },
-      child: Scaffold(
+        child: Scaffold(
           appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.purpleAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.deepPurple, Colors.purpleAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: AppBar(
+                title: Text(
+                  '학교별 랭킹',
+                  style: TextStyle(fontSize: 25),
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
             ),
           ),
-          child: AppBar(
-            title: Text('학교별 랭킹', style: TextStyle(fontSize: 22),),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-          ),
-        ),
-      ),
-      body: FutureBuilder<List<MapEntry<String, dynamic>>>(
-        future: _fetchScores(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasData) {
+          body: FutureBuilder<List<Map<String, dynamic>>>(
+            future: _getSchoolTotals(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple)));
+              } else if (snapshot.hasError) {
+                return Center(child: Text('오류가 발생했습니다: ${snapshot.error}', style: TextStyle(color: Colors.red)));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No data available'));
+              }
+
+              List<Map<String, dynamic>> schoolTotals = snapshot.data!;
               return ListView.builder(
-                itemCount: snapshot.data!.length,
+                itemCount: schoolTotals.length,
                 itemBuilder: (context, index) {
-                  var entry = snapshot.data![index];
-                  return _buildRankingCard(entry, index);
+                  var school = schoolTotals[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      color: Colors.white,
+                      shadowColor: Colors.purpleAccent.withOpacity(0.5),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                        leading: _buildLeading(index),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              school['name'],
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                            ),
+                            Text(
+                              '${school['total']}',
+                              style: TextStyle(
+                                  fontSize: _getSizeForRank(index),
+                                  fontWeight: FontWeight.bold,
+                                  color: _getColor(index)
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: Icon(Icons.chevron_right, color: Colors.deepPurple, size: 30),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => IndividualRankingPage(domain: school['domain'], name: school['name']),
+                          ));
+                        },
+                      ),
+                    ),
+                  );
                 },
               );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text("오류가 발생했습니다: ${snapshot.error}", style: TextStyle(color: Colors.red)),
-              );
-            }
-          }
-          return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple)));
-        },
-      ),
-    ),
-    ),
-    );
-  }
-
-  Widget _buildRankingCard(MapEntry<String, dynamic> entry, int index) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: _getBackgroundColor(index),
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(color: Colors.white),
-            ),
+            },
           ),
-          title: Text(entry.key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          trailing: Chip(
-            label: Text('${entry.value}', style: TextStyle(color: Colors.white)),
-            backgroundColor: Colors.deepPurple,
-          ),
-          onTap: () {
-            _showDetailsDialog(entry.key, entry.value);
-          },
         ),
       ),
-    );
-  }
-
-  Color _getBackgroundColor(int index) {
-    switch (index) {
-      case 0:
-        return Colors.amber;
-      case 1:
-        return Colors.grey;
-      case 2:
-        return Colors.brown;
-      default:
-        return Colors.deepPurple;
-    }
-  }
-
-  void _showDetailsDialog(String school, int score) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: Container(
-            padding: EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.deepPurple, Colors.purpleAccent],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(Icons.school, size: 80, color: Colors.white),
-                SizedBox(height: 20),
-                Text(
-                  '$school 상세 정보',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '점수: $score',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  icon: Icon(Icons.close, color: Colors.white),
-                  label: Text('닫기', style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

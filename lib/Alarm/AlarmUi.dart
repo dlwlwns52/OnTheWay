@@ -402,16 +402,19 @@ class _NotificationScreenState extends State<AlarmUi> {
       String helper_email = postId.get('helper_email');
       String owner_email = postId.get('owner_email');
 
+      String helper_nickname = postId.get('helper_email_nickname');
+      String owner_nickname = postId.get('owner_email_nickname');
+
       String helperDomain = _extractDomain(helper_email);
       String ownerDomain = _extractDomain(owner_email);
 
-      String helperId = _extractId(helper_email);
-      String ownerId = _extractId(owner_email);
+      // String helperId = _extractId(helper_email);
+      // String ownerId = _extractId(owner_email);
 
       // // // 도메인별로 점수 증가
-      await _updateIndividualCount(helperId, helperDomain);
+      await _updateIndividualCount(helper_nickname, helperDomain);
 
-      await _updateIndividualCount(ownerId, ownerDomain);
+      await _updateIndividualCount(owner_nickname, ownerDomain);
 
 
 
@@ -430,7 +433,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   }
 
   // 도메인 별로 카운트
-  Future<void> _updateIndividualCount(String Id, String domain) async {
+  Future<void> _updateIndividualCount(String nickname, String domain) async {
     try {
       DocumentReference schoolRef = FirebaseFirestore.instance
           .collection('schoolScores')
@@ -440,11 +443,11 @@ class _NotificationScreenState extends State<AlarmUi> {
 
       if (!schoolSnapshot.exists) {
         // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
-        await schoolRef.set({Id: 1});
+        await schoolRef.set({nickname: 1});
       } else {
         // 문서가 존재하면 해당 이메일의 값을 업데이트
-        int currentCount = (schoolSnapshot.data() as Map<String, dynamic>)[Id] ?? 0;
-        await schoolRef.update({Id: currentCount + 1});
+        int currentCount = (schoolSnapshot.data() as Map<String, dynamic>)[nickname] ?? 0;
+        await schoolRef.update({nickname: currentCount + 1});
       }
     } catch (e) {
       print("Error in _updateIndividualCount: $e");
