@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Map/TMapView.dart';
-
 
 
 class HanbatPostManager {
@@ -21,38 +21,63 @@ class HanbatPostManager {
         return AlertDialog( // 사용자에게 선택 옵션을 제공하는 경고 대화 상자 반환
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
-          title: Text('선택하세요', textAlign: TextAlign.center,),
-          content: Text('이 게시물을 삭제하거나 수정하시겠습니까?'),
+          title: Column(
+            children: [
+              Text(
+                '알림',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 25,
+                ),
+              ),
+              SizedBox(height: 20), // 간격 추가
+            ],
+          ),
+          content: Text(
+            '게시물을 삭제하거나 수정하시겠습니까?',
+            style: TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
 
           actions: <Widget>[
+            SizedBox(height: 60),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigoAccent,
+                  backgroundColor: Colors.indigo[400],
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20))
               ),
               child: Text(
                 '수정',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 _navigateToEditPostScreen(context, doc); // '수정' 버튼 클릭 시 게시물 수정 화면으로 이동 메서드 실행
+                HapticFeedback.lightImpact();
+
                 // Navigator.of(context).pop(); // 대화 상자 닫기
               },
             ),
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigoAccent,
+                  backgroundColor: Colors.red.shade300,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20))
               ),
               child: Text(
                 '삭제',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 String postStore = doc['store']; // 게시물의 'store' 값을 가져옵니다.
                 String? postOwnerEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일을 가져옵니다.
-
+                HapticFeedback.lightImpact();
                 _deletePost(doc.id, postStore, postOwnerEmail!);// '삭제' 버튼 클릭 시 게시물 삭제 메서드 실행
                 Navigator.of(context).pop(); // 대화 상자 닫기
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -121,14 +146,26 @@ class HanbatPostManager {
             title: Text(
               '요청사항',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style:
+              // TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              TextStyle(
+                fontFamily: 'NanumSquareRound',
+                fontWeight: FontWeight.w800,
+                fontSize: 25,
+              ),
             ),
             content: SingleChildScrollView(
               child: Column(
                 children: [
                   Text(
                     doc['Request'] ?? '요청사항 없음',
-                    style: TextStyle(fontSize: 18),
+                    style:
+                    // TextStyle(fontSize: 18),
+                    TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                     textAlign: TextAlign.left,
                   ),
                   SizedBox(height: 20),
@@ -162,6 +199,7 @@ class HanbatPostManager {
                 child: IconButton(
                   icon: Icon(Icons.navigation_sharp,color: Colors.white,),
                   onPressed: () {
+                      HapticFeedback.lightImpact();
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
                       ));
@@ -172,20 +210,21 @@ class HanbatPostManager {
 
               ElevatedButton( //'도와주기' 버튼
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigoAccent,
+                  backgroundColor: Colors.indigo[400],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
                 ),
                 child: Text('도와주기', style: TextStyle(fontWeight: FontWeight.bold),),
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   helpPost(context, doc, _pushHelpButton); // 도와주기 기능 실행
                 },
               ),
 
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigoAccent, // 버튼 색상 변경
+                  backgroundColor: Colors.grey, // 버튼 색상 변경
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                   ),
@@ -354,7 +393,7 @@ class HanbatPostManager {
       );
 
       _pushHelpButton(true);
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(milliseconds: 1200));
       _pushHelpButton(false);
 
 

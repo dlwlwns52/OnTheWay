@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart' as lottie;
@@ -23,7 +24,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
 
   // 현재 위치로 지도 이동하는 함수
   void _moveToCurrentLocation() async {
-
+    HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
         textAlign: TextAlign.center,),
@@ -77,7 +78,13 @@ class _MapScreenState extends State<CurrentMapScreen> {
               backgroundColor: Colors.transparent,
               elevation: 1,
               shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('현재 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: Text('현재 위치 설정',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize : 22,
+                ),
+              ),
               actions: <Widget>[
               ],
             ),
@@ -159,6 +166,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
           //저장하기 버튼
           child: ElevatedButton(
             onPressed: () {
+              HapticFeedback.lightImpact();
               // 현재위치 설정을 안했을때
               if (currentSelectedLocation == null) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(

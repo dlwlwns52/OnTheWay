@@ -79,7 +79,13 @@ class _MapScreenState extends State<PostStoreMap> {
               backgroundColor: Colors.transparent,
               elevation: 4,
               shadowColor: Colors.black.withOpacity(0.5),
-              title: Text('가게 위치', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: Text('가게 위치',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize : 23,
+                ),
+              ),
               actions: <Widget>[
               ],
             ),

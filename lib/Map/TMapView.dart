@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -94,7 +95,13 @@ class _TMapViewState extends State<TMapView> {
               backgroundColor: Colors.transparent,
               elevation: 1,
               shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('길찾기', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: Text('길찾기',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 23,
+                ),
+              ),
               actions: <Widget>[
               ],
             ),
@@ -123,6 +130,7 @@ class _TMapViewState extends State<TMapView> {
           //저장하기 버튼
           child: ElevatedButton(
             onPressed: () {
+              HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(

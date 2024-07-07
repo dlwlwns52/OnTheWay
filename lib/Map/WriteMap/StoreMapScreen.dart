@@ -1,5 +1,6 @@
 import 'package:OnTheWay/Map/WriteMap/CurrentMapScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart' as lottie;
@@ -24,7 +25,7 @@ class _MapScreenState extends State<StoreMapScreen> {
 
   // 현재 위치로 지도 이동하는 함수
   void _moveToCurrentLocation() async {
-
+    HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
         textAlign: TextAlign.center,),
@@ -35,7 +36,6 @@ class _MapScreenState extends State<StoreMapScreen> {
     var location = new Location();
     var currentLocation = await location.getLocation(); // 현재 위치 정보 가져오기
     LatLng newCenter = LatLng(currentLocation.latitude!, currentLocation.longitude!);
-    print(newCenter);
 
     setState(() {
       storeSelectedLocation = newCenter; // 선택된 위치 업데이트
@@ -44,6 +44,7 @@ class _MapScreenState extends State<StoreMapScreen> {
         markerId: UniqueKey().toString(),
         latLng: newCenter,
         draggable: true, // 마커를 드래그 가능하게 설정
+
       ));
     });
 
@@ -79,7 +80,13 @@ class _MapScreenState extends State<StoreMapScreen> {
               backgroundColor: Colors.transparent,
               elevation: 1,
               shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('가게 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: Text('가게 위치 설정',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize : 22,
+                ),
+              ),
               actions: <Widget>[
               ],
             ),
@@ -98,7 +105,7 @@ class _MapScreenState extends State<StoreMapScreen> {
           _mapController = controller; // Kakao Map Controller 생성 및 할당
         },
         markers: markers.toList(), // 마커 리스트 설정
-        center: storeSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정(현재 한밭대)
+        center: storeSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정   (현재 한밭대)
         onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
           if (markerDragType == MarkerDragType.end) {
             markerPosition = latLng;
@@ -160,6 +167,7 @@ class _MapScreenState extends State<StoreMapScreen> {
           //저장하기 버튼
           child: ElevatedButton(
             onPressed: () {
+              HapticFeedback.lightImpact();
               // 현재위치 설정을 안했을때
               if (storeSelectedLocation == null) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -174,7 +182,6 @@ class _MapScreenState extends State<StoreMapScreen> {
                 if(markerPosition == null){
                   Navigator.of(context).pop(storeSelectedLocation);
                 }
-
                 else{
                   storeSelectedLocation = markerPosition;
                   Navigator.of(context).pop(storeSelectedLocation);

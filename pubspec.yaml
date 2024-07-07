@@ -72,16 +72,28 @@ flutter:
     - assets/lottie/blue.json
     - assets/lottie/blue2.json
     - assets/lottie/blue3.json
-    - assets/lottie/pink.json
     - assets/lottie/puple.json
-    - assets/lottie/orange.json
+
+
     - assets/lottie/walk.json
     - assets/lottie/login.json
-    - assets/lottie/send2.json
+    - assets/lottie/smile.json
     - assets/lottie/loading_indigo.json
     - assets/lottie/check1.json
     - assets/lottie/check2.json
     - assets/lottie/check_help.json
+    - assets/lottie/clap.json
+    - assets/lottie/congratulation.json
 
-
-
+    - assets/fonts/
+  fonts:
+    - family: NanumSquareRound
+      fonts:
+        - asset: assets/fonts/NanumSquareRoundL.ttf
+          weight: 300
+        - asset: assets/fonts/NanumSquareRoundR.ttf
+          weight: 400
+        - asset: assets/fonts/NanumSquareRoundB.ttf
+          weight: 700
+        - asset: assets/fonts/NanumSquareRoundEB.ttf
+          weight: 800

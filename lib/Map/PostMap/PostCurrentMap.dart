@@ -78,7 +78,13 @@ class _MapScreenState extends State<PostCurrentMap> {
               backgroundColor: Colors.transparent,
               // elevation: 4,
               // shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('사용자 위치', style: TextStyle(fontWeight: FontWeight.bold),),
+              title: Text('사용자 위치',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize : 23,
+                ),
+              ),
               actions: <Widget>[
               ],
             ),

@@ -128,17 +128,24 @@ class LoadingScreen extends StatelessWidget {
             AutoSizeText(
                 'OnTheWay',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 70,
-                  color: Colors.indigo,
-                ),
+                style:
+                // TextStyle(
+                //   fontWeight: FontWeight.bold,
+                //   fontSize: 70,
+                //   color: Colors.indigo,
+                // ),
+               TextStyle(
+                fontFamily: 'NanumSquareRound',
+                fontWeight: FontWeight.w900,
+                fontSize: 55,
+                 color: Colors.indigo,
+              ),
                 maxLines: 1,
               ),
             SizedBox(height: 30),
             Container(
-              width: 200,
-              height: 200,
+              width: 150,
+              height: 150,
               child: Lottie.asset(
                     'assets/lottie/loading_indigo.json',
                     fit: BoxFit.contain,

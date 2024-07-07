@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 import 'IndividualRankingPage.dart';
 
@@ -64,10 +65,12 @@ class SchoolRankingScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         child: Text(
           '${index + 1}',
-          style: TextStyle(
+          style:
+          TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontFamily: 'NanumSquareRound',
+            fontWeight: FontWeight.w700,
+            fontSize: 25,
           ),
         ),
       ),
@@ -78,25 +81,25 @@ class SchoolRankingScreen extends StatelessWidget {
     switch (index) {
       case 0: // 1등
         return LinearGradient(
-          colors: [Colors.amber, Colors.amber, Colors.grey.shade200, Colors.amber, Colors.amber,],
+          colors: [Colors.amber, Colors.amber, Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 1: // 2등
         return LinearGradient(
-          colors: [Colors.grey, Colors.grey, Colors.grey.shade300,  Colors.grey, Colors.blueGrey],
+          colors: [Colors.grey, Colors.grey, Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 2: // 3등
         return LinearGradient(
-          colors: [Colors.brown,Colors.brown, Colors.grey.shade300, Colors.brown, Colors.brown],
+          colors: [Color(0xFFB87333), Color(0xFFB87333), Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       default: // 4등부터
         return LinearGradient(
-          colors: [Colors.purple.shade300, Colors.purple.shade300, Colors.grey.shade300, Colors.purple.shade300, Colors.purple.shade300,],
+          colors: [Colors.purple.shade300, Colors.purple.shade300],
           // colors: [Colors.indigo.shade300, Colors.indigo.shade300, Colors.grey.shade300, Colors.indigo.shade300, Colors.indigo.shade300,],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -154,9 +157,13 @@ class SchoolRankingScreen extends StatelessWidget {
                 ),
               ),
               child: AppBar(
-                title: Text(
+                title:  Text(
                   '학교별 랭킹',
-                  style: TextStyle(fontSize: 25),
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'NanumSquareRound',
+                  ),
                 ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -187,7 +194,7 @@ class SchoolRankingScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25),
                       ),
                       color: Colors.white,
-                      shadowColor: Colors.purpleAccent.withOpacity(0.5),
+                      shadowColor: Colors.indigo.withOpacity(0.5),
                       child: ListTile(
                         contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
                         leading: _buildLeading(index),
@@ -196,20 +203,31 @@ class SchoolRankingScreen extends StatelessWidget {
                           children: [
                             Text(
                               school['name'],
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                fontFamily: 'NanumSquareRound',
+                              ),
                             ),
                             Text(
                               '${school['total']}',
+                              // style: TextStyle(
+                              //     fontSize: _getSizeForRank(index),
+                              //     fontWeight: FontWeight.bold,
+                              //     color: _getColor(index)
+                              // ),
                               style: TextStyle(
-                                  fontSize: _getSizeForRank(index),
-                                  fontWeight: FontWeight.bold,
+                                fontSize: _getSizeForRank(index),
+                                fontWeight: FontWeight.w800,
+                                fontFamily: 'NanumSquareRound',
                                   color: _getColor(index)
                               ),
                             ),
                           ],
                         ),
-                        trailing: Icon(Icons.chevron_right, color: Colors.deepPurple, size: 30),
+                        trailing: Icon(Icons.chevron_right, color: Colors.black, size: 30),
                         onTap: () {
+                          HapticFeedback.lightImpact();
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => IndividualRankingPage(domain: school['domain'], name: school['name']),
                           ));

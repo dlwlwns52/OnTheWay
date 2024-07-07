@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SchoolEmailDialog extends StatefulWidget {
   final Function(String) onSelected;
@@ -17,6 +18,7 @@ class _SchoolEmailDialogState extends State<SchoolEmailDialog> {
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
     {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
     {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
+    {'name': '테스트', 'domain': 'gmail.com'}
 
     // 도메인 추가
   ];
@@ -108,6 +110,7 @@ class _SchoolEmailDialogState extends State<SchoolEmailDialog> {
                         size: 16.0,
                       ),
                       onTap: () {
+                        HapticFeedback.lightImpact();
                         widget.onSelected(domain['domain']!);
                         Navigator.pop(context);
                       },

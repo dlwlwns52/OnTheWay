@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
@@ -107,10 +108,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: emailController,
                       decoration: InputDecoration(
-                        labelText: '이메일:',
+                        labelText: '이메일 :',
+                        labelStyle: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: Colors.grey
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.orange),
+                          borderSide: BorderSide(color: Colors.indigo),
                         ),
                       ),
                       onFieldSubmitted: (value) {
@@ -122,7 +129,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusNode: _EmailToPasswordFocusNode,
                       controller: passwordController,
                       decoration: InputDecoration(
-                        labelText: '비밀번호:',
+                        labelText: '비밀번호 :',
+                        labelStyle: TextStyle(
+                            fontFamily: 'NanumSquareRound',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            color: Colors.grey
+                        ),
+
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: Colors.indigo),
@@ -135,18 +149,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Checkbox(
+                        Switch(
                           value: _isAutoLogin,
-                          onChanged: (bool? value) {
+                          onChanged: (bool value) {
+                            HapticFeedback.lightImpact();
                             setState(() {
-                              _isAutoLogin = value ?? false;
+                              _isAutoLogin = value;
                             });
                           },
                           activeColor: Colors.indigoAccent,
                         ),
+
                         Text(
                           '자동 로그인',
-                          style: TextStyle(fontSize: 16),
+                          style:
+                          TextStyle(
+                              fontFamily: 'NanumSquareRound',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                          ),
+
                         ),
                       ],
                     ),
@@ -156,7 +178,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: <Widget>[
                         ElevatedButton(
                           child: Text('비밀번호 찾기'),
-                          onPressed: () {},
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,
                             foregroundColor: Colors.white,
@@ -170,6 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ElevatedButton(
                           child: Text('회원가입'),
                           onPressed: () {
+                            HapticFeedback.lightImpact();
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => CreateAccount())
@@ -248,6 +273,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
   void _login() async{
+
+    HapticFeedback.lightImpact();
     final FirebaseAuth _auth = FirebaseAuth.instance;
     if(emailController.text.isEmpty){
       ScaffoldMessenger.of(context).showSnackBar(

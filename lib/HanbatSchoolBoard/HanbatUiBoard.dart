@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:OnTheWay/login/LoginScreen.dart'; // 로그인 화면을 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
 
@@ -117,15 +118,21 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
             AppBar(
               backgroundColor: Colors.transparent,
-              title: Text('한밭대 게시판', style: TextStyle(fontWeight: FontWeight.bold)),
-              centerTitle: true,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (context) => LoginScreen()));
-                },
+              title: Text('한밭대 게시판',
+                style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'NanumSquareRound',
+                ),
               ),
+              centerTitle: true,
+              // leading: IconButton(
+              //   icon: Icon(Icons.arrow_back_ios_new),
+              //   onPressed: () {
+              //     Navigator.pushReplacement(
+              //         context, MaterialPageRoute(builder: (context) => LoginScreen()));
+              //   },
+              // ),
               actions: <Widget>[
                 Padding(
                   padding: EdgeInsets.only(right: 10.0),
@@ -135,6 +142,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                       IconButton(
                         icon: Icon(Icons.notifications),
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => AlarmUi(),
@@ -277,6 +285,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                             children: <Widget>[
                               InkWell( // 터치 이벤트를 처리하기 위한 InkWell 위젯
                                 onTap: () {
+                                  HapticFeedback.lightImpact();
                                   postManager.helpAndExit(context, doc, _pushHelpButton); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                                 },
                                 child: Card(
@@ -298,6 +307,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                                 width: 80, // 버튼의 가로 폭을 70으로 고정
                                                 child: GestureDetector(
                                                   onTap: () {
+                                                    HapticFeedback.heavyImpact();
                                                     if (!isMyPost) {
                                                       // postManager.helpAndExit(context, doc); // 게시물을 탭하면 상세 정보 또는 편집/삭제 다이얼로그를 표시
                                                       Navigator.of(context).push(MaterialPageRoute(
@@ -326,11 +336,11 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                                       data['my_location'] ?? '내용 없음',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
-                                                        // fontSize: isMyPost ? 19 : 18,
                                                         fontSize: getTextSize(isMyPost),
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.black, // 텍스트 색상 변경
+                                                        fontWeight: FontWeight.w800,
+                                                        fontFamily: 'NanumSquareRound',
                                                       ),
+
                                                     ),
                                                   ),
                                                 ),
@@ -345,6 +355,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                                 child: GestureDetector(
                                                   onTap: () {
                                                     if(!isMyPost){
+                                                      HapticFeedback.heavyImpact();
                                                       Navigator.of(context).push(MaterialPageRoute(
                                                           builder: (context) => PostStoreMap(documentId: doc.id,),
                                                       ));
@@ -372,8 +383,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
                                                         fontSize: getTextSize(isMyPost),
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.black, // 텍스트 색상 변경
+                                                        fontWeight: FontWeight.w800,
+                                                        fontFamily: 'NanumSquareRound',
                                                       ),
                                                     ),
                                                   ),
@@ -387,8 +398,11 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                               data['cost'] ?? '추가 내용 없음',
                                               // 비용 정보 또는 '추가 내용 없음' 표시
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(fontSize: 17.0,
-                                                  fontWeight: FontWeight.bold, color: Colors.black),
+                                              style: TextStyle(
+                                                fontSize: getTextSize(isMyPost),
+                                                fontWeight: FontWeight.w800,
+                                                fontFamily: 'NanumSquareRound',
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -421,11 +435,10 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               color: Colors.grey.withOpacity(0.5),
               child: Center(
                 child: Lottie.asset(
-                  'assets/lottie/check_help.json',
-                  width: 250,
-                  height: 250,
-                  fit: BoxFit.contain
-                  ,
+                  'assets/lottie/smile.json',
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
@@ -458,11 +471,22 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           ),
 
         ],
+        selectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w400,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w400,
+          fontSize: 12,
+        ),
         selectedItemColor: Colors.black,    // 선택된 항목의 텍스트 색상
-        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+        unselectedItemColor: Colors.black,  // 선택되지 않rr은 항목의 텍스트 색상
         onTap: (index) {
           // 채팅방으로 이동
           if (index == 0) {
+            HapticFeedback.lightImpact();
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => AllUsersScreen()),
@@ -470,6 +494,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             //진행 상황
           }
           else if (index == 1) {
+            HapticFeedback.lightImpact();
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
@@ -477,6 +502,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           }
           //새 게시글 만드는 곳으로 이동
           else if (index == 2) {
+            HapticFeedback.lightImpact();
             Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
@@ -484,6 +510,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           }
           // 학교 랭킹
           else if (index == 3) {
+            HapticFeedback.lightImpact();
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
@@ -491,6 +518,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           }
           // 프로필
           else if (index == 4) {
+            HapticFeedback.lightImpact();
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => UserProfileScreen()),
@@ -498,7 +526,6 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           }
 
         },
-        selectedLabelStyle: TextStyle(color: Colors.orange), // 선택된 항목의 텍스트 색상 설정
       ),
     );
   }

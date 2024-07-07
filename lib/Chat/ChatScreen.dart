@@ -5,6 +5,7 @@ import 'package:OnTheWay/Chat/message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
@@ -301,7 +302,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.of(context).pop(true);
+              },
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.cancel),
@@ -313,7 +317,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.of(context).pop(false);
+              },
             ),
           ],
         ),
@@ -357,8 +364,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
 
 
-      } else {
-        Navigator.of(context).pop([]);
       }
     }
     return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.
@@ -540,7 +545,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
 
 
-  //메시지 삭제 및 수정 바텀 시트(직접 적어보기!!!!!!!!!!!!!!!!)
+  //메시지 삭제 및 수정 바텀 시트
   Future<void> showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot) async {
     final action = await showModalBottomSheet<String>(
       context: context,
@@ -555,6 +560,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 leading: Icon(Icons.delete),
                 title: Text('삭제'),
                 onTap: () {
+                  HapticFeedback.lightImpact();
                   Navigator.of(context).pop("delete");
                 },
               ),
@@ -832,7 +838,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   },
 
                   onLongPress: () {
-                    print(snapshot.data());
+                    HapticFeedback.lightImpact();
                     if (isSentByMe) {
                       showMessageOptionsBottomSheet(context, snapshot);
                     }
@@ -900,6 +906,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == false) ...{
               GestureDetector(
                 onLongPress: () {
+                  HapticFeedback.lightImpact();
                   if (isSentByMe) {
                     showMessageOptionsBottomSheet(context, snapshot);
                   }
@@ -993,7 +1000,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         },
       child: Scaffold(
           appBar: AppBar(
-            title: Text(widget.receiverName, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),),
+            title: Text(widget.receiverName,
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                  color: Colors.black
+                ),
+              ),
             // 채팅방 이름 표시
             // backgroundColor: Color(0XFF98ABEE),
             backgroundColor: Colors.white,
@@ -1001,25 +1015,42 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             iconTheme: IconThemeData(
               color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
             ),
-            actions: <Widget>[
 
-              IconButton(
-                icon: Icon(Icons.navigation_rounded, color: Colors.indigoAccent,),
-                onPressed: () async {
-                  await _tmapDirections(); // 위치 데이터를 가져옵니다.
-                  if (tmapDirections.length >= 2) {
-                    // tmapDirections 리스트에서 위치 정보 사용
-                    String currentLocation = tmapDirections[0];
-                    String storeLocation = tmapDirections[1];
-                    // Navigator를 사용하여 새 페이지로 이동
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => TMapView(
-                        currentLocation: currentLocation,
-                        storeLocation: storeLocation,
-                      ),
-                    ));
-                  }
-                },
+            actions: <Widget>[
+              Container(
+                width: 40,
+                height: 40,
+                margin: EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.indigo[400],
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.navigation_rounded, color: Colors.white),
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await _tmapDirections(); // 위치 데이터를 가져옵니다.
+                    if (tmapDirections.length >= 2) {
+                      // tmapDirections 리스트에서 위치 정보 사용
+                      String currentLocation = tmapDirections[0];
+                      String storeLocation = tmapDirections[1];
+                      // Navigator를 사용하여 새 페이지로 이동
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => TMapView(
+                          currentLocation: currentLocation,
+                          storeLocation: storeLocation,
+                        ),
+                      ));
+                    }
+                  },
+                ),
               ),
             ],
           ),

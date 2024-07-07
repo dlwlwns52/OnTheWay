@@ -2,6 +2,7 @@ import 'package:OnTheWay/Alarm/Grade.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lottie/lottie.dart';
 
@@ -79,11 +80,18 @@ class _NotificationScreenState extends State<AlarmUi> {
                 ),
                 AppBar(
                   backgroundColor: Colors.transparent,
-                  title: Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text('알림',
+                      style:
+                      TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 25,
+                      ),),
                   actions: <Widget>[
                     IconButton(
                       icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         setState(() {
                           isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
                         });
@@ -135,17 +143,30 @@ class _NotificationScreenState extends State<AlarmUi> {
                                 children: [
                                   Text(
                                     notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                                    style:
+                                    // TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                                    TextStyle(
+                                      fontFamily: 'NanumSquareRound',
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '도와주기를 요청하였습니다.',
+                                    // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                                    style: TextStyle(
+                                      fontFamily: 'NanumSquareRound',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                        color: Colors.grey[600]
+                                    ),
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    '도와주기를 요청하였습니다.',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
                                     '$timeAgo',
-                                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                    style:
+                                    TextStyle(color: Colors.grey[600], fontSize: 14),
                                   ),
                                 ],
                               ),
@@ -182,11 +203,13 @@ class _NotificationScreenState extends State<AlarmUi> {
                                                   SizedBox(width: 8),
                                                   Text(
                                                     grade.letter,
-                                                    style: TextStyle(
+                                                    style:
+                                                    TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       color: grade.color,
                                                       fontSize: 13,
                                                     ),
+
                                                   ),
                                                   SizedBox(width: 7),
                                                   Column(
@@ -212,11 +235,13 @@ class _NotificationScreenState extends State<AlarmUi> {
                             ],
                           ),
                           onTap: () {
+                            HapticFeedback.lightImpact();
                             _showAcceptDeclineDialog(context, nickname, doc.id);
                           },
                           trailing: isDeleteMode ? IconButton(
                             icon: Icon(Icons.close, color: Colors.black),
                             onPressed: () {
+                              HapticFeedback.lightImpact();
                               _deleteNotification(doc.id);
                               _deleteChatActions(doc.id);
                             },
@@ -316,15 +341,20 @@ class _NotificationScreenState extends State<AlarmUi> {
           title: Text(
             '알림',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black, // 제목 색상 변경
+            style:
+            TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w800,
+              fontSize: 25,
             ),
           ),
           content: Text(
             '\'$nickname\' 님의 도와주기 요청을 수락하시겠습니까?',
-            style: TextStyle(
-              color: Colors.black87,
+            style:
+            TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
           actions: <Widget>[
@@ -339,6 +369,7 @@ class _NotificationScreenState extends State<AlarmUi> {
               onPressed: () async {
                 await _HelperCount(documentId);
                 // 수락 로직 구현
+                HapticFeedback.lightImpact();
                 _respondToHelpRequest(documentId, 'accepted');
                 Navigator.of(context).pop(); // 대화 상자 닫기
 
@@ -366,6 +397,7 @@ class _NotificationScreenState extends State<AlarmUi> {
               ),
               child: Text('거절',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
+                HapticFeedback.lightImpact();
                 // 수락 로직 구현
                 _respondToHelpRequest(documentId, 'rejected');
                 Navigator.of(context).pop(); // 대화 상자 닫기

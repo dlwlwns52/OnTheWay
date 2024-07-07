@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Map/WriteMap/CurrentMapScreen.dart';
@@ -88,6 +89,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   //현재위치 받는 메소드
   void _currentChooseLocation() async {
     // MapScreen으로부터 반환된 위치를 받습니다.
+    HapticFeedback.lightImpact();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CurrentMapScreen()),
@@ -106,6 +108,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   //가게위치 받는 메소드
   void _storeChooseLocation() async {
     // MapScreen으로부터 반환된 위치를 받습니다.
+    HapticFeedback.lightImpact();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => StoreMapScreen()),
@@ -128,6 +131,8 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   }
 
   Future<void> _uploadPost() async {
+    HapticFeedback.lightImpact();
+
     if (_locationController.text.isEmpty) {
       _showSnackBar("\'본인 위치\' 칸을 입력해주세요.");
       return;
@@ -237,7 +242,13 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                 backgroundColor: Colors.transparent,
                 elevation: 4,
                 shadowColor: Colors.indigo.withOpacity(0.5),
-                title: Text('게시물 작성', style: TextStyle(fontWeight: FontWeight.bold),),
+                title: Text('게시물 작성',
+                  style: TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize : 25,
+                  ),
+                ),
               ),
             ],
           ),

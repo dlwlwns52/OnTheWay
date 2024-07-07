@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -294,14 +295,17 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             '채팅방 나가기',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w800,
+              fontSize: 25,
             ),
           ),
           content: Text(
             '대화내용 및 채팅 목록이 모두 삭제됩니다.',
             style: TextStyle(
-              color: Colors.black87,
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
           actions: <Widget>[
@@ -321,6 +325,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                 helperDeleteChatRoom(documentId, helperNickname);
                 deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
                 Navigator.of(context).pop();
+                HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -363,18 +368,26 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
-          title: Text(
-            '채팅방 나가기',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
+          title: Column (
+                  children: [
+                      Text(
+                      '채팅방 나가기',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 25,
+                    ),
+                  ),
+                    SizedBox(height: 20,)
+                ]
+            ,),
           content: Text(
             '대화내용 및 채팅 목록이 모두 삭제됩니다.\n',
             style: TextStyle(
-              color: Colors.black87,
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
             ),
           ),
           actions: <Widget>[
@@ -391,6 +404,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               ),
               onPressed: () {
                 // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
+                HapticFeedback.lightImpact();
                 ownerDeleteChatRoom(documentId, ownerNickname);
                 deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
                 Navigator.of(context).pop();
@@ -455,7 +469,13 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                     elevation: 4,
                     shadowColor: Colors.black.withOpacity(0.5),
                     title: Text("채팅",
-                      style: TextStyle(fontWeight: FontWeight.bold),),
+                      style:
+                      TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 28,
+                      ),
+                    ),
                     actions: <Widget>[
                     ],
                   ),
@@ -550,9 +570,17 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                             ),
                             child: InkWell(
                               onLongPress: () {
+                                HapticFeedback.heavyImpact();
                                 helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
                               },
                           onTap: (() {
+                            HapticFeedback.lightImpact();
+                            String helper_receiver = userData['helper_email_nickname'];
+                            FirebaseFirestore.instance
+                                .collection('ChatActions')
+                                .doc(doc.id)
+                                .update({'messageCount_$helper_receiver': 0});
+
                             Navigator.push(
                                 context,
                                 new MaterialPageRoute(
@@ -594,8 +622,8 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                       Text(
                                         userData['owner_email_nickname'],
                                         style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w800,
                                           fontSize: 18,
                                         ),
                                       ),
@@ -603,8 +631,10 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                       Text(
                                         "$lastMessage",
                                         style: TextStyle(
-                                          color: Colors.grey[800],
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 16,
+                                          color: Colors.grey,
                                         ),
                                       ),
                                     ],
@@ -677,9 +707,17 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                         child: InkWell(
                           onLongPress: () {
                             // print(doc.data());
+                            HapticFeedback.heavyImpact();
                             ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
                           },
                           onTap: (() {
+                            HapticFeedback.lightImpact();
+                            String owner_receiver = userData['owner_email_nickname'];
+                            FirebaseFirestore.instance
+                                .collection('ChatActions')
+                                .doc(doc.id)
+                                .update({'messageCount_$owner_receiver': 0});
+
                             Navigator.push(
                                 context,
                                 new MaterialPageRoute(
@@ -721,17 +759,23 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                                       Text(
                                         userData['helper_email_nickname'],
                                         style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w800,
                                           fontSize: 18,
                                         ),
                                       ),
-                                      SizedBox(height: 4),
+                                      SizedBox(height: 8),
                                       Text(
                                         "$lastMessage",
+                                        // style: TextStyle(
+                                        //   color: Colors.grey[800],
+                                        //   fontSize: 16,
+                                        // ),
                                         style: TextStyle(
-                                          color: Colors.grey[800],
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 16,
+                                          color: Colors.grey,
                                         ),
                                       ),
                                     ],

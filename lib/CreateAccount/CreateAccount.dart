@@ -43,7 +43,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _dropdownValue = '학교 메일 선택';
   bool isEmailVerified = false;
-
+  bool _congratulation = false;
 
   //이메일인증
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -193,6 +193,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
   void _checkNicknameAvailabilityAndValidate() {
+    HapticFeedback.lightImpact();
     if(_nicknameValidateFields()) {
       _checkNicknameAvailability();
     }
@@ -296,36 +297,49 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.notification_important, color: Colors.indigo),
-                    SizedBox(width: 8),
+                    // Icon(Icons.notification_important, color: Colors.indigo),
+                    // SizedBox(width: 8),
                     Text(
                       '알림',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                      style:
+                      TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 30,
                         color: Colors.indigo,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    SizedBox(height: 50),
                   ],
                 ),
               ),
               content: Text(
-                "'" + nickname + "' " +'은 다른 사용자가 사용하고 있는 이름입니다. \n\n 다른 닉네임을 사용해 주시길 바랍니다.',
+                '다른 사용자가 사용하고 있는 이름입는니다. \n다른 닉네임을 사용해 주시길 바랍니다.',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  height: 1.5
                 ),
               ),
+
               actions: [
+                SizedBox(height: 65),
                 ElevatedButton(
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       _nicknameController.clear();
                       Navigator.of(context).pop();
                     },
-                    child: Text('취소'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo[300],
-                    )
+                    child: Text('확인'),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.indigo[300],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  ),
                 ),
               ],
             );
@@ -337,7 +351,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         setState(() {
           _buttonText = '사용가능';
           _buttonColor = Colors.indigo[200] ?? Colors.indigoAccent;
-          // _buttonTextColor = Colors.white; // 텍스트 색상 변경
+          _buttonTextColor = Colors.white; // 텍스트 색상 변경
           _isNicknameAvailable = true;
         });
 
@@ -352,12 +366,19 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.notification_important, color: Colors.indigo),
-                    SizedBox(width: 8),
+                    // Icon(Icons.notification_important, color: Colors.indigo),
+                    // SizedBox(width: 8),
                     Text(
                       '알림',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                      style:
+                      // TextStyle(
+                      //   fontWeight: FontWeight.bold,
+                      //   color: Colors.indigo,
+                      // ),
+                      TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 25,
                         color: Colors.indigo,
                       ),
                     ),
@@ -365,16 +386,61 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   ],
                 ),
               ),
-              content: Text(
-                "'" + nickname + "' 은 사용 가능한 이름입니다.\n\n 이 닉네임을 사용하시겠습니까?",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 10),
+                  Text(
+                    "사용 가능한 이름입니다. ",
+                    style:
+                    // TextStyle(
+                    //   fontSize: 17,
+                    //   color: Colors.indigo,
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                    TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "이 닉네임을 사용하시겠습니까?",
+                    style:
+                    // TextStyle(
+                    //   fontSize: 17,
+                    //   color: Colors.indigo,
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                    TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Text(
+                    " ※ 닉네임은 한 번 설정하시면 변경이 불가하니 \n    신중히 선택해 주세요. ",
+                    style:
+                    // TextStyle(
+                    //   fontSize: 12,
+                    //   color: Colors.red[300],
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                    TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w400,
+                      color: Colors.red[600],
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 ElevatedButton(
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     // 사용자가 입력한 닉네임을 TextFormField에 넣어주기
                     _nicknameController.text = nickname;
                     Navigator.of(context).pop();
@@ -402,6 +468,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   //이메일 선택 메소드
   void _showSchoolEmailDialog(BuildContext context) {
+    HapticFeedback.lightImpact();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -418,6 +485,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   //이메일 인증
   Future<void> _signInWithGoogle() async {
+    HapticFeedback.lightImpact();
     try {
       String userEmail = _emailUserController.text.trim();
       if (_dropdownValue == null) {
@@ -497,7 +565,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 showCursor: true,
                 decoration: InputDecoration(
                   labelText: '닉네임',
-                  labelStyle: TextStyle(color: Colors.black54),
+                  labelStyle: TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
+                  ),
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -544,7 +616,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _buttonTextColor,
-                fontWeight: FontWeight.bold,
+                fontFamily: 'NanumSquareRound',
+                fontWeight: FontWeight.w900,
                 fontSize: 17,
               ),
             ),
@@ -565,6 +638,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               focusNode: _emailFocusNode,
               decoration: InputDecoration(
                 labelText: '이메일',
+                labelStyle: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
                 border: OutlineInputBorder(),
                 enabled: _isNicknameAvailable,
                 focusedBorder: OutlineInputBorder(
@@ -588,7 +666,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: Text(_dropdownValue ?? '학교 메일 선택'),
+              child: Text(_dropdownValue ?? '학교 메일 선택',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),),
             ),
           ),
         ],
@@ -719,7 +802,13 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           onPressed: () => _onSignUpButtonPressed(context),
           child: Text(
             '회원가입',
-            style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+            style:
+            // TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+            TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w500,
+              fontSize: 18,
+            ),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
@@ -731,6 +820,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
   void _onSignUpButtonPressed(BuildContext context) async {
+    HapticFeedback.lightImpact();
     if (_validateFields()) {
       bool emailAvailable = await _checkEmailAvailability();
       if (!emailAvailable) return;
@@ -738,120 +828,155 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       final rootContext = context;
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            '회원가입 완료',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.indigo,
-            ),
-          ),
-          content: Text(
-            '회원가입을 완료 하시겠습니까?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-          ),
-          actions: [
-            Column(
-              children: [
+        builder: (context) =>
+            AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Column(children: [
+                Text(
+                  '회원가입 완료',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 25,
+                    color: Colors.indigo,
+                  ),
+                ),
+                SizedBox(height: 15,),
                 Center(
                   child: Lottie.asset(
-                    'assets/lottie/Animation.json',
+                    'assets/lottie/clap.json',
+                    width: 150,
+                    height: 150,
                     fit: BoxFit.contain,
-                    width: 200,
-                    height: 200,
                   ),
                 ),
               ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  child: Text(
-                    '확인',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo[300],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  ),
-                  onPressed: () async {
-                    Navigator.of(context).pop();
+              ),
+              content: Text(
+                '회원가입을 완료 하시겠습니까?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
 
-                    String nickname = _nicknameController.text;
-                    String password = _passwordController.text;
-                    String email = _emailUserController.text + "@" + _dropdownValue!;
-                    try {
-                      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                        email: email,
-                        password: password,
-                      );
-                      DateTime now = DateTime.now();
-                      String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-
-                      User? currentUser = FirebaseAuth.instance.currentUser;
-                      String userUid = currentUser?.uid ?? '';
-
-                      final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-                      await usersCollection.doc(nickname).set({
-                        'uid': userUid,
-                        'nickname': nickname,
-                        'email': email,
-                        'joined_date': formattedDate,
-                        'grade' : 3.0,
-                      });
-
-                      ScaffoldMessenger.of(rootContext).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '회원가입이 완료되었습니다.',
-                            textAlign: TextAlign.center,
-                          ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      child: Text(
+                        '확인',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo[300],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 24),
+                      ),
+                      onPressed: () async {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
 
-                      Navigator.pushReplacement(
-                        rootContext,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    } catch (e) {
-                      print("회원가입 실패: $e");
-                    }
-                  },
-                ),
-                ElevatedButton(
-                  child: Text(
-                    '취소',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                        String nickname = _nicknameController.text;
+                        String password = _passwordController.text;
+                        String email = _emailUserController.text + "@" +
+                            _dropdownValue!;
+                        try {
+                          await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                            email: email,
+                            password: password,
+                          );
+                          DateTime now = DateTime.now();
+                          String formattedDate = DateFormat('yyyy-MM-dd')
+                              .format(now);
+
+                          User? currentUser = FirebaseAuth.instance.currentUser;
+                          String userUid = currentUser?.uid ?? '';
+
+                          final CollectionReference usersCollection = FirebaseFirestore
+                              .instance.collection('users');
+                          await usersCollection.doc(nickname).set({
+                            'uid': userUid,
+                            'nickname': nickname,
+                            'email': email,
+                            'joined_date': formattedDate,
+                            'grade': 3.0,
+                          });
+
+                          //congratulation 애니메이션
+                          setState(() {
+                            _congratulation = true;
+                          });
+
+                          await Future.delayed(Duration(milliseconds: 1800), () {
+                            setState(() {
+                              _congratulation = false;
+                            });
+                          });
+
+
+                          ScaffoldMessenger.of(rootContext).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '회원가입이 완료되었습니다.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+
+                          Navigator.pushReplacement(
+                            rootContext,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen()), // 로그인 화면으로 이동
+                          );
+
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '회원가입 도중 에러가 발생하였습니다. \n다시 시도해 주세요.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                          print("회원가입 실패: $e");
+                        }
+                      },
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                    ElevatedButton(
+                      child: Text(
+                        '취소',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 24),
+                      ),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
       );
     }
   }
@@ -871,59 +996,61 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             ),
             AppBar(
               backgroundColor: Colors.transparent,
-              title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(
+                "회원가입",
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 25,
+                ),
+              ),
             ),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 30),
-              _buildNicknameField(),
-              SizedBox(height: 30),
-              _buildEmailField(),
-              SizedBox(height: 30),
-              _buildEmailCheck(),
-              SizedBox(height: 30),
-              _buildPasswordField(),
-              SizedBox(height: 30),
-              _buildConfirmPasswordField(),
-              SizedBox(height: 30),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        SizedBox(height: 30),
+                        _buildNicknameField(),
+                        SizedBox(height: 30),
+                        _buildEmailField(),
+                        SizedBox(height: 30),
+                        _buildEmailCheck(),
+                        SizedBox(height: 30),
+                        _buildPasswordField(),
+                        SizedBox(height: 30),
+                        _buildConfirmPasswordField(),
+                        SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          if (_congratulation)
+            Positioned.fill(
+              child: Container(
+                color: Colors.grey.withOpacity(0.5),
+                child: Center(
+                  child: Lottie.asset(
+                    'assets/lottie/congratulation.json',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: _buildBottomAppBar(context),
     );
   }
-
-
-  // Future<void> saveTokenToDatabase(String? token) async {
-  //   // 사용자가 로그인한 경우에만 토큰을 저장합니다.
-  //   String nickname = _nicknameController.text;
-  //   print(nickname);
-  //   String? userId = FirebaseAuth.instance.currentUser?.uid;
-  //   if (userId == null) return;
-  //
-  //   // Firestore 인스턴스를 가져옵니다.
-  //   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //
-  //   // Firestore의 'users' 컬렉션에 토큰을 저장합니다.
-  //   await firestore.collection('users').doc(nickname).set({
-  //     'token': token,
-  //   }, SetOptions(merge: true));
-  // }
-  //
-  // Future<void> getTokenAndSave() async {
-  //   // FCM 토큰을 가져옵니다.
-  //   String? token = await FirebaseMessaging.instance.getToken();
-  //
-  //   // 토큰을 Firestore에 저장합니다.
-  //   await saveTokenToDatabase(token);
-  // }
-
-
 }
