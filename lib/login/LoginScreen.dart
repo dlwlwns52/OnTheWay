@@ -49,229 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
     _PasswordToLoginFocusNode.dispose();
     super.dispose();
   }
-  //
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // 배경 그래디언트 추가
-          // Container(
-          //   decoration: BoxDecoration(
-          //     gradient: LinearGradient(
-          //       colors: [Colors.indigo, Colors.white,Colors.indigo],
-          //       //Color(0xFFFF8B13)
-          //       begin: Alignment.topLeft,
-          //       end: Alignment.bottomRight,
-          //     ),
-          //   ),
-          // ),
-
-          Lottie.asset(
-            'assets/lottie/blue2.json',
-            fit: BoxFit.fill,
-            width: double.infinity,
-            height: double.infinity,
-          ),
 
 
-            // Lottie.asset(
-            //   'assets/lottie/Animation.json',
-            //   fit: BoxFit.fill,
-            //   width: double.infinity,
-            //   height: double.infinity,
-            // ),
-
-
-
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              width: MediaQuery.of(context).size.width * 0.9,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    // 이메일 입력
-                    TextFormField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        labelText: '이메일 :',
-                        labelStyle: TextStyle(
-                          fontFamily: 'NanumSquareRound',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 16,
-                          color: Colors.grey
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.indigo),
-                        ),
-                      ),
-                      onFieldSubmitted: (value) {
-                        FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode);
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      focusNode: _EmailToPasswordFocusNode,
-                      controller: passwordController,
-                      decoration: InputDecoration(
-                        labelText: '비밀번호 :',
-                        labelStyle: TextStyle(
-                            fontFamily: 'NanumSquareRound',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                            color: Colors.grey
-                        ),
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.indigo),
-                        ),
-                      ),
-                      obscureText: true,
-                      onFieldSubmitted: (value) => _login(),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Switch(
-                          value: _isAutoLogin,
-                          onChanged: (bool value) {
-                            HapticFeedback.lightImpact();
-                            setState(() {
-                              _isAutoLogin = value;
-                            });
-                          },
-                          activeColor: Colors.indigoAccent,
-                        ),
-
-                        Text(
-                          '자동 로그인',
-                          style:
-                          TextStyle(
-                              fontFamily: 'NanumSquareRound',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                          ),
-
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        ElevatedButton(
-                          child: Text('비밀번호 찾기'),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
-                            foregroundColor: Colors.white,
-                            // shadowColor: Colors.black,
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          child: Text('회원가입'),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => CreateAccount())
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
-                            foregroundColor: Colors.white,
-                            shadowColor: Colors.orangeAccent,
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-
-                    Container(
-                      height: 50,
-                      width: double.infinity,
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            offset: Offset(0, 4),
-                            blurRadius: 5.0,
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isEmailFilled && isPasswordFilled
-                                  ? [Colors.indigoAccent, Colors.blueAccent, Colors.indigoAccent]
-                                  : [Colors.grey, Colors.grey],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: InkWell(
-                            onTap: _login,
-                            borderRadius: BorderRadius.circular(12),
-                            splashColor: Colors.indigo.withOpacity(0.2),
-                            highlightColor: Colors.indigo.withOpacity(0.2),
-                            child: Center(
-                              child: Text(
-                                "로그인",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
+//로그인 버튼 클릭시 발동
   void _login() async{
 
     HapticFeedback.lightImpact();
@@ -408,6 +188,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
             );
 
+          case "too-many-requests":
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('잠시 동안 요청이 많아 처리가 지연되고 있습니다. \n잠시 후 다시 시도해 주세요.', textAlign: TextAlign.center,),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            break;
+
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -455,12 +244,321 @@ class _LoginScreenState extends State<LoginScreen> {
       print('No user found with email: $email');
     }
 
-
   }
-
   Future<void> getTokenAndSave(String? email) async {
     String? token = await FirebaseMessaging.instance.getToken();
     await saveTokenToDatabase(token, email);
+  }
+
+
+  //비밀번호 찾기
+
+  void showResetPasswordDialog(BuildContext context) {
+    final TextEditingController resetEmailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.lock_reset, color: Colors.blueAccent),
+              SizedBox(width: 10),
+              Text('비밀번호 재설정', style: TextStyle(color: Colors.blueAccent)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.',
+                style: TextStyle(color: Colors.black54),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: resetEmailController,
+                decoration: InputDecoration(
+                  labelText: '이메일 입력',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: Icon(Icons.email),
+                  filled: true,
+                  fillColor: Colors.blue[50],
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('취소', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueAccent,
+                onPrimary: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text('전송'),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _resetPassword(resetEmailController.text.trim());
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+//비밀번호 재전송
+  Future<void> _resetPassword(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호 재설정 이메일을 전송했습니다. \n새 비밀번호로 변경 후 접속이 안 될 경우 \n앱을 재시작해 주시길 바랍니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호 재설정 이메일 전송에 실패했습니다. 다시 시도해 주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 배경 그래디언트 추가
+          // Container(
+          //   decoration: BoxDecoration(
+          //     gradient: LinearGradient(
+          //       colors: [Colors.indigo, Colors.white,Colors.indigo],
+          //       //Color(0xFFFF8B13)
+          //       begin: Alignment.topLeft,
+          //       end: Alignment.bottomRight,
+          //     ),
+          //   ),
+          // ),
+
+          Lottie.asset(
+            'assets/lottie/blue2.json',
+            fit: BoxFit.fill,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+
+
+          // Lottie.asset(
+          //   'assets/lottie/Animation.json',
+          //   fit: BoxFit.fill,
+          //   width: double.infinity,
+          //   height: double.infinity,
+          // ),
+
+
+
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              width: MediaQuery.of(context).size.width * 0.9,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    // 이메일 입력
+                    TextFormField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        labelText: '이메일 :',
+                        labelStyle: TextStyle(
+                            fontFamily: 'NanumSquareRound',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            color: Colors.grey
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.indigo),
+                        ),
+                      ),
+                      onFieldSubmitted: (value) {
+                        FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode);
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      focusNode: _EmailToPasswordFocusNode,
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: '비밀번호 :',
+                        labelStyle: TextStyle(
+                            fontFamily: 'NanumSquareRound',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            color: Colors.grey
+                        ),
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.indigo),
+                        ),
+                      ),
+                      obscureText: true,
+                      onFieldSubmitted: (value) => _login(),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Switch(
+                          value: _isAutoLogin,
+                          onChanged: (bool value) {
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              _isAutoLogin = value;
+                            });
+                          },
+                          activeColor: Colors.indigoAccent,
+                        ),
+
+                        Text(
+                          '자동 로그인',
+                          style:
+                          TextStyle(
+                            fontFamily: 'NanumSquareRound',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
+
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        ElevatedButton(
+                          child: Text('비밀번호 찾기'),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            showResetPasswordDialog(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            foregroundColor: Colors.white,
+                            // shadowColor: Colors.black,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          child: Text('회원가입'),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => CreateAccount())
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.orangeAccent,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    Container(
+                      height: 50,
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 4),
+                            blurRadius: 5.0,
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isEmailFilled && isPasswordFilled
+                                  ? [Colors.indigoAccent, Colors.blueAccent, Colors.indigoAccent]
+                                  : [Colors.grey, Colors.grey],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: InkWell(
+                            onTap: _login,
+                            borderRadius: BorderRadius.circular(12),
+                            splashColor: Colors.indigo.withOpacity(0.2),
+                            highlightColor: Colors.indigo.withOpacity(0.2),
+                            child: Center(
+                              child: Text(
+                                "로그인",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

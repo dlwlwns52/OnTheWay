@@ -7,6 +7,8 @@ class IndividualRankingPage extends StatelessWidget {
 
   IndividualRankingPage({required this.domain, required this.name});
 
+
+  // 파이어스토어에서 학생 데려오기
   Future<List<Map<String, dynamic>>> _getSchoolMembersRanking(String domain) async {
     try {
       DocumentSnapshot schoolSnapshot = await FirebaseFirestore.instance.collection('schoolScores').doc(domain).get();
@@ -29,6 +31,90 @@ class IndividualRankingPage extends StatelessWidget {
     }
   }
 
+  // 등수 ui
+  Widget _buildLeading(int index) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: _getGradient(index), // 등수에 따른 그라디언트 적용
+        border: Border.all(color: Colors.white, width: 2.0),
+      ),
+      child: CircleAvatar(
+        radius: 20,
+        backgroundColor: Colors.transparent,
+        child: Text(
+          '${index + 1}',
+          style:
+          TextStyle(
+            color: Colors.white,
+            fontFamily: 'NanumSquareRound',
+            fontWeight: FontWeight.w700,
+            fontSize: 25,
+          ),
+        ),
+      ),
+    );
+  }
+
+  //메달 색상
+  LinearGradient _getGradient(int index) {
+    switch (index) {
+      case 0: // 1등
+        return LinearGradient(
+          colors: [Colors.amber, Colors.amber, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 1: // 2등
+        return LinearGradient(
+          colors: [Colors.grey, Colors.grey, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 2: // 3등
+        return LinearGradient(
+          colors: [Color(0xFFB87333), Color(0xFFB87333), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      default: // 4등부터
+        return LinearGradient(
+          colors: [Colors.purple.shade300, Colors.purple.shade300],
+          // colors: [Colors.indigo.shade300, Colors.indigo.shade300, Colors.grey.shade300, Colors.indigo.shade300, Colors.indigo.shade300,],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+    }
+  }
+
+  // total 색상
+  Color _getColor(int index) {
+    switch (index) {
+      case 0:
+        return Color(0xffe8bd50);
+      case 1:
+        return Colors.grey;
+      case 2:
+        return Colors.brown.shade300;
+      default:
+        return Colors.purple.shade300;
+    }
+  }
+
+  // 등수 대로 크기 차별화
+  double _getSizeForRank(int index) {
+    switch (index) {
+      case 0:
+        return 24; // 1등
+      case 1:
+        return 23; // 2등
+      case 2:
+        return 22; // 3등
+      default:
+        return 21; // 4등부터
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -42,10 +128,42 @@ class IndividualRankingPage extends StatelessWidget {
           }
         },
           child: Scaffold(
-          appBar: AppBar(
-            title: Text('$name 랭킹'),
-            backgroundColor: Colors.deepPurple,
-          ),
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(kToolbarHeight),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.deepPurpleAccent, Colors.indigoAccent, Colors.deepPurpleAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: AppBar(
+                  title:  Text(
+                    '$name 랭킹',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'NanumSquareRound',
+                    ),
+                  ),
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                ),
+              ),
+            ),
+          // appBar: AppBar(
+          //   title: Text('$name 랭킹',
+          //     style : TextStyle(
+          //       color: Colors.white,
+          //       fontFamily: 'NanumSquareRound',
+          //       fontWeight: FontWeight.w700,
+          //       fontSize: 20,
+          //     ),
+          //   ),
+
+            // backgroundColor: Colors.deepPurple,
+
           body: FutureBuilder<List<Map<String, dynamic>>>(
             future: _getSchoolMembersRanking(domain),
             builder: (context, snapshot) {
@@ -69,21 +187,19 @@ class IndividualRankingPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       child: ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        leading: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.deepPurple,
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                        ),
+                        leading: _buildLeading(index),
                         title: Text(
                           member['id'],
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'NanumSquareRound',
+                          ),
                         ),
                         trailing: Text(
                           '${member['score']}',
-                          style: TextStyle(color: Colors.deepPurple, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: _getColor(index), fontSize: _getSizeForRank(index), fontWeight: FontWeight.bold),
+
                         ),
                       ),
                     ),

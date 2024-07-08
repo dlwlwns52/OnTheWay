@@ -12,7 +12,7 @@ class SchoolRankingScreen extends StatelessWidget {
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
     {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
     {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
-
+    {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
     //임시
     {'name': '카카오대학교', 'domain': 'kakao.com'},
     {'name': '네이버대학교', 'domain': 'naver.com'},
@@ -26,10 +26,10 @@ class SchoolRankingScreen extends StatelessWidget {
   }
 
   //학교 도메인 반환
-  String _getDomain(String Name) {
-    var school = _domains.firstWhere((element) => element['name'] == Name, orElse: () => {'name': Name});
-    return school['domain']!;
-  }
+  // String _getDomain(String Name) {
+  //   var school = _domains.firstWhere((element) => element['name'] == Name, orElse: () => {'name': Name});
+  //   return school['domain']!;
+  // }
 
   // 학교 도메인 , 학교 이름, 총 점수 반환
   Future<List<Map<String, dynamic>>> _getSchoolTotals() async {
@@ -77,6 +77,7 @@ class SchoolRankingScreen extends StatelessWidget {
     );
   }
 
+  //메달 색상
   LinearGradient _getGradient(int index) {
     switch (index) {
       case 0: // 1등
@@ -107,6 +108,7 @@ class SchoolRankingScreen extends StatelessWidget {
     }
   }
 
+  // total 색상
   Color _getColor(int index) {
     switch (index) {
       case 0:
@@ -120,6 +122,7 @@ class SchoolRankingScreen extends StatelessWidget {
     }
   }
 
+  // 등수 대로 크기 차별화
   double _getSizeForRank(int index) {
     switch (index) {
       case 0:
@@ -211,11 +214,6 @@ class SchoolRankingScreen extends StatelessWidget {
                             ),
                             Text(
                               '${school['total']}',
-                              // style: TextStyle(
-                              //     fontSize: _getSizeForRank(index),
-                              //     fontWeight: FontWeight.bold,
-                              //     color: _getColor(index)
-                              // ),
                               style: TextStyle(
                                 fontSize: _getSizeForRank(index),
                                 fontWeight: FontWeight.w800,

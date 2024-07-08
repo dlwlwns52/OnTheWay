@@ -18,6 +18,7 @@ class _SchoolEmailDialogState extends State<SchoolEmailDialog> {
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
     {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
     {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
+    {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
     {'name': '테스트', 'domain': 'gmail.com'}
 
     // 도메인 추가

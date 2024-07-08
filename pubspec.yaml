@@ -84,6 +84,8 @@ flutter:
     - assets/lottie/check_help.json
     - assets/lottie/clap.json
     - assets/lottie/congratulation.json
+    - assets/lottie/clapCute.json
+    - assets/lottie/createSuccess.json
 
     - assets/fonts/
   fonts:

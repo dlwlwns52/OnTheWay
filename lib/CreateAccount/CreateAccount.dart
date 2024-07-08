@@ -279,7 +279,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           .doc(nickname)
           .get();
 
-      // 중복된 이름
+      // 중복된 이증
       if (snapshot.exists && snapshot.data()?['nickname'] == nickname) {
         setState(() {
           _buttonText = '중복확인';
@@ -518,6 +518,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
       if (user != null && user.email == fullEmail) {
         // 성공적으로 로그인
+        await _auth.signOut();
         setState(() {
           isEmailVerified = true;
           _userEmailErrorText = null; // 이메일 인증 성공 시 오류 메시지 제거
@@ -845,14 +846,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   ),
                 ),
                 SizedBox(height: 15,),
-                Center(
-                  child: Lottie.asset(
-                    'assets/lottie/clap.json',
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                // Center(
+                //   child: Lottie.asset(
+                //     'assets/lottie/clapCute.json',
+                //     width: 150,
+                //     height: 150,
+                //     fit: BoxFit.contain,
+                //   ),
+                // ),
               ],
               ),
               content: Text(
@@ -866,6 +867,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               ),
 
               actions: [
+                SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -885,18 +887,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       ),
                       onPressed: () async {
                         HapticFeedback.lightImpact();
-                        Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
 
                         String nickname = _nicknameController.text;
-                        String password = _passwordController.text;
-                        String email = _emailUserController.text + "@" +
-                            _dropdownValue!;
+                         ///////////   String password = _passwordController.text;
+                        String email = _emailUserController.text + "@" + _dropdownValue!;
                         try {
-                          await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                            email: email,
-                            password: password,
-                          );
                           DateTime now = DateTime.now();
                           String formattedDate = DateFormat('yyyy-MM-dd')
                               .format(now);
@@ -914,32 +909,43 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             'grade': 3.0,
                           });
 
+                          // 다이어로그를 닫음
+                          Navigator.pop(context);
+
                           //congratulation 애니메이션
-                          setState(() {
-                            _congratulation = true;
-                          });
-
-                          await Future.delayed(Duration(milliseconds: 1800), () {
+                          // 100ms 지연 후 애니메이션과 나머지 작업 처리
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            //congratulation 애니메이션
                             setState(() {
-                              _congratulation = false;
+                              _congratulation = true;
                             });
+
+                            await Future.delayed(Duration(milliseconds: 1800), () {
+                              setState(() {
+                                _congratulation = false;
+                              });
+                            });
+
+                            // ScaffoldMessenger 호출을 여기서 안전하게 실행
+                            WidgetsBinding.instance?.addPostFrameCallback((_) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(rootContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '축하합니다! \n회원가입이 완료되었습니다.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              }
+                            });
+
+                            Navigator.pushReplacement(
+                              rootContext,
+                              MaterialPageRoute(builder: (context) => LoginScreen()), // 로그인 화면으로 이동
+                            );
                           });
-
-
-                          ScaffoldMessenger.of(rootContext).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '회원가입이 완료되었습니다.',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          );
-
-                          Navigator.pushReplacement(
-                            rootContext,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen()), // 로그인 화면으로 이동
-                          );
 
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1041,9 +1047,22 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               child: Container(
                 color: Colors.grey.withOpacity(0.5),
                 child: Center(
-                  child: Lottie.asset(
-                    'assets/lottie/congratulation.json',
-                    fit: BoxFit.contain,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/lottie/congratulation.json',
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.contain,
+                      ),
+                      Lottie.asset(
+                        'assets/lottie/clapCute.json',
+                        width: 300,
+                        height: 300,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
                   ),
                 ),
               ),
