@@ -440,8 +440,6 @@ class _NotificationScreenState extends State<AlarmUi> {
       String helperDomain = _extractDomain(helper_email);
       String ownerDomain = _extractDomain(owner_email);
 
-      // String helperId = _extractId(helper_email);
-      // String ownerId = _extractId(owner_email);
 
       // // // 도메인별로 점수 증가
       await _updateIndividualCount(helper_nickname, helperDomain);
@@ -458,10 +456,6 @@ class _NotificationScreenState extends State<AlarmUi> {
   // 도메인 추출
   String _extractDomain(String email)  {
     return email.split('@').last;
-  }
-  // 아이디 추출
-   String _extractId(String email)  {
-      return email.split('@').first;
   }
 
   // 도메인 별로 카운트

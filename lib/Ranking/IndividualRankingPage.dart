@@ -19,8 +19,18 @@ class IndividualRankingPage extends StatelessWidget {
       Map<String, dynamic> data = schoolSnapshot.data() as Map<String, dynamic>;
 
       List<Map<String, dynamic>> ranking = data.entries
-          .map((entry) => {'id': entry.key, 'score': entry.value})
-          .toList();
+          .where((entry) => entry.key != 'logoUrl') // logoUrl 필드 제외
+          .map((entry) { num score;
+        if (entry.value is num) {
+          score = entry.value;
+        } else if (entry.value is String) {
+          score = num.tryParse(entry.value) ?? 0;
+        } else {
+          score = 0;
+        }
+        return {'id': entry.key, 'score': score};
+      }).toList();
+
 
       ranking.sort((a, b) => b['score'].compareTo(a['score']));
 

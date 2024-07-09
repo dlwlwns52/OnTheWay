@@ -15,6 +15,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   User? user;
   String? nickname;
   double? grade;
+  int feedbackCount = 0;
+  DateTime? lastFeedbackTime;
+
 
   @override
   void initState() {
@@ -25,6 +28,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  // 닉네임 가져옴
   Future<void> _fetchUserNickname(String? email) async {
     if (email == null) return;
 
@@ -47,6 +51,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  //로그아웃시 로그인창으로 이동
   void _logout() {
     HapticFeedback.lightImpact();
     Navigator.push(
@@ -55,12 +60,142 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  void _deleteAccount() {
-    HapticFeedback.lightImpact();
-    // 회원탈퇴 로직 추가 필요
-    print('회원탈퇴');
+  // 개발자에게 건의사항 전송
+  Future<void> _submitFeedback(String feedback) async {
+    if (user != null) {
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final documentName = '${nickname}_${user!.email}_$timestamp';
+
+      await FirebaseFirestore.instance.collection('feedback').doc(documentName).set({
+        'nickname': nickname,
+        'email': user!.email,
+        'feedback': feedback,
+        'timestamp': DateTime.now(),
+      });
+    }
   }
 
+  // 건의사항 다이어로그
+  void _showFeedbackDialog() {
+    final TextEditingController feedbackController = TextEditingController();
+
+    showDialog(
+      barrierDismissible: false, // 바깥을 눌러도 다이어로그가 닫히지 않게 설정
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.feedback, color: Colors.indigo),
+                SizedBox(width: 8),
+                Text(
+                  '개발자에게 하고 싶은 말',
+                  style: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 19,
+                    color: Colors.indigo,
+                  ),
+                ),
+                SizedBox(width: 8),
+              ],
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+            width: MediaQuery.of(context).size.width * 1, // 다이얼로그 너비 설정
+              child: TextField(
+              controller: feedbackController,
+              maxLines: 7,
+              decoration: InputDecoration(
+                hintText: '건의사항을 입력해주세요.',
+                hintStyle: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                  color: Colors.black45,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+            SizedBox(height: 15,),
+
+            Text('※ 소중한 의견에 대한 답변은 이메일을 통해 보내드리도록 하겠습니다.',
+              style: TextStyle(
+                fontFamily: 'NanumSquareRound',
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                color: Colors.indigo,
+                height: 1.5
+              ),
+            ),
+          ],),
+
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                if (feedbackController.text.isNotEmpty) {
+                  _submitFeedback(feedbackController.text);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('소중한 의견을 주셔서 감사합니다. \n답변은 이메일로 보내드리겠습니다!'
+                      , textAlign: TextAlign.center,),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+                else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('건의사항을 입력해주세요.'
+                      , textAlign: TextAlign.center,),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              child: Text('전송'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo[400],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('취소'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade300,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+  // 계정 삭제할지 물어보는 다이어로그
   void _checkNicknameAvailability() async {
         showDialog(
           context: context,
@@ -128,6 +263,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
   }
 
+  //계정 삭제하는 함수
+  void _deleteAccount() {
+    HapticFeedback.lightImpact();
+    // 회원탈퇴 로직 추가 필요
+    print('회원탈퇴');
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +300,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               _buildGradeCard(userGrade),
               SizedBox(height: 40),
               _buildButton('로그아웃', _logout, Colors.indigo.shade300),
+              _buildTextButton('개발자에게 하고 싶은 말', _showFeedbackDialog, Colors.blue), // 추가된 부분
               _buildTextButton('회원탈퇴', _checkNicknameAvailability, Colors.red),
             ],
           ),

@@ -251,68 +251,117 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
 
-  //비밀번호 찾기
 
+
+  //비밀번호 찾기
   void showResetPasswordDialog(BuildContext context) {
     final TextEditingController resetEmailController = TextEditingController();
-
     showDialog(
       context: context,
+      barrierDismissible: false, // 바깥을 눌러도 다이어로그가 닫히지 않게 설정
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: Row(
-            children: [
-              Icon(Icons.lock_reset, color: Colors.blueAccent),
-              SizedBox(width: 10),
-              Text('비밀번호 재설정', style: TextStyle(color: Colors.blueAccent)),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.',
-                style: TextStyle(color: Colors.black54),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: resetEmailController,
-                decoration: InputDecoration(
-                  labelText: '이메일 입력',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+          title: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+             
+                Text(
+                  '비밀번호 재설정',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 25,
+                    color: Colors.indigo,
                   ),
-                  prefixIcon: Icon(Icons.email),
-                  filled: true,
-                  fillColor: Colors.blue[50],
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: Text('취소', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              ],
             ),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 1, // 다이얼로그 너비 설정
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Text(
+                    '이메일 주소를 입력하신 후 \n전송 버튼을 누르시면\n비밀번호 재설정 링크가 발송됩니다.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                TextField(
+                  controller: resetEmailController,
+                  decoration: InputDecoration(
+                    labelText: '이메일 입력',
+                    labelStyle: TextStyle(color: Colors.indigo[400]),
+
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: Icon(Icons.email, color: Colors.indigo,),
+                    filled: true,
+                    fillColor: Colors.indigo[50],
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ],
+            ),
+          ),
+
+          actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.blueAccent,
-                onPrimary: Colors.white,
+                backgroundColor: Colors.indigo[400],
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: Text('전송'),
+              child: Text(
+                '전송',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 HapticFeedback.lightImpact();
                 _resetPassword(resetEmailController.text.trim());
                 Navigator.of(context).pop();
+              },
+            ),
+
+            SizedBox(),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade300,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                '닫기',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // 대화 상자 닫기
               },
             ),
           ],
@@ -332,7 +381,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호 재설정 이메일 전송에 실패했습니다. 다시 시도해 주세요.', textAlign: TextAlign.center,),
+        SnackBar(content: Text('비밀번호 재설정 이메일 전송에 실패했습니다. \n다시 시도해 주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 2),
         ),
       );
@@ -346,17 +395,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 배경 그래디언트 추가
-          // Container(
-          //   decoration: BoxDecoration(
-          //     gradient: LinearGradient(
-          //       colors: [Colors.indigo, Colors.white,Colors.indigo],
-          //       //Color(0xFFFF8B13)
-          //       begin: Alignment.topLeft,
-          //       end: Alignment.bottomRight,
-          //     ),
-          //   ),
-          // ),
 
           Lottie.asset(
             'assets/lottie/blue2.json',
@@ -364,16 +402,6 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             height: double.infinity,
           ),
-
-
-          // Lottie.asset(
-          //   'assets/lottie/Animation.json',
-          //   fit: BoxFit.fill,
-          //   width: double.infinity,
-          //   height: double.infinity,
-          // ),
-
-
 
           Center(
             child: Container(

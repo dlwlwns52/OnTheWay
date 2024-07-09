@@ -1,10 +1,20 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-
 import 'IndividualRankingPage.dart';
 
-class SchoolRankingScreen extends StatelessWidget {
+class SchoolRankingScreen extends StatefulWidget {
+  @override
+  _SchoolRankingScreenState createState() => _SchoolRankingScreenState();
+}
+
+class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    updateSchoolLogos(); // 초기 로고 업데이트 호출
+  }
 
 
   // 도메인과 학교 이름 매핑 - !! 학교 추가시 작성
@@ -18,18 +28,49 @@ class SchoolRankingScreen extends StatelessWidget {
     {'name': '네이버대학교', 'domain': 'naver.com'},
     // 도메인 추가
   ];
-
   //학교 이름 리턴
   String _getSchoolName(String domain) {
     var school = _domains.firstWhere((element) => element['domain'] == domain, orElse: () => {'name': domain});
     return school['name']!;
   }
 
-  //학교 도메인 반환
-  // String _getDomain(String Name) {
-  //   var school = _domains.firstWhere((element) => element['name'] == Name, orElse: () => {'name': Name});
-  //   return school['domain']!;
-  // }
+  // Firebase Storage에서 이미지 URL을 가져오는 함수
+  Future<String> getDownloadUrlFromStorage(String fileName) async {
+    Reference storageReference = FirebaseStorage.instance.ref().child('schoolLogo/$fileName');
+    String downloadUrl = await storageReference.getDownloadURL();
+    return downloadUrl;
+  }
+
+  // 각 대학 별로 Firestore에 이미지 URL을 저장하는 함수
+  Future<void> saveImageUrlToFirestore(String schoolDomain, String imageUrl) async {
+    await FirebaseFirestore.instance.collection('schoolScores').doc(schoolDomain).update({'logoUrl': imageUrl});
+  }
+
+  // 이미지 파일을 Firebase Storage에서 가져와 URL을 얻고 Firestore에 저장
+  Future<void> updateSchoolLogos() async {
+    final Map<String, String> logoFiles = {
+      // 학교 추가시 이부분 꼭 추가!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+      'cnu.ac.kr': 'CNU.jpg',
+      'edu.hanbat.ac.kr': 'HBNU.jpeg',
+      'jbnu.ac.kr': 'JBNU.jpg',
+      'pusan.ac.kr': 'PNU.jpg',
+    };
+
+    for (var entry in logoFiles.entries){
+      String domain = entry.key; // 도메인
+      String fileName = entry.value; // 파일명
+      try {
+        // 파일명으로부터 다운로드 URL을 가져옵니다.
+        String downloadUrl = await getDownloadUrlFromStorage(fileName);
+        // 해당 도메인의 Firestore 문서에 다운로드 URL을 저장합니다.
+        await saveImageUrlToFirestore(domain, downloadUrl);
+
+      }catch (e) {
+        print('Error updating logo for $domain: $e');
+      }
+    }
+  }
+
 
   // 학교 도메인 , 학교 이름, 총 점수 반환
   Future<List<Map<String, dynamic>>> _getSchoolTotals() async {
@@ -38,12 +79,28 @@ class SchoolRankingScreen extends StatelessWidget {
 
       List<Map<String, dynamic>> schoolTotals = snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        int total = data.values.fold(0, (sum, value) => sum + (value as int));
-        return {'domain': doc.id, 'name': _getSchoolName(doc.id), 'total': total};
+
+        // logoUrl은 String이므로 0 처리
+        int total = data.values.fold(0, (sum, value){
+          int intValue = 0;
+          if (value is int){
+            intValue = value;
+          }
+          else if (value is String) {
+            intValue = int.tryParse(value) ?? 0;
+          }
+          return sum + intValue;
+        });
+
+        return {
+          'domain': doc.id,
+          'name': _getSchoolName(doc.id),
+          'total': total,
+          'logoUrl': data['logoUrl'] ?? ''
+        };
+
       }).toList();
-
       schoolTotals.sort((a, b) => b['total'].compareTo(a['total']));
-
       return schoolTotals;
 
     } catch (e) {
@@ -192,6 +249,7 @@ class SchoolRankingScreen extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Card(
+
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -203,14 +261,26 @@ class SchoolRankingScreen extends StatelessWidget {
                         leading: _buildLeading(index),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                           children: [
-                            Text(
-                              school['name'],
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                fontFamily: 'NanumSquareRound',
-                              ),
+                            SizedBox(),
+                            Column(
+                              children: [
+                                Image.network(
+                                  school['logoUrl'],
+                                  height: 50,
+                                  width: 50,
+                                ),
+                                SizedBox(height: 7),
+                                Text(
+                                  school['name'],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'NanumSquareRound',
+                                  ),
+                                ),
+                              ],
                             ),
                             Text(
                               '${school['total']}',
@@ -218,12 +288,13 @@ class SchoolRankingScreen extends StatelessWidget {
                                 fontSize: _getSizeForRank(index),
                                 fontWeight: FontWeight.w800,
                                 fontFamily: 'NanumSquareRound',
-                                  color: _getColor(index)
+                                color: _getColor(index)
+                                ,
                               ),
                             ),
+                            Icon(Icons.chevron_right, color: Colors.black, size: 30),
                           ],
                         ),
-                        trailing: Icon(Icons.chevron_right, color: Colors.black, size: 30),
                         onTap: () {
                           HapticFeedback.lightImpact();
                           Navigator.of(context).push(MaterialPageRoute(
