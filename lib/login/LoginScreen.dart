@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
+import '../CreateAccount/SchoolEmailDialog.dart';
 
 class LoginScreen extends StatefulWidget {
 
@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isEmailFilled = false;
   bool isPasswordFilled = false;
   bool congraturation = true;
+  String? _dropdownValue = '학교 메일 선택';
 
   void _checkFieldsFilled() {
     setState(() {
@@ -147,10 +148,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 MaterialPageRoute(builder: (context) => HanbatBoardPage()),
               );
               break;
-            // case 'hanbat.ac.kr':
+            // case 'pusan.ac.kr': // 임시!!!!!!!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1
             //   Navigator.pushReplacement(
             //     context,
-            //     MaterialPageRoute(builder: (context) => Hanba()),
+            //     MaterialPageRoute(builder: (context) => BoardPage()),
             //   );
             //   break;
           // 다른 도메인에 대한 처리...
@@ -388,6 +389,23 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  //이메일 선택 메소드
+  void _showSchoolEmailDialog(BuildContext context) {
+    HapticFeedback.lightImpact();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SchoolEmailDialog(
+          onSelected : (String domain) {
+            setState(() {
+              _dropdownValue = domain;
+            });
+          },
+        );
+      },
+    );
+  }
+
 
 
   @override
@@ -442,6 +460,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         FocusScope.of(context).requestFocus(_EmailToPasswordFocusNode);
                       },
                     ),
+
                     SizedBox(height: 20),
                     TextFormField(
                       focusNode: _EmailToPasswordFocusNode,

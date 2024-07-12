@@ -117,12 +117,23 @@ class PostManager {
             title: Text(
               '요청사항',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style:
+              TextStyle(
+                fontFamily: 'NanumSquareRound',
+                fontWeight: FontWeight.w700,
+                fontSize: 25,
+              ),
             ),
             content: SingleChildScrollView( // 긴 내용 스크롤 가능하도록
               child: Text(
                 doc['Request'] ?? '요청사항 없음',
                 textAlign: TextAlign.left,
+                style:
+                TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                ),
               ),
             ),
             actions: <Widget>[
@@ -137,8 +148,15 @@ class PostManager {
                 child: Text('도와주기'),
 
                 onPressed: () {
-                  helpPost(context, doc); // 도와주기 기능 실행
-                  // Navigator.of(context).pop(); // 대화 상자 닫기
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("야레야레 \n못말리는 사람이네.. \n안됩니다.. \n다시 접속해주세요! \n어디서 에러가 났지.. "
+                        ,textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 25),),
+                      duration: Duration(seconds: 2),
+
+                    ),
+                  );
                 },
               ),
 
@@ -151,7 +169,12 @@ class PostManager {
                 ),
                 child: Text('닫기'),
                 onPressed: () {
-                  Navigator.of(context).pop(); // 대화 상자 닫기
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("닫는 것도 마음대로는 힘들지요?.. \n다시 접속해주세요! \n 죄송함다..!",
+                        style: TextStyle(fontSize: 25) ,textAlign: TextAlign.center),
+                      duration: Duration(seconds: 2),),
+                  );
                 },
               ),
             ],

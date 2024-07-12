@@ -314,7 +314,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 ),
               ),
               content: Text(
-                '다른 사용자가 사용하고 있는 이름입는니다. \n다른 닉네임을 사용해 주시길 바랍니다.',
+                '다른 사용자가 사용하고 있는 이름입니다. \n다른 닉네임을 사용해 주시길 바랍니다.',
                 style: TextStyle(
                   fontFamily: 'NanumSquareRound',
                   fontWeight: FontWeight.w600,

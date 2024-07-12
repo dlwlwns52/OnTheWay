@@ -4,6 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import '../Alarm/Grade.dart';
+import '../Board/UiBoard.dart';
+import '../Chat/AllUsersScreen.dart';
+import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../Ranking/SchoolRanking.dart';
 
 class UserProfileScreen extends StatefulWidget {
   @override
@@ -17,6 +21,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   double? grade;
   int feedbackCount = 0;
   DateTime? lastFeedbackTime;
+  int _selectedIndex = 4; // 기본 선택된 항목을 '프로필'으로 설정
+  String botton_email = ""; // 사용자의 이메일을 저장할 변수
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
 
   @override
@@ -26,6 +33,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (user != null) {
       _fetchUserNickname(user!.email);
     }
+    botton_email = _auth.currentUser?.email ?? "";
+    botton_domain = botton_email.split('@').last.toLowerCase();
+
   }
 
   // 닉네임 가져옴
@@ -63,6 +73,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // 개발자에게 건의사항 전송
   Future<void> _submitFeedback(String feedback) async {
     if (user != null) {
+      final userRef = FirebaseFirestore.instance.collection('users').doc(nickname);
+      final userData = await userRef.get();
+
+      int feedbackCount = userData.exists && userData.data()?.containsKey('feedbackCount') == true
+          ? userData['feedbackCount']
+          : 0;
+      DateTime? lastFeedbackTime = userData.exists && userData.data()?.containsKey('lastFeedbackTime') == true
+          ? (userData['lastFeedbackTime'] as Timestamp?)?.toDate()
+          : null;
+
+      if (lastFeedbackTime != null && DateTime.now().difference(lastFeedbackTime).inDays >= 1){
+        feedbackCount = 0;
+      }
+
+      if (feedbackCount > 3){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('의견을 보내주셔서 대단히 감사합니다.\n건의사항은 하루에 최대 3번까지 \n접수할 수 있음을 알려드립니다.'
+              , textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),),
+        );
+        return; // 피드백 전송을 중단하고 함수 종료
+      }
+
+      // 피드백 카운트를 증가
+      feedbackCount += 1;
+
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       final documentName = '${nickname}_${user!.email}_$timestamp';
 
@@ -72,6 +108,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         'feedback': feedback,
         'timestamp': DateTime.now(),
       });
+      // 사용자 데이터에 피드백 카운트와 마지막 피드백 시간을 업데이트
+      await userRef.update({
+        'feedbackCount': feedbackCount,
+        'lastFeedbackTime': DateTime.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('소중한 의견을 주셔서 감사합니다. \n답변은 이메일로 보내드리겠습니다!'
+          , textAlign: TextAlign.center,),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
     }
   }
 
@@ -151,12 +200,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 if (feedbackController.text.isNotEmpty) {
                   _submitFeedback(feedbackController.text);
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('소중한 의견을 주셔서 감사합니다. \n답변은 이메일로 보내드리겠습니다!'
-                      , textAlign: TextAlign.center,),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
                 }
                 else{
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -270,16 +313,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     print('회원탈퇴');
   }
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
     Grade? userGrade = grade != null ? Grade(grade!) : null;
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
         title: Text('프로필', style:
         TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold)
         ),
@@ -306,6 +346,114 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.forum_rounded, color: _selectedIndex == 0 ? Colors.indigo : Colors.black),
+            label: '채팅',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.hourglass_empty_rounded,color: _selectedIndex == 1 ? Colors.indigo : Colors.black), //search
+            label: '진행 상황',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_outlined, color: _selectedIndex == 2 ? Colors.indigo : Colors.black),
+            label: '게시판',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school, color: _selectedIndex == 3 ? Colors.indigo : Colors.black),
+            label: '학교 랭킹',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: _selectedIndex == 4 ? Colors.indigo : Colors.black),
+            label: '프로필',
+          ),
+        ],
+        selectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+        ),
+        selectedItemColor: Colors.indigo,    // 선택된 항목의 텍스트 색상
+        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+
+        currentIndex: _selectedIndex,
+
+        onTap: (index) {
+          if (_selectedIndex == index) {
+            // 현재 선택된 탭을 다시 눌렀을 때 아무 동작도 하지 않음
+            return;
+          }
+
+          setState(() {
+            _selectedIndex = index;
+          });
+
+          // 채팅방으로 이동
+          if (index == 0) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllUsersScreen()),
+            );
+          }
+          //진행 상황
+          else if (index == 1) {
+            HapticFeedback.lightImpact();
+
+          }
+
+          //새 게시글 만드는 곳으로 이동
+          else if (index == 2) {
+            HapticFeedback.lightImpact();
+            switch (botton_domain) {
+              case 'naver.com':
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+                );
+                break;
+            // case 'hanbat.ac.kr':
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => HanbaBoardPage()),
+            //   );
+            //   break;
+              default:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => BoardPage()),
+                );
+                break;
+            }
+          }
+
+
+          // 학교 랭킹
+          else if (index == 3) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+            );
+          }
+          // 프로필
+          else if (index == 4) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => UserProfileScreen()),
+            );
+          }
+        },
+      ),
+
     );
   }
 

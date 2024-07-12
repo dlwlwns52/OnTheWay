@@ -1,12 +1,39 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import '../Board/UiBoard.dart';
+import '../Chat/AllUsersScreen.dart';
+import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../Profile/Profile.dart';
+import 'SchoolRanking.dart';
 
-class IndividualRankingPage extends StatelessWidget {
+class IndividualRankingPage extends StatefulWidget {
   final String domain;
   final String name;
 
   IndividualRankingPage({required this.domain, required this.name});
 
+  @override
+  _IndividualRankingPageState createState() => _IndividualRankingPageState();
+}
+
+class _IndividualRankingPageState extends State<IndividualRankingPage> {
+  late Future<List<Map<String, dynamic>>> _rankingFuture;
+  // 바텀 네비게이션 인덱스
+  int _selectedIndex = 3; // 기본 선택된 항목을 '게시판'으로 설정
+  String botton_email = ""; // 사용자의 이메일을 저장할 변수
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
+
+  @override
+  void initState() {
+    super.initState();
+    _rankingFuture = _getSchoolMembersRanking(widget.domain);
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    botton_email = _auth.currentUser?.email ?? "";
+    botton_domain = botton_email.split('@').last.toLowerCase();
+
+  }
 
   // 파이어스토어에서 학생 데려오기
   Future<List<Map<String, dynamic>>> _getSchoolMembersRanking(String domain) async {
@@ -20,7 +47,8 @@ class IndividualRankingPage extends StatelessWidget {
 
       List<Map<String, dynamic>> ranking = data.entries
           .where((entry) => entry.key != 'logoUrl') // logoUrl 필드 제외
-          .map((entry) { num score;
+          .map((entry) {
+        num score;
         if (entry.value is num) {
           score = entry.value;
         } else if (entry.value is String) {
@@ -30,7 +58,6 @@ class IndividualRankingPage extends StatelessWidget {
         }
         return {'id': entry.key, 'score': score};
       }).toList();
-
 
       ranking.sort((a, b) => b['score'].compareTo(a['score']));
 
@@ -54,8 +81,7 @@ class IndividualRankingPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         child: Text(
           '${index + 1}',
-          style:
-          TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontFamily: 'NanumSquareRound',
             fontWeight: FontWeight.w700,
@@ -90,7 +116,6 @@ class IndividualRankingPage extends StatelessWidget {
       default: // 4등부터
         return LinearGradient(
           colors: [Colors.purple.shade300, Colors.purple.shade300],
-          // colors: [Colors.indigo.shade300, Colors.indigo.shade300, Colors.grey.shade300, Colors.indigo.shade300, Colors.indigo.shade300,],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -128,54 +153,42 @@ class IndividualRankingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async {
-            return true;
-        },
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! > 0) {
+      onWillPop: () async {
+        return true;
+      },
+      child: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
             Navigator.pop(context);
           }
         },
-          child: Scaffold(
-            appBar: PreferredSize(
-              preferredSize: Size.fromHeight(kToolbarHeight),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.deepPurpleAccent, Colors.indigoAccent, Colors.deepPurpleAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: AppBar(
-                  title:  Text(
-                    '$name 랭킹',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'NanumSquareRound',
-                    ),
-                  ),
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.deepPurpleAccent, Colors.indigoAccent, Colors.deepPurpleAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
+              child: AppBar(
+                title: Text(
+                  '${widget.name} 랭킹',
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'NanumSquareRound',
+                  ),
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
             ),
-          // appBar: AppBar(
-          //   title: Text('$name 랭킹',
-          //     style : TextStyle(
-          //       color: Colors.white,
-          //       fontFamily: 'NanumSquareRound',
-          //       fontWeight: FontWeight.w700,
-          //       fontSize: 20,
-          //     ),
-          //   ),
-
-            // backgroundColor: Colors.deepPurple,
-
+          ),
           body: FutureBuilder<List<Map<String, dynamic>>>(
-            future: _getSchoolMembersRanking(domain),
+            future: _rankingFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator(color: Colors.deepPurple));
@@ -209,7 +222,6 @@ class IndividualRankingPage extends StatelessWidget {
                         trailing: Text(
                           '${member['score']}',
                           style: TextStyle(color: _getColor(index), fontSize: _getSizeForRank(index), fontWeight: FontWeight.bold),
-
                         ),
                       ),
                     ),
@@ -218,8 +230,112 @@ class IndividualRankingPage extends StatelessWidget {
               );
             },
           ),
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.forum_rounded, color: _selectedIndex == 0 ? Colors.indigo : Colors.black),
+                label: '채팅',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.hourglass_empty_rounded,color: _selectedIndex == 1 ? Colors.indigo : Colors.black), //search
+                label: '진행 상황',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.list_alt_outlined, color: _selectedIndex == 2 ? Colors.indigo : Colors.black),
+                label: '게시판',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.school, color: _selectedIndex == 3 ? Colors.indigo : Colors.black),
+                label: '학교 랭킹',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person, color: _selectedIndex == 4 ? Colors.indigo : Colors.black),
+                label: '프로필',
+              ),
+            ],
+            selectedLabelStyle: TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+            selectedItemColor: Colors.indigo,    // 선택된 항목의 텍스트 색상
+            unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+
+            currentIndex: _selectedIndex,
+
+            onTap: (index) {
+
+              setState(() {
+                _selectedIndex = index;
+              });
+
+              // 채팅방으로 이동
+              if (index == 0) {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AllUsersScreen()),
+                );
+              }
+              //진행 상황
+              else if (index == 1) {
+                HapticFeedback.lightImpact();
+
+              }
+
+
+              //새 게시글 만드는 곳으로 이동
+              else if (index == 2) {
+                HapticFeedback.lightImpact();
+                switch (botton_domain) {
+                  case 'naver.com':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+                    );
+                    break;
+                // case 'hanbat.ac.kr':
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (context) => HanbaBoardPage()),
+                //   );
+                //   break;
+                  default:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => BoardPage()),
+                    );
+                    break;
+                }
+              }
+
+
+              // 학교 랭킹
+              else if (index == 3) {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                );
+              }
+              // 프로필
+              else if (index == 4) {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                );
+              }
+            },
+          ),
         ),
-        ),
-        );
-      }
-    }
+      ),
+    );
+  }
+}

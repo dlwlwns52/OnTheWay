@@ -42,7 +42,8 @@ class _BoardPageState extends State<BoardPage> {
 
       appBar: AppBar(
         backgroundColor: Colors.orange, // 앱 바의 배경색을 오렌지색으로 설정합니다.
-        title: Text('게시판'), // 앱 바의 타이틀을 '게시판'으로 설정합니다.
+        title: Text('반갑습니다\n이곳에 오시다니.\n당신은 선택받은 자 입니다.',
+            style: TextStyle(fontSize: 15) ,textAlign: TextAlign.center), // 앱 바의 타이틀을 '게시판'으로 설정합니다.
         centerTitle: true,
 
         leading: IconButton(
@@ -59,9 +60,11 @@ class _BoardPageState extends State<BoardPage> {
             icon: Icon(Icons.create), // '생성' 아이콘을 설정합니다.
             onPressed: () {
               // 아이콘 버튼이 눌렸을 때 새 게시글 작성 화면으로 이동합니다.
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NewPostScreen()), // NewPostScreen 위젯으로 이동합니다.
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("에러게시판 입니다..\n다시 뒤로가기 해주세요! \n 죄송함다..!",
+                      style: TextStyle(fontSize: 25) ,textAlign: TextAlign.center),
+                  duration: Duration(seconds: 2),),
               );
             },
           ),
@@ -69,6 +72,12 @@ class _BoardPageState extends State<BoardPage> {
             icon: Icon(Icons.person),
             onPressed: (){
               // 본인 확인 클래스 생성시 그 클래스로 이동하는 코드 추가
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("뾱!",
+                      style: TextStyle(fontSize: 25) ,textAlign: TextAlign.center),
+                  duration: Duration(seconds: 2),),
+              );
             },
           )
         ],

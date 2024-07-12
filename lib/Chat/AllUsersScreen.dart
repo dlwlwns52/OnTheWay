@@ -11,6 +11,11 @@ import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../Board/UiBoard.dart';
+import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
+import '../Profile/Profile.dart';
+import '../Ranking/SchoolRanking.dart';
 import 'ChatScreen.dart';
 
 
@@ -29,12 +34,20 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
   // 스트림 구독을 저장할 변수를 선언
   late StreamSubscription<DocumentSnapshot> _messageCountSubscription;
 
+  // 바텀 네비게이션 인덱스
+  int _selectedIndex = 0; // 기본 선택된 항목을 '게시판'으로 설정
+  String botton_email = ""; // 사용자의 이메일을 저장할 변수
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
 
   @override
   void initState() {
     super.initState();
     _fetchChatActions();
+
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    botton_email = _auth.currentUser?.email ?? "";
+    botton_domain = botton_email.split('@').last.toLowerCase();
   }
 
 
@@ -443,17 +456,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async{
-        return true;
-      },
-      child: GestureDetector(
-        onHorizontalDragEnd: (details){
-          if (details.primaryVelocity! >  0){
-            Navigator.pop(context);
-          }
-        },
-        child: Scaffold(
+    return Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(kToolbarHeight),
               child: Stack(
@@ -465,6 +468,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                     ),
                   ),
                   AppBar(
+                    automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
                     backgroundColor: Colors.transparent,
                     elevation: 4,
                     shadowColor: Colors.black.withOpacity(0.5),
@@ -826,9 +830,115 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
             )
                 : Center(
               child: CircularProgressIndicator(), // 로딩 중 표시
-            )
+            ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.forum_rounded, color: _selectedIndex == 0 ? Colors.indigo : Colors.black),
+            label: '채팅',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.hourglass_empty_rounded,color: _selectedIndex == 1 ? Colors.indigo : Colors.black), //search
+            label: '진행 상황',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_outlined, color: _selectedIndex == 2 ? Colors.indigo : Colors.black),
+            label: '게시판',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school, color: _selectedIndex == 3 ? Colors.indigo : Colors.black),
+            label: '학교 랭킹',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: _selectedIndex == 4 ? Colors.indigo : Colors.black),
+            label: '프로필',
+          ),
+        ],
+        selectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
         ),
-    ),
+        unselectedLabelStyle: TextStyle(
+          fontFamily: 'NanumSquareRound',
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+        ),
+        selectedItemColor: Colors.indigo,    // 선택된 항목의 텍스트 색상
+        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
+
+        currentIndex: _selectedIndex,
+
+        onTap: (index) {
+          if (_selectedIndex == index) {
+            // 현재 선택된 탭을 다시 눌렀을 때 아무 동작도 하지 않음
+            return;
+          }
+
+          setState(() {
+            _selectedIndex = index;
+          });
+
+          // 채팅방으로 이동
+          if (index == 0) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllUsersScreen()),
+            );
+          }
+          //진행 상황
+          else if (index == 1) {
+            HapticFeedback.lightImpact();
+
+          }
+
+          //새 게시글 만드는 곳으로 이동
+          else if (index == 2) {
+            HapticFeedback.lightImpact();
+            switch (botton_domain) {
+              case 'naver.com':
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+                );
+                break;
+            // case 'hanbat.ac.kr':
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => HanbaBoardPage()),
+            //   );
+            //   break;
+              default:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => BoardPage()),
+                );
+                break;
+            }
+          }
+
+
+          // 학교 랭킹
+          else if (index == 3) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+            );
+          }
+          // 프로필
+          else if (index == 4) {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => UserProfileScreen()),
+            );
+          }
+        },
+      ),
     );
   }
 }
