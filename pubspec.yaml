@@ -16,7 +16,7 @@ dependencies:
   kakao_map_plugin: ^0.2.4
   webview_flutter: ^4.0.0
   location: ^5.0.3
-  http: ^1.0.0
+  http: ^0.13.1
   cloud_functions: ^4.6.0
   webview_flutter_wkwebview: ^3.10.2
   webview_flutter_android: ^3.16.0
@@ -36,6 +36,13 @@ dependencies:
   auto_size_text: ^3.0.0
   cupertino_icons: ^1.0.5
 
+  #인증 및 별제 관련
+  twilio_flutter: 0.0.9
+  iamport_flutter: any
+  url_launcher: ^6.0.4
+  app_links: ^3.5.1
+  json_annotation: ^4.8.1
+  get: ^4.6.6
   #애니메이션
   lottie: ^2.7.0
 

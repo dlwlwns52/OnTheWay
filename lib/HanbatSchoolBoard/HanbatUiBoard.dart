@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
 
 import '../Board/UiBoard.dart';
+import '../Pay/KaKaoPay.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'HanbatWriteBoard.dart';
@@ -517,6 +518,10 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           else if (index == 1) {
             HapticFeedback.lightImpact();
 
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentScreen()),
+            );
           }
 
 
