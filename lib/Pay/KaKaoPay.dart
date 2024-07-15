@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iamport_flutter/iamport_payment.dart';
 import 'package:iamport_flutter/model/payment_data.dart'; // PaymentData 클래스
 
-class PaymentScreen extends StatelessWidget {
+class KaKaoPay extends StatelessWidget {
   final String buyerId = '카카오페이1'; // 구매자 ID
   final String sellerId = '카카오페이2'; // 판매자 ID
   final int amount = 100; // 결제 금액
@@ -30,9 +30,9 @@ class PaymentScreen extends StatelessWidget {
             ),
           ),
         ),
-        userCode: 'iamport', // 아임포트 가맹점 식별코드
+        userCode: 'imp83221800', // 아임포트 가맹점 식별코드
         data: PaymentData(
-          pg: 'kakaopay.TC0ONETIME', // 결제 PG사 설정
+          pg: 'kakaopay', // 결제 PG사 설정
           payMethod: 'card', // 결제 방법 설정
           name: '온더웨이', // 결제 상품 이름
           merchantUid: 'mid_${DateTime.now().millisecondsSinceEpoch}', // 주문 번호

@@ -265,4 +265,38 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
             }
         }
     });
-    
+
+
+// 7번째 함수 accept 값이 없는 ChatActions 48시간 후 삭제
+
+// exports.scheduledFunction = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+exports.scheduledFunction = functions.pubsub.schedule('30 9 * * *').timeZone('Asia/Seoul').onRun(async (context) => {
+  // 현재 시간을 Firestore 타임스탬프로 가져옵니다.
+  const now = admin.firestore.Timestamp.now();
+  
+  // 현재 시간에서 48시간을 뺀 시간을 계산합니다.
+  const cutoff = new Date(now.toDate().getTime() - 48 * 60 * 60 * 1000); // 48 hours ago
+  const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoff);
+
+  // 'ChatActions' 컬렉션에서 'response' 필드가 'accepted'가 아닌 문서들과
+  // 'timestamp' 필드가 48시간 이전인 문서들을 쿼리합니다.
+  const query = admin.firestore().collection('ChatActions')
+                    .where('response', '!=', 'accepted')
+                    .where('timestamp', '<', cutoffTimestamp);
+  
+  const snapshot = await query.get();
+  
+  // Firestore 배치 작업을 생성합니다.
+  const batch = admin.firestore().batch();
+  
+  // 쿼리 결과의 각 문서를 반복하여 삭제 작업을 추가합니다.
+  snapshot.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
+
+  // 배치 작업을 커밋하여 모든 삭제 작업을 실행합니다.
+  await batch.commit();
+  
+  // 로그에 삭제 작업이 완료되었음을 출력합니다.
+  console.log('Documents older than 48 hours have been deleted');
+});

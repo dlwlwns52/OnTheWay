@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import 'IndividualRankingPage.dart';
 
@@ -376,7 +377,10 @@ class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
           //진행 상황
           else if (index == 1) {
             HapticFeedback.lightImpact();
-
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
+            );
           }
 
 

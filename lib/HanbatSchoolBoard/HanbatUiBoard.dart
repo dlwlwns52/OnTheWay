@@ -10,7 +10,7 @@ import 'package:flutter/widgets.dart';
 import '../Alarm/AlarmUi.dart';
 
 import '../Board/UiBoard.dart';
-import '../Pay/KaKaoPay.dart';
+import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'HanbatWriteBoard.dart';
@@ -129,7 +129,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             AppBar(
               automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
               backgroundColor: Colors.transparent,
-              title: Text('서울대 게시판',
+              title: Text('연세대 게시판',
                 style: TextStyle(
                   fontSize: 23,
                   fontWeight: FontWeight.w600,
@@ -517,10 +517,9 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           //진행 상황
           else if (index == 1) {
             HapticFeedback.lightImpact();
-
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PaymentScreen()),
+              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
             );
           }
 

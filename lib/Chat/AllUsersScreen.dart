@@ -14,6 +14,7 @@ import 'package:rxdart/rxdart.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
 import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
+import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'ChatScreen.dart';
@@ -463,7 +464,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                 children: [
                   Positioned.fill(
                     child: Lottie.asset(
-                      'assets/lottie/blue.json',
+                      'assets/lottie/blue2.json',
                       fit: BoxFit.fill,
                     ),
                   ),
@@ -892,7 +893,10 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           //진행 상황
           else if (index == 1) {
             HapticFeedback.lightImpact();
-
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
+            );
           }
 
           //새 게시글 만드는 곳으로 이동

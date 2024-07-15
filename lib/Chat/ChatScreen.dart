@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Map/TMapView.dart';
+import '../Ranking/SchoolRanking.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverName;
@@ -65,6 +66,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   late bool _isUserDeleted;
   late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userDeleteSubscription;
 
+  // 가져온 닉네임값(길찾기 기능때 다른 아이콘 및 다른 지도로 이동)
+  Map<String, String>? nicknames;
+
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _updateUserStatusInChatRoom(true); // 채팅방에 들어갔음을 업데이트
     _startListeningToMessages(); // 메시지 변경 사항을 실시간으로 듣기
     _startListeningToUserDelete();
+    _fetchNicknames();
   }
 
   @override
@@ -116,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
 
-
+ //빈 칸이면 채팅 안보내짐
   void _checkFieldsFilled() {
     setState(() {
       isFilled = _messageController.text.isNotEmpty;
@@ -593,6 +599,30 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
 
+  // helper 와 owner 닉네임 가져오기
+  Future<Map<String, String>> getNicknames() async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(widget.documentName)
+        .get();
+
+    String ownerNickname = snapshot.get('owner_email_nickname');
+    String helperNickname = snapshot.get('helper_email_nickname');
+
+    return {
+      'ownerNickname': ownerNickname,
+      'helperNickname': helperNickname,
+    };
+  }
+
+
+  Future<void> _fetchNicknames() async {
+    Map<String, String> fetchedNicknames = await getNicknames();
+    setState(() {
+      nicknames = fetchedNicknames;
+    });
+  }
+
   // Timestamp 객체를 입력받아 문자열로 변환하는 함수를 정의합니다.
   String _formatTimestamp(Timestamp timestamp) {
     DateTime dateTime = timestamp.toDate(); // Firebase의 Timestamp 객체를 Dart의 DateTime 객체로 변환합니다.
@@ -828,6 +858,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 GestureDetector(
                   onTap: () {
                     // 이미지 클릭 시 FullScreenImage 보여주기
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -1033,21 +1064,37 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   ],
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.navigation_rounded, color: Colors.white),
+                  icon: Icon(
+                    nicknames != null && widget.senderName == nicknames!['ownerNickname']
+                        ? Icons.map
+                        : Icons.navigation_rounded,
+                    color: Colors.white,
+                  ),
                   onPressed: () async {
+
                     HapticFeedback.lightImpact();
                     await _tmapDirections(); // 위치 데이터를 가져옵니다.
-                    if (tmapDirections.length >= 2) {
-                      // tmapDirections 리스트에서 위치 정보 사용
-                      String currentLocation = tmapDirections[0];
-                      String storeLocation = tmapDirections[1];
-                      // Navigator를 사용하여 새 페이지로 이동
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => TMapView(
-                          currentLocation: currentLocation,
-                          storeLocation: storeLocation,
-                        ),
-                      ));
+                    if (nicknames!['helperNickname'] == widget.senderName) {
+                      if (tmapDirections.length >= 2) {
+                        // tmapDirections 리스트에서 위치 정보 사용
+                        String currentLocation = tmapDirections[0];
+                        String storeLocation = tmapDirections[1];
+                        // Navigator를 사용하여 새 페이지로 이동
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              TMapView(
+                                currentLocation: currentLocation,
+                                storeLocation: storeLocation,
+                              ),
+                        ));
+                      }
+                    }
+
+                    else if (nicknames!['ownerNickname'] == widget.senderName) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                      );
                     }
                   },
                 ),

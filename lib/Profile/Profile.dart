@@ -7,6 +7,7 @@ import '../Alarm/Grade.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../Pay/PaymentScreen.dart';
 import '../Ranking/SchoolRanking.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -406,7 +407,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           //진행 상황
           else if (index == 1) {
             HapticFeedback.lightImpact();
-
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
+            );
           }
 
           //새 게시글 만드는 곳으로 이동

@@ -31,7 +31,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String _buttonText = '중복확인';
   Color _buttonColor = Colors.white70;
   Color _buttonTextColor = Colors.black87;
-
+  //스낵바가 이미 표시되었는지를 추적하는 플래그
+  bool _snackBarShown = false;
 
   String? _usernicknameErrorText; // 닉네임 제한 ( 영문 대소문자 알파벳, 한글 음절, 일반적인 하이픈 기호, 그리고 숫자를 모두 허용)
   String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
@@ -79,9 +80,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       if (value == null || value.trim().isEmpty) {
         _usernicknameErrorText = '닉네임을 입력해주세요.';
       } else if (!regex.hasMatch(value)) {
-        _usernicknameErrorText = '닉네임은 영문, 한글, 숫자만 사용 가능합니다.';
+        _usernicknameErrorText = '닉네임은 영문, 한글, 숫자만 \n사용 가능합니다.';
       } else if(onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)){
-        _usernicknameErrorText = '자음, 모음, 숫자 만으로는 구성될 수 없습니다.';
+        _usernicknameErrorText = '자음, 모음, 숫자 만으로는 \n구성될 수 없습니다.';
       }else {
         _usernicknameErrorText = null;
       }
@@ -190,6 +191,25 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       return false;
     }
     return true;
+  }
+
+//닉네임 맥스 length
+  void _checkMaxLength(TextEditingController controller, int maxLength) {
+    if (controller.text.length == maxLength && !_snackBarShown) {
+      controller.text = controller.text.substring(0, maxLength);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '최대 ${maxLength}글자까지 입력 가능합니다!',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      _snackBarShown = true;
+    } else if (controller.text.length < maxLength){
+      _snackBarShown = false;
+    }
   }
 
   void _checkNicknameAvailabilityAndValidate() {
@@ -570,6 +590,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       fontFamily: 'NanumSquareRound',
                       fontWeight: FontWeight.w400,
                       fontSize: 16,
+
                   ),
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
@@ -579,6 +600,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   ),
                   errorText: _usernicknameErrorText,
                 ),
+                maxLength: 8,
                 validator: (value) {
                   String pattern = r'[a-zA-Zㄱ-ㅎ가-힣-0-9]';
                   RegExp regex = RegExp(pattern);
@@ -589,6 +611,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 },
                 onChanged: (value) {
                   setState(() {
+                    _checkMaxLength(_nicknameController, 8);
                     _isNicknameAvailable = false;
                     _buttonText = '중복확인';
                     _buttonColor = Colors.white70;

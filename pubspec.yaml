@@ -42,7 +42,7 @@ dependencies:
   url_launcher: ^6.0.4
   app_links: ^3.5.1
   json_annotation: ^4.8.1
-  get: ^4.6.6
+
   #애니메이션
   lottie: ^2.7.0
 
@@ -93,6 +93,7 @@ flutter:
     - assets/lottie/congratulation.json
     - assets/lottie/clapCute.json
     - assets/lottie/createSuccess.json
+    - assets/lottie/payment_appbar.json
 
     - assets/fonts/
   fonts:
