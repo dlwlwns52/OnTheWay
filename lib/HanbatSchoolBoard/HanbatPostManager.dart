@@ -269,11 +269,11 @@ class HanbatPostManager {
 
 // 게시물 정보 가져오기
       String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
-      DocumentSnapshot postDoc = await FirebaseFirestore.instance.collection('naver_posts').doc(doc.id).get();
-      String postStore = postDoc['store']; // 게시물의 'store' 필드
+      String postStore = doc['store']; // 게시물의 'store' 필드
+      String cost = doc['cost']; // 게시물의 가격
+      String ownerLocation = doc['my_location']; // 오너(오더)의 위치
 
-// // 현재 시간을 기반으로 타임스탬프 생성
-//       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
 
 // 도와주기 상태 가져오기
       Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
@@ -301,7 +301,7 @@ class HanbatPostManager {
       String documentName = "${postStore}_${helperEmail}_$timestamp";
 
 
-// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.
+// 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.!!!!!!!!!!!!!!!!!!
 // 현재는 100번 test용
       if (clickCount >= 100) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -313,7 +313,7 @@ class HanbatPostManager {
         return;
       }
 
-// 만약 마지막 '도와주기' 요청 이후 5초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다.
+// 만약 마지막 '도와주기' 요청 이후 5초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다. !!!!!!!!!!!!!!!!!!
       if (now.difference(lastClickedTime).inSeconds < 5) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -379,6 +379,7 @@ class HanbatPostManager {
         'helper_email_nickname' : helperNickname,
         'owner_email': postOwnerEmail,
         'timestamp': now,
+        'response': null,
       });
 
       // 대화상자를 닫고 스낵바 표시
@@ -397,12 +398,7 @@ class HanbatPostManager {
       _pushHelpButton(false);
 
 
-
-      /*
-      채팅용락
-      */
-
-// 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.
+      // 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.
       await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).set({
         'University' : "naver",
         'post_store' : postStore,
@@ -416,8 +412,26 @@ class HanbatPostManager {
         'timestamp': now,
         'currentLocation': doc['current_location'],
         'storeLocation': doc['store_location'],
+        'response': null,
       });
 
+
+      // 'Payments' 컬렉션에 결제 관련 정보를 저장합니다.
+      await FirebaseFirestore.instance.collection('Payments').doc(documentName).set({
+        'University' : "naver",
+        'post_store' : postStore,
+        'orderer_location' : ownerLocation,
+        'owner_email': postOwnerEmail,
+        'owner_email_nickname' : OwnerNickname,
+        'ownerUid': ownerUid, // 게시물 작성자의 UID
+        'helper_email': helperEmail,
+        'helper_email_nickname' : helperNickname,
+        'helperUid': helperUid, // 도와주는 사람의 UID
+        'cost' : cost,
+        'timestamp': now,
+        'response': null,
+
+      });
 
     } catch (e) {
       // 오류 메시지 표시

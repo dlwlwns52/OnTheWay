@@ -94,6 +94,7 @@ flutter:
     - assets/lottie/clapCute.json
     - assets/lottie/createSuccess.json
     - assets/lottie/payment_appbar.json
+    - assets/lottie/imageSending.json
 
     - assets/fonts/
   fonts:

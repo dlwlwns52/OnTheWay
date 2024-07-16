@@ -336,7 +336,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (shouldUpload) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("이미지 업로드 중...", textAlign: TextAlign.center,),
+            content: Text("이미지 업로드 중입니다. \n잠시만 기다려 주시면 감사하겠습니다.", textAlign: TextAlign.center,),
             duration: Duration(seconds: 3),
           ),
         );
@@ -1132,9 +1132,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   color: Colors.grey.withOpacity(0.5),
                   child: Center(
                     child: Lottie.asset(
-                      'assets/lottie/loading_indigo.json',
-                      width: 200,
-                      height: 200,
+                      'assets/lottie/imageSending.json',
+                      width: 300,
+                      height: 300,
                       fit: BoxFit.contain
                     ),
                   ),

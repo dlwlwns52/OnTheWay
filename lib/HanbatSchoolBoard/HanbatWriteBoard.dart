@@ -337,6 +337,9 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                         decoration: InputDecoration(
                           labelText: '비용',
                           contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                          hintText: '숫자로 가격을 입력해주세요.  ex) 이천원 x, 2000원 o',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          hintStyle: TextStyle(color: Colors.grey),
                         ),
                         textInputAction: TextInputAction.next,
                         maxLines: null,

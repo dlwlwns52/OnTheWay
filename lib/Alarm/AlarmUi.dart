@@ -20,6 +20,10 @@ class _NotificationScreenState extends State<AlarmUi> {
   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
 
+  // 수락시 lottie 파일 조정 변주
+  bool _isAccepting =false;
+
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +37,18 @@ class _NotificationScreenState extends State<AlarmUi> {
       }
     }, context);
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
+
+    // context가 초기화된 후에 SnackBar를 표시합니다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.", textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    });
+
   }
 
   @override
@@ -40,6 +56,7 @@ class _NotificationScreenState extends State<AlarmUi> {
     // 여기에서 스트림 구독 취소 및 기타 정리 작업을 수행합니다.
     super.dispose();
   }
+
 
   // 알림 목록을 스트림 형태로 불러오는 함수
   Stream<List<DocumentSnapshot>> getNotifications() {
@@ -102,159 +119,187 @@ class _NotificationScreenState extends State<AlarmUi> {
               ],
             ),
           ),
-          body: Column(
-            children: [
-              SizedBox(height: 10),
-              Expanded(
-                child: StreamBuilder<List<DocumentSnapshot>>(
-                  stream: notificationsStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(child: Text('오류가 발생했습니다.'));
-                    }
-                    if (!snapshot.hasData) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    final notifications = snapshot.data!;
+          body: Stack(
+              children: [
+                Column(
+                children: [
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: StreamBuilder<List<DocumentSnapshot>>(
+                      stream: notificationsStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Center(child: Text('오류가 발생했습니다.'));
+                        }
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        final notifications = snapshot.data!;
 
-                    return ListView.separated(
-                      itemCount: notifications.length,
-                      itemBuilder: (context, index) {
+                        return ListView.separated(
+                          itemCount: notifications.length,
+                          itemBuilder: (context, index) {
 
-                        //알림 온 시간 측정
-                        final DocumentSnapshot doc = notifications[index];
-                        final notification = doc.data() as Map<String, dynamic>;
-                        final timestamp = notification['timestamp'] as Timestamp;
-                        final DateTime dateTime = timestamp.toDate();
-                        final String timeAgo = getTimeAgo(dateTime);
-                        //닉네임
-                        final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
-                        final Color avatarColor = _getColorFromName(nickname); // 색상 결정
+                            //알림 온 시간 측정
+                            final DocumentSnapshot doc = notifications[index];
+                            final notification = doc.data() as Map<String, dynamic>;
+                            final timestamp = notification['timestamp'] as Timestamp;
+                            final DateTime dateTime = timestamp.toDate();
+                            final String timeAgo = getTimeAgo(dateTime);
+                            //닉네임
+                            final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
+                            final Color avatarColor = _getColorFromName(nickname); // 색상 결정
 
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: avatarColor, // 여기서 색상 적용
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                          title: Row(
-                            children : [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                                    style:
-                                    // TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-                                    TextStyle(
-                                      fontFamily: 'NanumSquareRound',
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 16,
-                                    ),
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: avatarColor, // 여기서 색상 적용
+                                child: Icon(Icons.person, color: Colors.white),
+                              ),
+                              title: Row(
+                                children : [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+                                        style:
+                                        // TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                                        TextStyle(
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        '도와주기를 요청하였습니다.',
+                                        // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+                                        style: TextStyle(
+                                          fontFamily: 'NanumSquareRound',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                            color: Colors.grey[600]
+                                        ),
+                                      ),
+                                      SizedBox(height: 6),
+                                      Text(
+                                        '$timeAgo',
+                                        style:
+                                        TextStyle(color: Colors.grey[600], fontSize: 14),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '도와주기를 요청하였습니다.',
-                                    // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
-                                    style: TextStyle(
-                                      fontFamily: 'NanumSquareRound',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                        color: Colors.grey[600]
-                                    ),
-                                  ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    '$timeAgo',
-                                    style:
-                                    TextStyle(color: Colors.grey[600], fontSize: 14),
-                                  ),
+                                  Spacer(),
+                                  Column(
+                                    // crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      FutureBuilder<String>(
+                                        future: getGradeByNickname(notification['helper_email_nickname']),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return CircularProgressIndicator();
+                                          } else if (snapshot.hasError) {
+                                            return Text('에러가 발생하였습니다.');
+                                          } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
+                                            return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
+                                          } else {
+                                            // double grade = double.parse(snapshot.data!);
+                                            double gradeValue = double.parse(snapshot.data!);
+                                            Grade grade = Grade(gradeValue);
+                                            return
+                                              isDeleteMode  ? Text('') :  Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  // border: Border.all(color: grade.color, width: 2),
+                                                  border: grade.border,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  // color: Colors.black.withOpacity(0.1),
+                                                  color: grade.color2.withOpacity(0.05),
+                                                ),
+                                                child: Row(
+                                                    children: [
+                                                      Icon(Icons.school_outlined, color: grade.color),
+                                                      SizedBox(width: 8),
+                                                      Text(
+                                                        grade.letter,
+                                                        style:
+                                                        TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          color: grade.color,
+                                                          fontSize: 13,
+                                                        ),
+
+                                                      ),
+                                                      SizedBox(width: 7),
+                                                      Column(
+                                                          children : [
+                                                            SizedBox(height: 12,),
+                                                            Text(
+                                                              gradeValue.toStringAsFixed(2),
+                                                              style: TextStyle(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: grade.color,
+                                                                fontSize: 8,
+                                                              ),
+                                                            ),
+                                                          ]),
+                                                    ]
+                                                ),
+                                              );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  )
                                 ],
                               ),
-                              Spacer(),
-                              Column(
-                                // crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  FutureBuilder<String>(
-                                    future: getGradeByNickname(notification['helper_email_nickname']),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
-                                        return CircularProgressIndicator();
-                                      } else if (snapshot.hasError) {
-                                        return Text('에러가 발생하였습니다.');
-                                      } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
-                                        return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
-                                      } else {
-                                        // double grade = double.parse(snapshot.data!);
-                                        double gradeValue = double.parse(snapshot.data!);
-                                        Grade grade = Grade(gradeValue);
-                                        return
-                                          isDeleteMode  ? Text('') :  Container(
-                                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              // border: Border.all(color: grade.color, width: 2),
-                                              border: grade.border,
-                                              borderRadius: BorderRadius.circular(8),
-                                              // color: Colors.black.withOpacity(0.1),
-                                              color: grade.color2.withOpacity(0.05),
-                                            ),
-                                            child: Row(
-                                                children: [
-                                                  Icon(Icons.school_outlined, color: grade.color),
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    grade.letter,
-                                                    style:
-                                                    TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: grade.color,
-                                                      fontSize: 13,
-                                                    ),
-
-                                                  ),
-                                                  SizedBox(width: 7),
-                                                  Column(
-                                                      children : [
-                                                        SizedBox(height: 12,),
-                                                        Text(
-                                                          gradeValue.toStringAsFixed(2),
-                                                          style: TextStyle(
-                                                            fontWeight: FontWeight.bold,
-                                                            color: grade.color,
-                                                            fontSize: 8,
-                                                          ),
-                                                        ),
-                                                      ]),
-                                                ]
-                                            ),
-                                          );
-                                      }
-                                    },
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            _showAcceptDeclineDialog(context, nickname, doc.id);
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _showAcceptDeclineDialog(context, nickname, doc.id);
+                              },
+                              trailing: isDeleteMode ? IconButton(
+                                icon: Icon(Icons.close, color: Colors.black),
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  _deleteNotification(doc.id);
+                                  _deleteChatActions(doc.id);
+                                },
+                              ) : null,
+                            );
                           },
-                          trailing: isDeleteMode ? IconButton(
-                            icon: Icon(Icons.close, color: Colors.black),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              _deleteNotification(doc.id);
-                              _deleteChatActions(doc.id);
-                            },
-                          ) : null,
+                          separatorBuilder: (context, index) => Divider(),
                         );
                       },
-                      separatorBuilder: (context, index) => Divider(),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
+                if (_isAccepting)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.grey.withOpacity(0.5),
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Lottie.asset(
+                              'assets/lottie/congratulation.json',
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.contain,
+                            ),
+                            Lottie.asset(
+                              'assets/lottie/clapCute.json',
+                              width: 300,
+                              height: 300,
+                              fit: BoxFit.contain,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
             ],
-
           ),
         ),
       ),
@@ -277,17 +322,6 @@ class _NotificationScreenState extends State<AlarmUi> {
   }
 
 
-  // 알림을 삭제하는 함수
-  void _deleteNotification(String docId) {
-    FirebaseFirestore.instance
-        .collection('helpActions')
-        .doc(docId)
-        .delete()
-        .then((_) => print("Document successfully deleted"))
-        .catchError((error) => print("Failed to delete document: $error"));
-
-  }
-
   // 수락시 게시글 삭제
   Future<void> _deletePost(String docId) async{
     DocumentSnapshot postId = await FirebaseFirestore.instance
@@ -305,11 +339,31 @@ class _NotificationScreenState extends State<AlarmUi> {
         .catchError((error) => print("Failed to delete document: $error"));
   }
 
+  // 알림을 삭제하는 함수
+  void _deleteNotification(String docId) {
+    FirebaseFirestore.instance
+        .collection('helpActions')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+
+  }
+
 
   //채팅 정보 삭제
   void _deleteChatActions(String docId) {
     FirebaseFirestore.instance
         .collection('ChatActions')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+  }
+
+  void _deletePayments(String docId) {
+    FirebaseFirestore.instance
+        .collection('Payments')
         .doc(docId)
         .delete()
         .then((_) => print("Document successfully deleted"))
@@ -331,6 +385,7 @@ class _NotificationScreenState extends State<AlarmUi> {
 
   //수락 또는 거절 버튼 구현
   void _showAcceptDeclineDialog(BuildContext context, String nickname, String documentId) {
+    final rootContext = context;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -367,25 +422,51 @@ class _NotificationScreenState extends State<AlarmUi> {
               ),
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () async {
-                await _HelperCount(documentId);
-                // 수락 로직 구현
-                HapticFeedback.lightImpact();
-                _respondToHelpRequest(documentId, 'accepted');
-                Navigator.of(context).pop(); // 대화 상자 닫기
 
-                Navigator.of(context).push(MaterialPageRoute(//채팅 목록창으로 이동
-                  builder: (context) => AllUsersScreen(),
-                ));
+                HapticFeedback.lightImpact();
+                await _HelperCount(documentId);
+                await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
 
                 // await _deletePost(documentId); // 수락시 게시글 삭제
                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "해당 요청이 수락되었습니다.", textAlign: TextAlign.center,),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
+
+
+                Navigator.of(context).pop();
+                // Navigator.pop(context);
+
+                Future.delayed(Duration(milliseconds: 100), () async {
+                  //congratulation 애니메이션
+                  setState(() {
+                    _isAccepting = true;
+                  });
+
+                  await Future.delayed(Duration(milliseconds: 1800), () {
+                    setState(() {
+                      _isAccepting = false;
+                    });
+                  });
+
+                  // ScaffoldMessenger 호출을 여기서 안전하게 실행
+                  WidgetsBinding.instance?.addPostFrameCallback((_) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(rootContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '해당 요청이 수락되었습니다.',
+                            textAlign: TextAlign.center,
+                          ),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  });
+
+                  Navigator.pushReplacement(
+                    rootContext,
+                    MaterialPageRoute(builder: (context) => AllUsersScreen()), // 로그인 화면으로 이동
+                  );
+                });
+
               },
             ),
             ElevatedButton(
@@ -398,11 +479,10 @@ class _NotificationScreenState extends State<AlarmUi> {
               child: Text('거절',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () {
                 HapticFeedback.lightImpact();
-                // 수락 로직 구현
-                _respondToHelpRequest(documentId, 'rejected');
                 Navigator.of(context).pop(); // 대화 상자 닫기
                 _deleteNotification(documentId); // 거절시 알림 내용 삭제
                 _deleteChatActions(documentId); // 거절시 채팅 정보 삭제
+                _deletePayments(documentId); //거절시 페이 정보 삭제
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -496,13 +576,16 @@ class _NotificationScreenState extends State<AlarmUi> {
     }
   }
 
-
-  void _respondToHelpRequest(String documentId, String response) async {
-    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
-        .update({'response': response});
+// ChatActions 컬렉션 response에 업데이트 추가
+  Future<void> _respondToActions(String documentId, String response) async {
+    await Future.wait([
+      FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+          .update({'response': response}),
+      FirebaseFirestore.instance.collection('helpActions').doc(documentId)
+          .update({'response': response}),
+      FirebaseFirestore.instance.collection('Payments').doc(documentId)
+          .update({'response': response}),
+    ]);
   }
-
-
-
 
 }

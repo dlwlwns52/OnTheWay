@@ -203,7 +203,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             '최대 ${maxLength}글자까지 입력 가능합니다!',
             textAlign: TextAlign.center,
           ),
-          duration: Duration(seconds: 2),
+          duration: Duration(seconds: 1),
         ),
       );
       _snackBarShown = true;
@@ -600,7 +600,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   ),
                   errorText: _usernicknameErrorText,
                 ),
-                maxLength: 8,
+                maxLength: 6,
                 validator: (value) {
                   String pattern = r'[a-zA-Zㄱ-ㅎ가-힣-0-9]';
                   RegExp regex = RegExp(pattern);
@@ -611,7 +611,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 },
                 onChanged: (value) {
                   setState(() {
-                    _checkMaxLength(_nicknameController, 8);
+                    _checkMaxLength(_nicknameController, 6);
                     _isNicknameAvailable = false;
                     _buttonText = '중복확인';
                     _buttonColor = Colors.white70;

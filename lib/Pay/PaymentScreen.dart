@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
@@ -24,6 +27,11 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
+  //ui 변수
+  List<DocumentSnapshot> acceptedPayments = [];
+  late StreamSubscription<dynamic> _paymentsSubscription; // Firestore 스트림 구독을 위한 변수
+
+
   @override
   void initState() {
     super.initState();
@@ -34,20 +42,59 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
         .split('@')
         .last
         .toLowerCase();
+
+
+    _fetchPayments(); // 정보가져
   }
 
+  // 이 함수는 현재 로그인한 사용자의 채팅방 목록을 가져오고, 각 채팅방의 최신 메시지 시간에 따라 목록을 정렬합니다.
+  Future<void> _fetchPayments() async {
+    // 현재 로그인한 사용자 정보를 가져옵니다.
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    // 사용자가 로그인하지 않았거나 이메일 정보가 없다면 함수를 종료합니다.
+    if (currentUser == null || currentUser.email == null) {
+      return;
+    }
 
-  Future<Map<String, dynamic>> _fetchPaymentData() async {
-    DocumentSnapshot<Map<String, dynamic>> student1Doc = await _firestore
-        .collection('Payments').doc('학생1').get();
-    DocumentSnapshot<Map<String, dynamic>> student2Doc = await _firestore
-        .collection('Payments').doc('학생2').get();
+    // 현재 사용자의 이메일 주소를 가져옵니다.
+    String currentUserEmail = currentUser.email!;
+    // 'helper_email' 필드가 현재 사용자의 이메일과 일치하는 'Payments' 컬렉션의 문서 스트림을 가져옵니다.
+    var helperEmailStream = FirebaseFirestore.instance
+        .collection('Payments')
+        .where('response', isEqualTo: 'accepted')
+        .where('helper_email', isEqualTo: currentUserEmail)
+        .snapshots();
 
-    return {
-      'student1': student1Doc.data(),
-      'student2': student2Doc.data(),
-    };
+    // 'owner_email' 필드가 현재 사용자의 이메일과 일치하는 'Payments' 컬렉션의 문서 스트림을 가져옵니다.
+    var ownerEmailStream = FirebaseFirestore.instance
+        .collection('Payments')
+        .where('response', isEqualTo: 'accepted')
+        .where('owner_email', isEqualTo: currentUserEmail)
+        .snapshots();
+
+    // 두 스트림을 결합하여 채팅방 목록을 생성합니다.
+    _paymentsSubscription = Rx.combineLatest2(
+        helperEmailStream, ownerEmailStream, (QuerySnapshot helperSnapshot, QuerySnapshot ownerSnapshot) async {
+      // helperEmailStream과 ownerEmailStream에서 받은 문서들을 결합합니다.
+      var combinedDocs = {...helperSnapshot.docs, ...ownerSnapshot.docs}.toList();
+
+
+      // 위젯이 화면에 여전히 존재하는 경우에만 상태를 업데이트합니다.
+      if (mounted) {
+        setState(() {
+          acceptedPayments = combinedDocs;
+        });
+      }
+    }
+    ).listen(
+          (data) {},
+      onError: (error) {
+        // 스트림에서 오류가 발생한 경우 로그를 출력합니다.
+        print("An error occurred: $error");
+      },
+    );
   }
+
 
   //비용을 숫자만 가져온다.
   String _extractCost(String cost) {
@@ -62,101 +109,135 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
     return int.parse(costString);
   }
 
-
-  Widget _buildOrderInfoCard(Map<String, dynamic> student1, Map<String, dynamic> student2, int cost) {
+  Widget _buildPaymentCard(Map<String, dynamic> paymentData, bool isHelper) {
+    int intCost = _extractCostAsInt('${paymentData['cost']}');
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 5,
+      elevation: 7,
+      margin: EdgeInsets.fromLTRB(0,0,0,20), // 카드 위아래에 간격 추가
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '오더: ',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: isHelper ? Colors.black : Colors.indigo[700]
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${paymentData['owner_email_nickname']}',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: isHelper ? Colors.black : Colors.indigo[700]
+                      ),
+                    ),
+                    TextSpan(
+                      text: '   ⇢   ',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: Colors.black
+                      ),
+                    ),
+                    TextSpan(
+                      text: '헬퍼: ',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: isHelper ? Colors.indigo[700] : Colors.black,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${paymentData['helper_email_nickname']}',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: isHelper ? Colors.indigo[700] : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            Divider(thickness: 2),
+            SizedBox(height: 10),
+            Center(
               child: Text(
-                '주문자: ${student1['name']}   ⇢   헬퍼: ${student2['name']}',
+                '${paymentData['post_store']}  ⇢  ${paymentData['orderer_location']}',
                 style: TextStyle(
                   fontFamily: 'NanumSquareRound',
                   fontWeight: FontWeight.w800,
-                  fontSize: 18,
+                  fontSize: 20,
+                  color: Colors.indigo[700],
                 ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 7),
+            Divider(thickness: 2),
+            SizedBox(height: 7),
+            Center(
+              child: Text(
+                '비용: $intCost원',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
+                  color: Colors.indigo[700],
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
             SizedBox(height: 10),
             Divider(thickness: 3),
             SizedBox(height: 10),
-            Center(child:
-            Text(
-                '비용: $cost원',
-              style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                  color: Colors.indigo
-              ), textAlign: TextAlign.center,
-            ),
-            ),
-            SizedBox(height: 10),
-            Divider(thickness: 2),
-            SizedBox(height: 10),
-            Center(child:
-            Container(
-              width: 150,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  backgroundColor: Colors.indigo[300],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+            Center(
+              child: SizedBox(
+                width: double.infinity, // 너비를 부모의 너비로 설정
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    isHelper ? print(1) : print(2);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    backgroundColor: Colors.indigo[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
                   ),
-                ),
-                icon: Icon(Icons.payment), // 버튼 아이콘
-                label: Text(
-                  '결제하기',
-                  style: TextStyle(
-                    fontFamily: 'NanumSquareRound',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
+                  icon: Icon(Icons.payment), // 버튼 아이콘
+                  label: Text(
+                    isHelper ? '결제 요청하기' : '결제하기',
+                    style: TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
             ),
-            ),
-
-            // Align(
-            //   alignment: Alignment.center,
-            //   child:Container(
-            //     margin: EdgeInsets.all(8.0), // 여백 추가
-            //     decoration: BoxDecoration(
-            //       color: Colors.indigo[300], // 버튼 배경색
-            //       borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
-            //     ),
-            //     child: ElevatedButton.icon(
-            //       onPressed: (){
-            //
-            //       },
-            //       icon: Icon(Icons.payment), // 버튼 아이콘
-            //       label: Text(
-            //         '결제하기',
-            //         style: TextStyle(
-            //             fontFamily: 'NanumSquareRound',
-            //             fontWeight: FontWeight.w600,
-            //             fontSize: 20,
-            //         ),
-            //       ),
-            //       style: ElevatedButton.styleFrom(
-            //         backgroundColor: Colors.transparent, // 버튼 색상 투명하게 설정
-            //         shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
-            //       ),
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
     );
   }
+
 
 
   @override
@@ -188,37 +269,19 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
           ],
         ),
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchPaymentData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('오류 발생: ${snapshot.error}'));
-          }
-
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('데이터 없음'));
-          }
-
-          var student1 = snapshot.data!['student1'];
-          var student2 = snapshot.data!['student2'];
-          int cost = _extractCostAsInt(student1['cost'].toString());
-
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildOrderInfoCard(student1, student2, cost),
-
-              ],
-            ),
-          );
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child:ListView.builder(
+        itemCount: acceptedPayments.length,
+        itemBuilder: (context, index) {
+          var paymentData = acceptedPayments[index].data() as Map<String, dynamic>;
+          bool isHelper = paymentData['helper_email'] == botton_email;
+          return _buildPaymentCard(paymentData, isHelper);
         },
       ),
+      ),
+
 
 
       bottomNavigationBar: BottomNavigationBar(
@@ -321,7 +384,6 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                 break;
             }
           }
-
 
           // 학교 랭킹
           else if (index == 3) {
