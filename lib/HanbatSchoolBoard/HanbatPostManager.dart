@@ -274,7 +274,6 @@ class HanbatPostManager {
       String ownerLocation = doc['my_location']; // 오너(오더)의 위치
 
 
-
 // 도와주기 상태 가져오기
       Map<String, dynamic> helpStatus = await getUserHelpClickStatus(postStore, postOwnerEmail);
 
@@ -388,7 +387,7 @@ class HanbatPostManager {
       // 성공 메시지 표시
       await ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("도와주기'요청이 전송됐습니다.",textAlign: TextAlign.center,),
+          content: Text("'도와주기'요청이 전송됐습니다.",textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );
@@ -428,6 +427,7 @@ class HanbatPostManager {
         'helper_email_nickname' : helperNickname,
         'helperUid': helperUid, // 도와주는 사람의 UID
         'cost' : cost,
+        'docName' : documentName,
         'timestamp': now,
         'response': null,
 

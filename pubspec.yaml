@@ -96,6 +96,12 @@ flutter:
     - assets/lottie/payment_appbar.json
     - assets/lottie/imageSending.json
 
+
+    - assets/images/Toss_Symbol_Primary.png
+    - assets/images/payment_icon_yellow_large.png
+    - assets/images/payment_icon_yellow_medium.png
+    - assets/images/payment_icon_yellow_small.png
+
     - assets/fonts/
   fonts:
     - family: NanumSquareRound

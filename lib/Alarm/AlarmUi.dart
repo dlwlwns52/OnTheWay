@@ -432,7 +432,7 @@ class _NotificationScreenState extends State<AlarmUi> {
 
 
                 Navigator.of(context).pop();
-                // Navigator.pop(context);
+
 
                 Future.delayed(Duration(milliseconds: 100), () async {
                   //congratulation 애니메이션

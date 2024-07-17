@@ -72,6 +72,7 @@ class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
       'edu.hanbat.ac.kr': 'HBNU.jpeg',
       'jbnu.ac.kr': 'JBNU.jpg',
       'pusan.ac.kr': 'PNU.jpg',
+      'naver.com' : 'naver.png',
     };
 
     for (var entry in logoFiles.entries){
