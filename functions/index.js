@@ -280,7 +280,7 @@ exports.scheduledFunction = functions.pubsub.schedule('00 09 * * *').timeZone('A
   console.log('Cutoff timestamp:', cutoffTimestamp);
 
   // 'ChatActions' 컬렉션에서 'response' 필드가 'accepted'가 아닌 문서들과
-  // 'timestamp' 필드가 48시간 이전인 문서들을 쿼리합니다.
+  // 'timestamp' 필드가 12시간 이전인 문서들을 쿼리합니다.
   const chatActionsQuery = admin.firestore().collection('ChatActions')
                     .where('response', '==', null)
                     .where('timestamp', '<', cutoffTimestamp);
@@ -290,13 +290,20 @@ exports.scheduledFunction = functions.pubsub.schedule('00 09 * * *').timeZone('A
                     .where('response', '==', null)
                     .where('timestamp', '<', cutoffTimestamp);
 
+
+  const PaymentsQuery = admin.firestore().collection('Payments')
+                    .where('response', '==', null)
+                    .where('timestamp', '<', cutoffTimestamp);
+
                   
-  const [chatActionsSnapshot, helpActionsSnapshot] = await Promise.all([
+  const [chatActionsSnapshot, helpActionsSnapshot, PaymentsSnapshot] = await Promise.all([
     chatActionsQuery.get(),
-    helpActionsQuery.get()
+    helpActionsQuery.get(),
+    PaymentsQuery.get()
   ]);
   console.log('Number of documents in ChatActions to delete:', chatActionsSnapshot.size);
   console.log('Number of documents in helpActions to delete:', helpActionsSnapshot.size);
+  console.log('Number of documents in Payments to delete:', PaymentsSnapshot.size);
 
   
   const batch = admin.firestore().batch();
@@ -318,6 +325,15 @@ exports.scheduledFunction = functions.pubsub.schedule('00 09 * * *').timeZone('A
       batch.delete(doc.ref);
     });
   }
+
+    // PaymentsSnapshot 삭제
+    if (PaymentsSnapshot.empty) {
+      console.log('No documents found in helpActions.');
+    } else {
+      PaymentsSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+    }
 
   await batch.commit();
   console.log('Documents older than 48 hours have been deleted');

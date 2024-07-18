@@ -367,9 +367,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             duration: Duration(seconds: 2),
           ),
         );
-
-
-
       }
     }
     return uploadImageUrls; // 선택된 이미지가 없으면 빈 리스트를 반환합니다.

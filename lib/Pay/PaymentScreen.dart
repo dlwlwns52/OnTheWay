@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:OnTheWay/Pay/KaKaoPay.dart';
+import 'package:OnTheWay/Pay/TossPay.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -232,15 +233,14 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                           context,
                           MaterialPageRoute(builder: (context) => KaKaoPay(),
                         ));
-                        print('카카오페이');
 
                       } else if (selectedPayment == 'tosspay') {
                         HapticFeedback.lightImpact();
-                        // Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(builder: (context) => KaKaoPay(),
-                        //     ));
                         Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => TossPay(),
+                            ));
                       }
 
                     },
@@ -283,13 +283,14 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
     DateTime now = DateTime.now();
     Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
 
+
     // 텍스트 메시지 객체 생성
     Message message = Message(
       receiverName : receiverName,
       senderName : senderName,
       receiverUid: receiverUid,
       senderUid: senderUid,
-      message: '사진',
+      message: '완료 사진을 전송해 드립니다.\n확인 후 정산해주세요!',
       timestamp: timestamp,
       read : false,
       type : 'text',
@@ -481,14 +482,16 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     'senderUid': FirebaseAuth.instance.currentUser?.uid,
                     'timestamp': FieldValue.serverTimestamp(),
                     'type': 'image',
+                    'message': '사진',
                     'read': false,
                     'isDeleted': false,
-                    'type': 'request',
+
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("이미지 업로드 완료!", textAlign: TextAlign.center),
+                      content: Text('정산 요청이 완료되었습니다.',
+                          textAlign: TextAlign.center),
                       duration: Duration(seconds: 2),
                     ),
                   );
@@ -521,7 +524,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     Center(
                       child: Text(
                         '다른 학생에게 도움을 주셔서 감사드립니다.\n덕분에 자영업자분들도 배달 수수료 \n부담을 덜 수 있었습니다.\n '
-                            '마지막으로 전달 완료한 사진을 \n전달해주시면 정산 요청이 가능합니다.\n감사합니다!',
+                            '마지막으로 전달 완료한 사진을 \n전달하시면 정산 요청도 함께 보내집니다.\n감사합니다.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'NanumSquareRound',
@@ -535,58 +538,22 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isPhotoSent ? Colors.grey : Colors
-                            .indigo[500],
+                        backgroundColor: isPhotoSent ? Colors.indigo[500] : Colors.grey,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: Text(
-                        '완료 사진 전송',
+                      child: Text(isPhotoSent ? '정산 완료' : '정산 요청하기',
                         style: TextStyle(color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18),
                       ),
-                      onPressed: isPhotoSent
-                          ? null
-                          : () async {
+                      onPressed: () async { //사진을 보냈을 않을 경우 클릭 o
                         HapticFeedback.lightImpact();
-                        await _pickImageAndShowPreview();
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isPhotoSent
-                            ? Colors.indigo[500]
-                            : Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: Text(
-                        '정산 요청하기',
-                        style: TextStyle(color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      ),
-                      onPressed: isPhotoSent
-                          ? () { //사진을 보냈을 않을 경우 클릭 o
-                        HapticFeedback.lightImpact();
-                        Navigator.of(context).pop();
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('정산이 요청이 완료되었습니다.',
-                                textAlign: TextAlign.center),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        isPhotoSent ? await _pickImageAndShowPreview()
+                            : Navigator.of(context).pop();
                       }
-                          : null, //사진을 보내지 않을 경우 클릭 x
-
                     ),
                   ],
                 ),

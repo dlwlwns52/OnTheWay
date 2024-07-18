@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iamport_flutter/iamport_payment.dart';
 import 'package:iamport_flutter/model/payment_data.dart'; // PaymentData 클래스
 
-class KaKaoPay extends StatelessWidget {
+class TossPay extends StatelessWidget {
   final String buyerId = '카카오페이1'; // 구매자 ID
   final String sellerId = '카카오페이2'; // 판매자 ID
   final int amount = 100; // 결제 금액
@@ -12,13 +12,14 @@ class KaKaoPay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('카카오페이',
+        title: Text('토스페이',
           style: TextStyle(
             fontFamily: 'NanumSquareRound',
             fontWeight: FontWeight.w700,
             fontSize: 28,
+            // color: Colors.black
           ),), // 앱바 타이틀 설정
-        backgroundColor: Colors.yellow.shade600,
+        backgroundColor: Colors.blue.shade600,
       ),
       body: IamportPayment(
         // 결제 모듈 설정
@@ -38,7 +39,7 @@ class KaKaoPay extends StatelessWidget {
         ),
         userCode: 'imp83221800', // 아임포트 가맹점 식별코드
         data: PaymentData(
-          pg: 'kakaopay', // 결제 PG사 설정
+          pg: 'tosspay', // 결제 PG사 설정
           payMethod: 'card', // 결제 방법 설정
           name: '온더웨이', // 결제 상품 이름
           merchantUid: 'mid_${DateTime.now().millisecondsSinceEpoch}', // 주문 번호
