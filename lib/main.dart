@@ -124,8 +124,8 @@ class LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
-            SizedBox(height: 60),
-            AutoSizeText(
+            // SizedBox(height: 60),
+            Text(
                 'OnTheWay',
                 textAlign: TextAlign.center,
                 style:
@@ -142,20 +142,39 @@ class LoadingScreen extends StatelessWidget {
               ),
                 maxLines: 1,
               ),
-            SizedBox(height: 30),
-            Container(
-              width: 150,
-              height: 150,
-              child: Lottie.asset(
-                    'assets/lottie/loading_indigo.json',
-                    fit: BoxFit.contain,
-                ),
-            ),
-
-            SizedBox(height: 100),
-            // CircularProgressIndicator(
-            //   valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
+            SizedBox(height: 330),
+            // SizedBox(height: 60),
+            // AutoSizeText(
+            //     'OnTheWay',
+            //     textAlign: TextAlign.center,
+            //     style:
+            //     // TextStyle(
+            //     //   fontWeight: FontWeight.bold,
+            //     //   fontSize: 70,
+            //     //   color: Colors.indigo,
+            //     // ),
+            //    TextStyle(
+            //     fontFamily: 'NanumSquareRound',
+            //     fontWeight: FontWeight.w900,
+            //     fontSize: 55,
+            //      color: Colors.indigo,
+            //   ),
+            //     maxLines: 1,
+            //   ),
+            // SizedBox(height: 30),
+            // Container(
+            //   width: 150,
+            //   height: 150,
+            //   child: Lottie.asset(
+            //         'assets/lottie/loading_indigo.json',
+            //         fit: BoxFit.contain,
+            //     ),
             // ),
+            //
+            // SizedBox(height: 100),
+            // // CircularProgressIndicator(
+            // //   valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
+            // // ),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:OnTheWay/Chat/FullScreenImage.dart';
 import 'package:OnTheWay/Chat/message.dart';
+import 'package:OnTheWay/Map/Navigation/OwnerTMapView.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +14,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
-import '../Map/TMapView.dart';
+import '../Map/Navigation/HelperTMapView.dart';
 import '../Ranking/SchoolRanking.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -1068,9 +1069,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     color: Colors.white,
                   ),
                   onPressed: () async {
-
                     HapticFeedback.lightImpact();
                     await _tmapDirections(); // 위치 데이터를 가져옵니다.
+
                     if (nicknames!['helperNickname'] == widget.senderName) {
                       if (tmapDirections.length >= 2) {
                         // tmapDirections 리스트에서 위치 정보 사용
@@ -1079,7 +1080,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         // Navigator를 사용하여 새 페이지로 이동
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) =>
-                              TMapView(
+                              HelperTMapView(
                                 currentLocation: currentLocation,
                                 storeLocation: storeLocation,
                               ),
@@ -1088,10 +1089,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     }
 
                     else if (nicknames!['ownerNickname'] == widget.senderName) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
-                      );
+                      if (tmapDirections.length >= 2) {
+                        // tmapDirections 리스트에서 위치 정보 사용
+                        String currentLocation = tmapDirections[0];
+                        String storeLocation = tmapDirections[1];
+                        // 여기에 헬퍼 위치 보이게 하기
+                        String? helperNickname = nicknames!['helperNickname'] ??
+                            'defaultHelperId';
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              OwnerTMapView(
+                                currentLocation: currentLocation,
+                                storeLocation: storeLocation,
+                                helperId: helperNickname,
+                              ),
+                        ));
+                      }
                     }
                   },
                 ),

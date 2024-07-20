@@ -3,22 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class TMapView extends StatefulWidget {
+class HelperTMapView extends StatefulWidget {
   final String currentLocation;
   final String storeLocation;
 
-  TMapView({required this.currentLocation, required this.storeLocation});
+  HelperTMapView({required this.currentLocation, required this.storeLocation});
 
   @override
-  State<TMapView> createState() => _TMapViewState();
+  State<HelperTMapView> createState() => _HelperTMapViewState();
 }
 
-class _TMapViewState extends State<TMapView> {
+class _HelperTMapViewState extends State<HelperTMapView> {
   late WebViewController controller;
   String distance = '';
   String time = '';
 
-  // JavaScript 함수를 호출하는 함수 예시
+  // 길찾기 함수 호출
   void update(String startLocation, String endLocation) {
     // startLocation과 endLocation을 ','를 기준으로 분리하여 위도와 경도를 추출
     List<String> startCoords = startLocation.split(',');

@@ -496,9 +496,11 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     ),
                   );
 
+
                   setState(() {
                     isPhotoSent = true;
                   });
+
                 }
               }
             }
@@ -551,8 +553,14 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                       ),
                       onPressed: () async { //사진을 보냈을 않을 경우 클릭 o
                         HapticFeedback.lightImpact();
-                        isPhotoSent ? await _pickImageAndShowPreview()
-                            : Navigator.of(context).pop();
+                        if (isPhotoSent) {// true 가 사진 보냈을때
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => AllUsersScreen()),
+                              );
+                            } else {
+                              await _pickImageAndShowPreview();}
                       }
                     ),
                   ],

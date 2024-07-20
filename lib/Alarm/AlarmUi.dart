@@ -422,9 +422,11 @@ class _NotificationScreenState extends State<AlarmUi> {
               ),
               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
               onPressed: () async {
+                DateTime now = DateTime.now();
 
                 HapticFeedback.lightImpact();
                 await _HelperCount(documentId);
+                await _updateTime(documentId, now);
                 await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
 
                 // await _deletePost(documentId); // 수락시 게시글 삭제
@@ -576,7 +578,14 @@ class _NotificationScreenState extends State<AlarmUi> {
     }
   }
 
-// ChatActions 컬렉션 response에 업데이트 추가
+  //채팅방 생성 수락시
+  Future<void> _updateTime(String documentId, DateTime newtime) async {
+    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+        .update({'timestamp': newtime});
+  }
+
+
+// response에 업데이트 추가
   Future<void> _respondToActions(String documentId, String response) async {
     await Future.wait([
       FirebaseFirestore.instance.collection('ChatActions').doc(documentId)

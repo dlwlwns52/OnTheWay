@@ -5,7 +5,8 @@ import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 
-import '../Map/TMapView.dart';
+import '../Map/FirstLocation.dart';
+import '../Map/Navigation/HelperTMapView.dart';
 
 
 class HanbatPostManager {
@@ -201,7 +202,7 @@ class HanbatPostManager {
                   onPressed: () {
                       HapticFeedback.lightImpact();
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => TMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
+                        builder: (context) => HelperTMapView(currentLocation: doc['current_location'], storeLocation: doc['store_location'],),
                       ));
                   },
                 ),
@@ -302,26 +303,26 @@ class HanbatPostManager {
 
 // 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.!!!!!!!!!!!!!!!!!!
 // 현재는 100번 test용
-      if (clickCount >= 100) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
-      }
+//       if (clickCount >= 100) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
+//             duration: Duration(seconds: 2),
+//           ),
+//         );
+//         return;
+//       }
 
 // 만약 마지막 '도와주기' 요청 이후 5초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다. !!!!!!!!!!!!!!!!!!
-      if (now.difference(lastClickedTime).inSeconds < 5) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
-            duration: Duration(seconds: 30),
-          ),
-        );
-        return;
-      }
+//       if (now.difference(lastClickedTime).inSeconds < 5) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
+//             duration: Duration(seconds: 2),
+//           ),
+//         );
+//         return;
+//       }
 
 
       // 도와주기 버튼 누른 사람 닉네임 users 컬렉션에서 조회한 후 변수에 저ㄹ장!
@@ -367,6 +368,11 @@ class HanbatPostManager {
 
 
       // String documentName = "${postStore}_${helperEmail}";
+      // 헬퍼의 초기 위치 저장
+      FirstLocation locationService = FirstLocation(helperNickname);
+      await locationService.saveInitialLocation();
+
+
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({

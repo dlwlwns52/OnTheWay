@@ -17,8 +17,13 @@ class KaKaoPay extends StatelessWidget {
             fontFamily: 'NanumSquareRound',
             fontWeight: FontWeight.w700,
             fontSize: 28,
-          ),), // 앱바 타이틀 설정
-        backgroundColor: Colors.yellow.shade600,
+            color: Colors.black
+          ),
+        ), // 앱바 타이틀 설정
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(
+        color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
+      ),
       ),
       body: IamportPayment(
         // 결제 모듈 설정
