@@ -5,7 +5,8 @@ import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 
-import '../Map/FirstLocation.dart';
+import '../Map/Navigation/FirstLocation.dart';
+import '../Map/Navigation/HelperLocationService.dart';
 import '../Map/Navigation/HelperTMapView.dart';
 
 
@@ -372,7 +373,7 @@ class HanbatPostManager {
       FirstLocation locationService = FirstLocation(helperNickname);
       await locationService.saveInitialLocation();
 
-
+      listenForChatActionsUpdate(documentName);
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
@@ -480,6 +481,18 @@ class HanbatPostManager {
 
   String createDocumentName(String postStore, String? postOwnerEmail) {
     return "${postStore}_${postOwnerEmail}";
+  }
+
+
+  void listenForChatActionsUpdate(String documentName) {
+    final chatActionsRef = FirebaseFirestore.instance.collection('ChatActions').doc(documentName);
+    chatActionsRef.snapshots().listen((snapshot) {
+      final data = snapshot.data();
+      if (data != null && data['response'] == 'accepted') {
+        HelperLocationService locationService = HelperLocationService(data['helper_nickname']);
+        locationService.configureBackgroundLocation();
+      }
+    });
   }
 
 }

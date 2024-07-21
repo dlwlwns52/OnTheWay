@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HelperTMapView extends StatefulWidget {
@@ -39,6 +40,10 @@ class _HelperTMapViewState extends State<HelperTMapView> {
   void initState() {
     super.initState();
 
+    // 위치 권한 요청
+    // requestLocationPermission();
+
+
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -72,6 +77,19 @@ class _HelperTMapViewState extends State<HelperTMapView> {
       );
     });
 
+  }
+
+  // 위치 권한 요청 함수
+  void requestLocationPermission() async {
+    var status = await Permission.location.request();
+    if (status.isGranted) {
+      // 위치 권한이 허용됨
+    } else if (status.isDenied) {
+      // 위치 권한이 거부됨
+    } else if (status.isPermanentlyDenied) {
+      // 위치 권한이 영구적으로 거부됨
+      openAppSettings();
+    }
   }
 
 

@@ -5,8 +5,15 @@
 
     <key>KAKAO_APP_KEY</key>
     <string>69a96da745eed8af5198d8de5d72a2eb</string>
+
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>가게위치 및 현재 위치를 표시하기 위해 위치 정보가 필요합니다.</string>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
+
     <key>NSAppTransportSecurity</key>
       <dict>
         <key>NSAllowsArbitraryLoads</key>
