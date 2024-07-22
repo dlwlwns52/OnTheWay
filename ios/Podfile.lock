@@ -636,7 +636,7 @@ PODS:
   - AppAuth/Core (1.6.2)
   - AppAuth/ExternalUserAgent (1.6.2):
     - AppAuth/Core
-  - background_fetch (1.3.5):
+  - background_locator_2 (0.0.1):
     - Flutter
   - BoringSSL-GRPC (0.0.24):
     - BoringSSL-GRPC/Implementation (= 0.0.24)
@@ -653,9 +653,6 @@ PODS:
     - Firebase/Functions (= 10.18.0)
     - firebase_core
     - Flutter
-  - CocoaLumberjack (3.8.5):
-    - CocoaLumberjack/Core (= 3.8.5)
-  - CocoaLumberjack/Core (3.8.5)
   - Firebase/Auth (10.18.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 10.18.0)
@@ -776,9 +773,6 @@ PODS:
     - FirebaseCoreExtension (~> 10.0)
     - GTMSessionFetcher/Core (< 4.0, >= 2.1)
   - Flutter (1.0.0)
-  - flutter_background_geolocation (4.15.5):
-    - CocoaLumberjack (~> 3.8.5)
-    - Flutter
   - flutter_local_notifications (0.0.1):
     - Flutter
   - flutter_secure_storage (6.0.0):
@@ -894,6 +888,9 @@ PODS:
     - nanopb/encode (= 2.30909.1)
   - nanopb/decode (2.30909.1)
   - nanopb/encode (2.30909.1)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - permission_handler_apple (9.1.1):
     - Flutter
   - PromisesObjC (2.3.1)
@@ -912,7 +909,7 @@ PODS:
 
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
-  - background_fetch (from `.symlinks/plugins/background_fetch/ios`)
+  - background_locator_2 (from `.symlinks/plugins/background_locator_2/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
   - Firebase/Auth
@@ -924,7 +921,6 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
-  - flutter_background_geolocation (from `.symlinks/plugins/flutter_background_geolocation/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
@@ -935,6 +931,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - kakao_map_plugin (from `.symlinks/plugins/kakao_map_plugin/ios`)
   - location (from `.symlinks/plugins/location/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - uni_links (from `.symlinks/plugins/uni_links/ios`)
@@ -972,7 +969,6 @@ SPEC REPOS:
     - RecaptchaInterop
   trunk:
     - AppAuth
-    - CocoaLumberjack
     - FirebaseDatabase
     - FirebaseStorage
     - GoogleSignIn
@@ -981,8 +977,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
-  background_fetch:
-    :path: ".symlinks/plugins/background_fetch/ios"
+  background_locator_2:
+    :path: ".symlinks/plugins/background_locator_2/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   cloud_functions:
@@ -1001,8 +997,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: Flutter
-  flutter_background_geolocation:
-    :path: ".symlinks/plugins/flutter_background_geolocation/ios"
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_secure_storage:
@@ -1021,6 +1015,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/kakao_map_plugin/ios"
   location:
     :path: ".symlinks/plugins/location/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   shared_preferences_foundation:
@@ -1038,11 +1034,10 @@ SPEC CHECKSUMS:
   abseil: c582bbf59f009606334bfd042bfeda8fd9abde35
   app_links: e70ca16b4b0f88253b3b3660200d4a10b4ea9795
   AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
-  background_fetch: f73d045fee3d313ea8c0afa205317bff8a6bf8d2
+  background_locator_2: bc8a422343ab656d5bd98e08694c6f89fef20418
   BoringSSL-GRPC: 0c327029bf8f7a84e693992771dbf3b717b0aab1
   cloud_firestore: 73eece22ce25a0565238c283ee9990f1618d8063
   cloud_functions: ac380580bd5eae13e242c2107512e2fe43cd8e1e
-  CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   Firebase: a2b5a817e7ce9479d63eef3c06675ff4275ae3da
   firebase_auth: 8e9ec02991ca4659111cc671c84d0c010b6bfb26
   firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
@@ -1067,7 +1062,6 @@ SPEC CHECKSUMS:
   FirebaseSharedSwift: 3f72cf3bc88ad6046489fad331bd3ededceb6f8b
   FirebaseStorage: 8333c4b183764cdd170d9539a61322b71c23adff
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_background_geolocation: 41cddc9ed0aac0b674bb6642690efd28df57ca6d
   flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
   geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
@@ -1086,6 +1080,7 @@ SPEC CHECKSUMS:
   leveldb-library: 486edecd9620db16583b5097672b7ab66282ae26
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
   nanopb: cb11ceb72fb26479ce40633984e31e74705eab0f
+  path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
   PromisesObjC: 4c8eeaef508e2e5842316da811187b4242aa6e43
   RecaptchaInterop: 563d7bb483401b6e26134db3924b8b62ffae3891

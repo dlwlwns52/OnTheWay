@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class OwnerTMapView extends StatefulWidget {
@@ -50,10 +51,6 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
         _longitude = data?['longitude'];
       });
 
-      if (_latitude != null && _longitude != null) {
-        updateHelperLocation(_latitude!, _longitude!);
-        print(10);
-      }
     });
 
     controller = WebViewController()
@@ -70,8 +67,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
             if (_latitude != null && _longitude != null) {
               print(2);
               controller.runJavaScript("setHelperId('${widget.helperId}');");
-              updateHelperLocation(_latitude!, _longitude!);
-              print('3');
+              controller.runJavaScript("updateHelperLocation('$_latitude', '$_longitude');");
             }
           },
           onWebResourceError: (WebResourceError error) {},
@@ -83,6 +79,9 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
       ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app'));
   }
 
+
+
+
   void updateHelperLocation(double lat, double lon) {
     controller.runJavaScript(
         "updateHelperLocation('$lat', '$lon');"
@@ -92,8 +91,34 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('헬퍼 위치 보기'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                  'assets/lottie/blue3.json',
+                  fit: BoxFit.fill,
+                  options: LottieOptions(
+                  )
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 1,
+              shadowColor: Colors.indigo.withOpacity(0.5),
+              title: Text('헬퍼 위치 확인',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 23,
+                ),
+              ),
+              actions: <Widget>[
+              ],
+            ),
+          ],
+        ),
       ),
       body: Container(
         width: double.infinity,

@@ -5,6 +5,7 @@ import UserNotifications
 import FirebaseMessaging
 import FirebaseCore //Cannot find 'FirebaseApp' in scope  에러로 추가
 import GoogleSignIn
+import background_locator_2
 
 @UIApplicationMain
 
@@ -39,6 +40,11 @@ import GoogleSignIn
         
         // Firebase Messaging 델리게이트 설정
         Messaging.messaging().delegate = self
+        
+        // Background Locator 초기화
+        BackgroundLocatorPlugin.setPluginRegistrantCallback { registry in
+            GeneratedPluginRegistrant.register(with: registry)
+        }
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }

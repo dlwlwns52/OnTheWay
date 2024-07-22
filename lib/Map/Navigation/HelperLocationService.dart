@@ -1,52 +1,40 @@
-import 'package:flutter_background_geolocation/flutter_background_geolocation.dart' as bg;
-import 'package:firebase_database/firebase_database.dart';
-import 'dart:math';
+import 'package:background_locator_2/background_locator.dart'; // BackgroundLocator 라이브러리
+import 'package:background_locator_2/settings/android_settings.dart'; // Android 설정을 위한 라이브러리
+import 'package:background_locator_2/settings/ios_settings.dart'; // iOS 설정을 위한 라이브러리
+import 'package:background_locator_2/settings/locator_settings.dart'; // 위치 추적 설정을 위한 라이브러리
+import 'package:flutter/material.dart'; // Flutter의 기본 패키지
+import 'LocationCallbackHandler.dart'; // LocationCallbackHandler 클래스
 
 class HelperLocationService {
-  double? prevLat; // 이전 위도를 저장하기 위한 변수
-  double? prevLon; // 이전 경도를 저장하기 위한 변수
-  final String helperId; // 헬퍼의 ID를 저장하는 변수
+  final String helperId; // 헬퍼 ID를 저장하는 변수
 
-  // 생성자: 헬퍼 ID를 초기화
-  HelperLocationService(this.helperId);
+  HelperLocationService(this.helperId); // 생성자에서 헬퍼 ID를 받아서 설정
 
-  // 백그라운드 위치 추적을 설정하는 메서드
   void configureBackgroundLocation() {
-    // 플러그인을 설정
-    bg.BackgroundGeolocation.onLocation((bg.Location location) {
-      // 위치가 3미터 이상 이동했는지 확인
-      if (prevLat == null || prevLon == null || getDistance(prevLat!, prevLon!, location.coords.latitude, location.coords.longitude) > 3) {
-        // 위치가 이동한 경우, 새로운 위치를 이전 위치로 저장
-        prevLat = location.coords.latitude;
-        prevLon = location.coords.longitude;
+    // helperId 설정
+    LocationCallbackHandler.setHelperId(helperId);
 
-        // 새로운 위치를 Firebase에 저장
-        saveHelperLocation(location.coords.latitude, location.coords.longitude);
-      }
-    });
-
-    // 플러그인 시작
-    bg.BackgroundGeolocation.start();
-  }
-
-  // 헬퍼의 위치를 Firebase에 저장하는 메서드
-  void saveHelperLocation(double latitude, double longitude) {
-    final DatabaseReference locationRef = FirebaseDatabase.instance.ref().child('locations/$helperId');
-    locationRef.set({
-      'latitude': latitude, // 위도를 저장
-      'longitude': longitude, // 경도를 저장
-    });
-  }
-
-  // 두 지점 사이의 거리를 계산하는 함수 (Haversine formula 사용)
-  double getDistance(double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371; // 지구의 반지름 (km)
-    double dLat = (lat2 - lat1) * (3.141592653589793 / 180); // 위도 차이를 라디안으로 변환
-    double dLon = (lon2 - lon1) * (3.141592653589793 / 180); // 경도 차이를 라디안으로 변환
-    double a =
-        0.5 - cos(dLat)/2 +
-            cos(lat1 * (pi / 180)) * cos(lat2 * (pi / 180)) *
-                (1 - cos(dLon))/2; // Haversine formula 계산
-    return R * 2 * asin(sqrt(a)) * 1000; // 결과를 미터로 변환하여 반환
+    // BackgroundLocator를 사용하여 위치 업데이트 설정
+    BackgroundLocator.registerLocationUpdate(
+      LocationCallbackHandler.callback, // 위치 업데이트 콜백 함수
+      initCallback: LocationCallbackHandler.initCallback, // 초기화 콜백 함수
+      disposeCallback: LocationCallbackHandler.disposeCallback, // 해제 콜백 함수
+      iosSettings: IOSSettings(
+        accuracy: LocationAccuracy.NAVIGATION, // iOS의 위치 추적 정확도 설정
+        distanceFilter: 3, // 3미터마다 업데이트
+      ),
+      androidSettings: AndroidSettings(
+        accuracy: LocationAccuracy.NAVIGATION, // Android의 위치 추적 정확도 설정
+        interval: 5, // 위치 업데이트 간격 (밀리초)
+        distanceFilter: 3, // 3미터마다 업데이트
+        androidNotificationSettings: AndroidNotificationSettings(
+          notificationChannelName: 'Location tracking', // 알림 채널 이름
+          notificationTitle: 'Tracking location', // 알림 제목
+          notificationMsg: 'Your location is being tracked', // 알림 메시지
+          notificationIconColor: Colors.grey, // 알림 아이콘 색상
+          notificationTapCallback: LocationCallbackHandler.notificationCallback, // 알림 클릭 시 콜백 함수
+        ),
+      ),
+    );
   }
 }

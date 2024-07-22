@@ -1,3 +1,6 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:OnTheWay/login/LoginScreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +13,9 @@ import 'HanbatSchoolBoard/HanbatUiBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:background_locator_2/background_locator.dart'; // 추가
+import 'package:background_locator_2/location_dto.dart'; // 추가
+import 'package:background_locator_2/settings/locator_settings.dart'; // 추가
 
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -24,6 +30,9 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler); // 백그라운드 메시지 핸들러 등록
   AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100'); // 인증 리포지토리 초기화
   await initializeDateFormatting(); // 날짜 형식 초기화를 기다림
+
+  await BackgroundLocator.initialize(); // background_locator_2 초기화 추가
+
   runApp(MyApp()); // 앱 실행
 }
 
@@ -67,11 +76,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Future<Map<String, dynamic>>? autoLoginResult;
+  static const String _isolateName = "LocatorIsolate"; // Isolate 이름 정의
+  ReceivePort port = ReceivePort(); // 데이터를 수신하기 위한 포트 생성
 
   @override
   void initState() {
     super.initState();
     autoLoginResult = _autoLogin();
+
+    IsolateNameServer.registerPortWithName(port.sendPort, _isolateName); // 포트와 Isolate 이름을 연결
+    port.listen((dynamic data) {
+      // 수신된 데이터 처리
+      print("Background location data: $data");
+    });
+
+    initPlatformState();
     // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     //   if (message.data['screen'] == 'AlarmUi' && mounted) {
     //     Navigator.of(context).push(MaterialPageRoute(builder: (_) => NaverBoardPage()));
@@ -80,7 +99,12 @@ class _MyAppState extends State<MyApp> {
 
   }
 
-  @override
+Future<void> initPlatformState() async {
+  await BackgroundLocator.initialize(); // background_locator_2 초기화
+}
+
+
+@override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,

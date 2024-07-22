@@ -373,6 +373,7 @@ class HanbatPostManager {
       FirstLocation locationService = FirstLocation(helperNickname);
       await locationService.saveInitialLocation();
 
+      //백그라운드 위치추적
       listenForChatActionsUpdate(documentName);
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.

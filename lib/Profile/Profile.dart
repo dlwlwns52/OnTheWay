@@ -62,14 +62,49 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+
   //로그아웃시 로그인창으로 이동
-  void _logout() {
+  Future<void> _logout() async {
     HapticFeedback.lightImpact();
-    Navigator.push(
+    // 자동 로그인 지우기
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return; // 사용자가 로그인되어 있지 않으면 함수 종료
+
+    final String? email = currentUser.email;
+
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot querySnapshot = await firestore.collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+      DocumentSnapshot userDoc = querySnapshot.docs.first;
+      // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+      String userId = userDoc.id;
+
+      // // 해당 사용자 문서에 토큰을 저장합니다.
+      await firestore.collection('users').doc(userId).set({
+        'isAutoLogin': false,
+        'token' : FieldValue.delete(),
+      }, SetOptions(merge: true));
+    }
+    else {
+      print('No user found with email: $email');
+    }
+
+    // FirebaseAuth에서 로그아웃
+    await FirebaseAuth.instance.signOut();
+
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
+          (Route<dynamic> route) => false,
     );
   }
+
+
 
   // 개발자에게 건의사항 전송
   Future<void> _submitFeedback(String feedback) async {
