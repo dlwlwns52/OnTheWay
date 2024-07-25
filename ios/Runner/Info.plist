@@ -2,6 +2,40 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
+    <key>KAKAO_APP_KEY</key>
+    <string>69a96da745eed8af5198d8de5d72a2eb</string>
+
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
+
+    <key>NSAppTransportSecurity</key>
+      <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
+      </dict>
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+
+    <key>NSCameraUsageDescription</key>
+    <string>사진을 촬영하기 위해 카메라에 접근 권한이 필요합니다.</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>갤러리에서 이미지를 선택하기 위해 사진 접근 권한이 필요합니다.</string>
+
+
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+
+
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -22,52 +56,15 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>onthewayNotebook</string>
-			</array>
-		</dict>
-	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>KAKAO_APP_KEY</key>
-	<string>69a96da745eed8af5198d8de5d72a2eb</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>kakaotalk</string>
-		<string>supertoss</string>
-		<string>naversearchthirdlogin</string>
-	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsArbitraryLoadsInWebContent</key>
-		<true/>
-	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>사진을 촬영하기 위해 카메라에 접근 권한이 필요합니다.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>안전하고 효율적인 거래를 위해 사용자의 위치 정보가 필요합니다.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>갤러리에서 이미지를 선택하기 위해 사진 접근 권한이 필요합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
-		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -89,7 +86,39 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>io.flutter.embedded_views_preview</key>
-	<true/>
+
+    <!-- Google Sign-In 추가 설정 -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1</string>
+            </array>
+        </dict>
+    </array>
+
+
+  <!-- 외부 앱 리스트 등록 -->
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+    <string>kakaotalk</string> <!-- 카카오톡 -->
+    <string>supertoss</string> <!-- 토스 -->
+    <string>naversearchthirdlogin</string> <!-- 네이버페이 앱 로그인 -->
+    <!-- 추가적인 외부 앱 리스트를 여기에 추가 -->
+  </array>
+
+  <!-- App Transport Security 설정 -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoadsInWebContent</key>
+    <true/>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+  </dict>
+
+
 </dict>
 </plist>

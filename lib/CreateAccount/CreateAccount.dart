@@ -506,6 +506,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   //이메일 인증
   Future<void> _signInWithGoogle() async {
     HapticFeedback.lightImpact();
+
     try {
       String userEmail = _emailUserController.text.trim();
       if (_dropdownValue == null) {

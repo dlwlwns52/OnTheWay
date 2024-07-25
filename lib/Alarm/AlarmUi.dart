@@ -33,9 +33,9 @@ class _NotificationScreenState extends State<AlarmUi> {
 
     alarm = Alarm(currentUserEmail, () {
       if (mounted) {
-        setState(() {});
-      }
+        setState(() {});}
     }, context);
+
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
 
     // context가 초기화된 후에 SnackBar를 표시합니다.
@@ -48,7 +48,6 @@ class _NotificationScreenState extends State<AlarmUi> {
         ),
       );
     });
-
   }
 
   @override

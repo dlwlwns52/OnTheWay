@@ -33,7 +33,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // PostManager 인스턴스 생성
   final postManager = HanbatPostManager();
-  // final Alarm = Alarm(); // NaverAlarm 인스턴스를 생성합니다.
+
+  // NaverAlarm 인스턴스를 생성합니다.
   late Alarm alarm;
 
   // 도와주기시 애니메이션 클릭
@@ -48,11 +49,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   @override
   void initState() {
     super.initState();
-    alarm = Alarm(
-      FirebaseAuth.instance.currentUser?.email ?? '',
-          () => setState(() {}), context,
+    alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
 
-    );
 
     alarm.onNotificationCountChanged = () {
       if (mounted) {
@@ -129,7 +127,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             AppBar(
               automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
               backgroundColor: Colors.transparent,
-              title: Text('연세대 게시판',
+              title: Text('한밭대 게시판',
                 style: TextStyle(
                   fontSize: 23,
                   fontWeight: FontWeight.w600,

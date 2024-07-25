@@ -373,8 +373,7 @@ class HanbatPostManager {
       FirstLocation locationService = FirstLocation(helperNickname);
       await locationService.saveInitialLocation();
 
-      //백그라운드 위치추적
-      listenForChatActionsUpdate(documentName);
+
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
@@ -389,6 +388,8 @@ class HanbatPostManager {
         'response': null,
       });
 
+      _alarmMessageCount(OwnerNickname, postOwnerEmail);
+
       // 대화상자를 닫고 스낵바 표시
       Navigator.of(context).pop();
 
@@ -400,9 +401,9 @@ class HanbatPostManager {
         ),
       );
 
-      _pushHelpButton(true);
-      await Future.delayed(Duration(milliseconds: 1200));
-      _pushHelpButton(false);
+      // _pushHelpButton(true);
+      // await Future.delayed(Duration(milliseconds: 1200));
+      // _pushHelpButton(false);
 
 
       // 'ChatActions' 컬렉션에 채팅 관련 정보를 저장합니다.
@@ -440,6 +441,10 @@ class HanbatPostManager {
         'response': null,
 
       });
+
+      _pushHelpButton(true);
+      await Future.delayed(Duration(milliseconds: 1200));
+      _pushHelpButton(false);
 
     } catch (e) {
       // 오류 메시지 표시
@@ -485,15 +490,42 @@ class HanbatPostManager {
   }
 
 
-  void listenForChatActionsUpdate(String documentName) {
-    final chatActionsRef = FirebaseFirestore.instance.collection('ChatActions').doc(documentName);
-    chatActionsRef.snapshots().listen((snapshot) {
-      final data = snapshot.data();
-      if (data != null && data['response'] == 'accepted') {
-        HelperLocationService locationService = HelperLocationService(data['helper_nickname']);
-        locationService.configureBackgroundLocation();
-      }
-    });
+// 알람 표시 카운트
+//   void _alarmMessageCount(String documentName, String ownerName) async {
+//     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
+//         'helpActions').doc(documentName).get();
+//     // 해당 채팅방의 messages 서브컬렉션 참조
+//
+//     // 상대방이 채팅방에 없는 경우 messageCount 증가
+//     int messageCount = userDoc['messageCount_${ownerName}'] ?? 0;
+//     await userMessageCount.update(
+//         {'messageCount_${ownerName}': messageCount + 1});
+//   }
+
+  void _alarmMessageCount(String documentName, String ownerName) async {
+    // Firestore 인스턴스 생성
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // helpActions 컬렉션의 해당 문서 참조
+    DocumentReference docRef = firestore.collection('userStatus').doc(documentName);
+
+    // 문서 가져오기
+    DocumentSnapshot userDoc = await docRef.get();
+
+    // messageCount 필드 값 가져오기 (문서가 없거나 필드가 없을 경우 기본값 0)
+    int messageCount = 0;
+    if (userDoc.exists && userDoc.data() != null) {
+      messageCount = userDoc.get('messageCount_${ownerName}') ?? 0;
+    }
+
+    // messageCount 증가
+    messageCount += 1;
+
+    // messageCount 필드 업데이트 (문서가 없을 경우 생성, 있을 경우 업데이트)
+    await docRef.set(
+      {'messageCount_${ownerName}': messageCount},
+      SetOptions(merge: true),
+    );
   }
 
 }

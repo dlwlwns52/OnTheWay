@@ -34,9 +34,6 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
   }
 
 
-  void moveToHelperLocation() {
-    controller.runJavaScript("moveToHelperLocation();");
-  }
 
   @override
   void initState() {
@@ -62,13 +59,12 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
           onPageStarted: (String url) {},
           onPageFinished: (String url) {
             // 페이지 로딩이 완료되면 메서드를 호출
-            print(1);
+
             update(widget.currentLocation, widget.storeLocation);
-            if (_latitude != null && _longitude != null) {
-              print(2);
-              controller.runJavaScript("setHelperId('${widget.helperId}');");
-              controller.runJavaScript("updateHelperLocation('$_latitude', '$_longitude');");
-            }
+            // if (_latitude != null && _longitude != null) {
+            //   controller.runJavaScript("setHelperId('${widget.helperId}');");
+            //   controller.runJavaScript("updateHelperLocation('$_latitude', '$_longitude');");
+            // }
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
@@ -82,11 +78,15 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
 
 
 
-  void updateHelperLocation(double lat, double lon) {
-    controller.runJavaScript(
-        "updateHelperLocation('$lat', '$lon');"
-    );
-  }
+  // void updateHelperLocation(double lat, double lon) {
+  //   controller.runJavaScript(
+  //       "updateHelperLocation('$lat', '$lon');"
+  //   );
+  // }
+
+  // void moveToHelperLocation() {
+  //   controller.runJavaScript("moveToHelperLocation();");
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +107,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
               backgroundColor: Colors.transparent,
               elevation: 1,
               shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('헬퍼 위치 확인',
+              title: Text('경로 설정 확인',
                 style: TextStyle(
                   fontFamily: 'NanumSquareRound',
                   fontWeight: FontWeight.w700,
@@ -125,46 +125,46 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
         height: double.infinity,
         child: WebViewWidget(controller: controller),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.all(16.0), // 여백 추가
-          decoration: BoxDecoration(
-            color: Colors.indigo[300], // 버튼 배경색
-            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
-
-          ),
-          //저장하기 버튼
-          child: ElevatedButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '헬 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
-                    textAlign: TextAlign.center,
-                  ),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-              moveToHelperLocation();
-            },
-
-            // 위치 값 저장
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.pin_drop), // 저장 아이콘
-                SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
-                Text('헬퍼 위치로 이동', style: TextStyle(fontSize: 18),),
-              ],
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigo[300],
-              elevation: 0, // 경계선을 제거합니다.
-            ),
-          ),
-        ),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   child: Container(
+      //     margin: EdgeInsets.all(16.0), // 여백 추가
+      //     decoration: BoxDecoration(
+      //       color: Colors.indigo[300], // 버튼 배경색
+      //       borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
+      //
+      //     ),
+      //     //저장하기 버튼
+      //     child: ElevatedButton(
+      //       onPressed: () {
+      //         HapticFeedback.lightImpact();
+      //         ScaffoldMessenger.of(context).showSnackBar(
+      //           SnackBar(
+      //             content: Text(
+      //               '헬 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
+      //               textAlign: TextAlign.center,
+      //             ),
+      //             duration: Duration(seconds: 1),
+      //           ),
+      //         );
+      //         moveToHelperLocation();
+      //       },
+      //
+      //       // 위치 값 저장
+      //       child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.center,
+      //         children: [
+      //           Icon(Icons.pin_drop), // 저장 아이콘
+      //           SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
+      //           Text('헬퍼 위치로 이동', style: TextStyle(fontSize: 18),),
+      //         ],
+      //       ),
+      //       style: ElevatedButton.styleFrom(
+      //         backgroundColor: Colors.indigo[300],
+      //         elevation: 0, // 경계선을 제거합니다.
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

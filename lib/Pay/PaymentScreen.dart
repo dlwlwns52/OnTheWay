@@ -546,7 +546,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                         ),
                         padding: EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: Text(isPhotoSent ? '정산 완료' : '정산 요청하기',
+                      child: Text(isPhotoSent ? '정산 요청 완료' : '정산 요청하기',
                         style: TextStyle(color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18),
