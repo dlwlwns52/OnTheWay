@@ -29,25 +29,31 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.initState();
     // 현재 사용자의 이메일을 가져와서 NaverAlarm 클래스를 초기화합니다.
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
-
-
     alarm = Alarm(currentUserEmail, () {
       if (mounted) {
         setState(() {});}
     }, context);
-
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
+    // context가 초기화된 후에 SnackBar를 표시합니다.\
 
-    // context가 초기화된 후에 SnackBar를 표시합니다.
+
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.", textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      _initializeMessageCount(currentUserEmail);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
+              textAlign: TextAlign.center,
+            ),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
     });
+
+
   }
 
   @override
@@ -56,6 +62,36 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.dispose();
   }
 
+  Future<String?> getNickname(String email) async {
+
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty){
+      return querySnapshot.docs.first['nickname'];
+    }
+    return null;
+  }
+
+  //userStatus messageCount 값 초기화
+  Future<void> resetMessageCount(String email) async {
+    String? nickname = await getNickname(email);
+    print(nickname);
+    if(nickname != null) {
+      DocumentReference docRef = FirebaseFirestore.instance.collection(
+          'userStatus').doc(nickname);
+
+      await docRef.set({'messageCount': 0}, SetOptions(merge: true));
+    }
+  }
+
+  Future<void> _initializeMessageCount(String email) async {
+    if (email != null) {
+      await resetMessageCount(email);
+    }
+  }
 
   // 알림 목록을 스트림 형태로 불러오는 함수
   Stream<List<DocumentSnapshot>> getNotifications() {

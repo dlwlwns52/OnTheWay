@@ -45,23 +45,28 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
+  //닉네임 가져오기
+  late Future<String?> _nickname;
 
   @override
   void initState() {
     super.initState();
-    alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
-
-
-    alarm.onNotificationCountChanged = () {
-      if (mounted) {
-        setState(() {});
-      }
-    };
+    // alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
+    // //
+    // //
+    // alarm.onNotificationCountChanged = () {
+    //   if (mounted) {
+    //     setState(() {});
+    //   }
+    // };
 
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
+
+    //닉네임 가져옴
+    _nickname = getNickname();
 
   }
 
@@ -110,6 +115,37 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     );
   }
 
+  //userStatus에서 본인 nickname 찾기
+  Future<String?> getNickname() async {
+    var querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('email', isEqualTo: botton_email)
+      .get();
+
+    if (querySnapshot.docs.isNotEmpty){
+      return querySnapshot.docs.first['nickname'];
+    }
+    return null;
+  }
+
+  // Firestore에서 messageCount 값을 실시간으로 가져오는 메서드
+  Stream<DocumentSnapshot> getMessageCountStream(String nickname) {
+    return FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(nickname)
+        .snapshots();
+  }
+
+  //userStatus messageCount 값 초기화
+  Future<void> resetMessageCount(String nickname) async {
+    DocumentReference docRef = FirebaseFirestore.instance.collection('userStatus').doc(nickname);
+
+    await docRef.set({'messageCount': 0}, SetOptions(merge: true));
+
+  }
+
+
+
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
   Widget build(BuildContext context) {
@@ -127,7 +163,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             AppBar(
               automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
               backgroundColor: Colors.transparent,
-              title: Text('한밭대 게시판',
+              title: Text('연세대 게시판',
                 style: TextStyle(
                   fontSize: 23,
                   fontWeight: FontWeight.w600,
@@ -141,42 +177,111 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                   child: Stack(
                     alignment: Alignment.topRight,
                     children: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.notifications),
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => AlarmUi(),
-                            ),
+
+                      FutureBuilder<String?>(
+                        future: _nickname,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return IconButton(
+                              icon: Icon(Icons.notifications),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                            );
+                          } else if (!snapshot.hasData || snapshot.data == null) {
+                            return IconButton(
+                              icon: Icon(Icons.notifications),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                            );
+                          }
+
+                          String ownerNickname = snapshot.data!;
+                          return IconButton(
+                            icon: Icon(Icons.notifications),
+                            onPressed: () async {
+
+                              HapticFeedback.lightImpact();
+                              await resetMessageCount(ownerNickname);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => AlarmUi(),
+                                ),
+                              );
+                            },
+                        );
+                      },
+                    ),
+                      // if (messageCount > 0)
+                      FutureBuilder<String?>(
+                        future: _nickname,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Container();
+                          } else if (!snapshot.hasData || snapshot.data == null) {
+                            return Container();
+                          }
+
+                          String ownerNickname = snapshot.data!;
+                          return StreamBuilder<DocumentSnapshot>(
+                            stream: getMessageCountStream(ownerNickname),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return Container();
+                              }
+                              var data = snapshot.data!.data() as Map<String, dynamic>;
+                              int messageCount = data['messageCount'] ?? 0;
+
+                              return Positioned(
+                                right: 11,
+                                top: 11,
+                                child: messageCount > 0
+                                    ? Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    minWidth: 14,
+                                    minHeight: 14,
+                                  ),
+                                  child: Text(
+                                    '$messageCount',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                )
+                                    : Container(),
+                              );
+                            },
                           );
-                          alarm.resetNotificationCount();
                         },
                       ),
-                      if (alarm.getNotificationCount() > 0)
-                        Positioned(
-                          right: 11,
-                          top: 11,
-                          child: Container(
-                            padding: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            constraints: BoxConstraints(
-                              minWidth: 14,
-                              minHeight: 14,
-                            ),
-                            child: Text(
-                              '${alarm.getNotificationCount()}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
