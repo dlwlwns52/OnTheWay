@@ -74,9 +74,6 @@ exports.respondToHelpRequest = functions.firestore
         title: '온더웨이',
         body: `귀하의 요청이 ${response === 'accepted' ? '수락되었습니다' : '거절되었습니다'}.`
       },
-      data: {
-        helperEmail: helperEmail // 게시물 작성자의 이메일
-      },
       token: helperDeviceToken
     };
 
@@ -198,6 +195,9 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
                         title: messageData.senderName, // 알림의 제목
                         body: messageData.message, // 알림의 본문 (메시지 내용)
                         // 필요에 따라 추가 FCM 옵션을 설정할 수 있습니다.
+                    },
+                    data : {
+                      screen: 'AllUsersScreen',
                     },
                     token: token // 알림을 받을 디바이스의 FCM 토큰
                 };

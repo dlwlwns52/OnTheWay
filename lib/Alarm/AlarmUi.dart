@@ -29,18 +29,18 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.initState();
     // 현재 사용자의 이메일을 가져와서 NaverAlarm 클래스를 초기화합니다.
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
     alarm = Alarm(currentUserEmail, () {
       if (mounted) {
         setState(() {});}
     }, context);
+
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
     // context가 초기화된 후에 SnackBar를 표시합니다.\
 
 
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeMessageCount(currentUserEmail);
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -50,9 +50,7 @@ class _NotificationScreenState extends State<AlarmUi> {
             duration: Duration(seconds: 1),
           ),
         );
-      }
     });
-
 
   }
 
@@ -62,36 +60,7 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.dispose();
   }
 
-  Future<String?> getNickname(String email) async {
 
-    var querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .get();
-
-    if (querySnapshot.docs.isNotEmpty){
-      return querySnapshot.docs.first['nickname'];
-    }
-    return null;
-  }
-
-  //userStatus messageCount 값 초기화
-  Future<void> resetMessageCount(String email) async {
-    String? nickname = await getNickname(email);
-    print(nickname);
-    if(nickname != null) {
-      DocumentReference docRef = FirebaseFirestore.instance.collection(
-          'userStatus').doc(nickname);
-
-      await docRef.set({'messageCount': 0}, SetOptions(merge: true));
-    }
-  }
-
-  Future<void> _initializeMessageCount(String email) async {
-    if (email != null) {
-      await resetMessageCount(email);
-    }
-  }
 
   // 알림 목록을 스트림 형태로 불러오는 함수
   Stream<List<DocumentSnapshot>> getNotifications() {
@@ -102,7 +71,9 @@ class _NotificationScreenState extends State<AlarmUi> {
         .map((snapshot) {
       var docs = snapshot.docs.toList();
       // 시간을 기준으로 목록을 역순 정렬
+      final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
       docs.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+
       return docs;
     });
   }
@@ -111,6 +82,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async{
+
         return true;
       },
       child: GestureDetector(

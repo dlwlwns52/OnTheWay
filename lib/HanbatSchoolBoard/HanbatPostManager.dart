@@ -388,7 +388,7 @@ class HanbatPostManager {
         'response': null,
       });
 
-      _alarmMessageCount(OwnerNickname, postOwnerEmail);
+      await _alarmMessageCount(OwnerNickname);
 
       // 대화상자를 닫고 스낵바 표시
       Navigator.of(context).pop();
@@ -502,12 +502,11 @@ class HanbatPostManager {
 //         {'messageCount_${ownerName}': messageCount + 1});
 //   }
 
-  void _alarmMessageCount(String documentName, String ownerName) async {
-    // Firestore 인스턴스 생성
+  Future<void> _alarmMessageCount(String ownerNickname) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     // helpActions 컬렉션의 해당 문서 참조
-    DocumentReference docRef = firestore.collection('userStatus').doc(documentName);
+    DocumentReference docRef = firestore.collection('userStatus').doc(ownerNickname);
 
     // 문서 가져오기
     DocumentSnapshot userDoc = await docRef.get();
@@ -515,15 +514,17 @@ class HanbatPostManager {
     // messageCount 필드 값 가져오기 (문서가 없거나 필드가 없을 경우 기본값 0)
     int messageCount = 0;
     if (userDoc.exists && userDoc.data() != null) {
-      messageCount = userDoc.get('messageCount_${ownerName}') ?? 0;
+      var data = userDoc.data() as Map<String, dynamic>;
+      if(data.containsKey('messageCount')) {
+        messageCount = data['messageCount'];
+      }
     }
-
     // messageCount 증가
     messageCount += 1;
 
     // messageCount 필드 업데이트 (문서가 없을 경우 생성, 있을 경우 업데이트)
     await docRef.set(
-      {'messageCount_${ownerName}': messageCount},
+      {'messageCount': messageCount},
       SetOptions(merge: true),
     );
   }

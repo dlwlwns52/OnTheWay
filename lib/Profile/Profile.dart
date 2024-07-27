@@ -1,3 +1,4 @@
+import 'package:OnTheWay/Profile/DeleteMember.dart';
 import 'package:OnTheWay/login/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -293,7 +294,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     Text(
                       '알림',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 25,
                         color: Colors.indigo,
                       ),
                     ),
@@ -302,16 +305,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ),
               content: Text(
-                '정말 해당 계정을 삭제 하시겠습니꽝? \n\n삭제 버튼을 누르시면\n계정의 정보가 모두 삭제됩니다.',
+                '정말 해당 계정을 삭제 하시겠습니까? \n\n삭제 버튼을 누르시면\n계정의 정보가 모두 삭제됩니다.',
                 style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: Colors.black,
                 ),
                 textAlign: TextAlign.center,
               ),
               actions: [
                 ElevatedButton(
                     onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "길게 누르시면 계정이 삭제 됩니다.",
+                            textAlign: TextAlign.center,
+                          ),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    onLongPress: () {
                       _deleteAccount();
                       Navigator.of(context).pop();
                     },
@@ -346,7 +362,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   //계정 삭제하는 함수
   void _deleteAccount() {
     HapticFeedback.lightImpact();
-    // 회원탈퇴 로직 추가 필요
+    DeleteMember member = DeleteMember(nickname, botton_email); // 회원탈퇴 로직 추가 필요
+
+    if (nickname != null && bottom_email != null) {
+      DeleteMember member = DeleteMember(nickname, bottom_email);
+      print('Member created: ${member.nickname}, ${member.bottomEmail}');
+    }
+    print(nickname);
+    print(user);
+    print(botton_email);
     print('회원탈퇴');
   }
 

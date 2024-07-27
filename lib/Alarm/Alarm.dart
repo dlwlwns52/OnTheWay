@@ -1,61 +1,86 @@
+import 'package:OnTheWay/Chat/AllUsersScreen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'AlarmUi.dart';
 
-
-class Alarm  {
+class Alarm {
   int notificationCount = 0;
   String currentUserEmail;
   VoidCallback onNotificationCountChanged;
-  BuildContext context; // BuildContext 추가
+  BuildContext context;
 
   Alarm(this.currentUserEmail, this.onNotificationCountChanged, this.context) {
-
-    // 사용자가 앱을 백그라운드나 종료 상태에서 시작할 때 호출
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleMessage(message);
     });
 
-
-    // 앱이 포그라운드에 있을 때 호출
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (context != null) { // context가 null이 아닌지 확인
+      if (context != null) {
         _handleMessage(message);
       }
     });
+
+    // 메시지 카운트 초기화
+
   }
 
-  void _handleMessage(RemoteMessage message) {
-    if (message.data['ownerEmail'] == currentUserEmail) {//
-      increaseNotificationCount();
+  Future<void> _handleMessage(RemoteMessage message) async {
+    if (message.data['ownerEmail'] == currentUserEmail  && message.data['screen'] == 'AlarmUi') {
+      await _initializeMessageCount(currentUserEmail);
+      if (context != null) {
 
-        if (context != null) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AlarmUi(),
-            ),
-          );
-
-        } else {
-          print("Context is null");
-        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => AlarmUi(),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
     }
-    // 여기에서 추가적인 알림 처리 로직을 구현할 수 있습니다.
+
+    else if(message.data['screen'] == 'AllUsersScreen'){
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => AllUsersScreen(),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
+    }
   }
 
-  void increaseNotificationCount() {
-    notificationCount += 1;
-    onNotificationCountChanged();
+  Future<String?> getNickname(String email) async {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first['nickname'];
+    }
+    return null;
   }
 
-  void resetNotificationCount() {
-    notificationCount = 0;
-    onNotificationCountChanged();
+  Future<void> resetMessageCount(String email) async {
+    String? nickname = await getNickname(email);
+    if (nickname != null) {
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection('userStatus')
+          .doc(nickname);
+
+      await docRef.set({'messageCount': 0}, SetOptions(merge: true));
+    }
   }
 
-  int getNotificationCount() {
-    return notificationCount;
+  Future<void> _initializeMessageCount(String email) async {
+    if (email.isNotEmpty) {
+      await resetMessageCount(email);
+    }
   }
-
 }
+

@@ -51,14 +51,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   @override
   void initState() {
     super.initState();
-    // alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
-    // //
-    // //
-    // alarm.onNotificationCountChanged = () {
-    //   if (mounted) {
-    //     setState(() {});
-    //   }
-    // };
+    alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
 
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -163,7 +156,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             AppBar(
               automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
               backgroundColor: Colors.transparent,
-              title: Text('연세대 게시판',
+              title: Text('광주교대 게시판',
                 style: TextStyle(
                   fontSize: 23,
                   fontWeight: FontWeight.w600,
