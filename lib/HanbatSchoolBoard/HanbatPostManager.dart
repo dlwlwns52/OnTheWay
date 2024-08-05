@@ -131,7 +131,7 @@ class HanbatPostManager {
 
   void helpAndExit(BuildContext context, DocumentSnapshot doc, Function(bool) _pushHelpButton) {
     String? userEmail = getUserEmail(); // 현재 로그인한 사용자의 이메일 가져오기
-    bool isMyPost = userEmail == doc['user_email']; // 현재 게시물이 로그인한 사용자의 것인지 확인
+    bool isMyPost = userEmail == doc['email']; // 현재 게시물이 로그인한 사용자의 것인지 확인
 
     if (isMyPost) {
       _showEditDeleteDialog(context, doc); // 수정 및 삭제 옵션 제공
@@ -270,7 +270,7 @@ class HanbatPostManager {
       String? helperEmail = getUserEmail();
 
 // 게시물 정보 가져오기
-      String postOwnerEmail = doc['user_email']; // 게시물 작성자의 이메일
+      String postOwnerEmail = doc['email']; // 게시물 작성자의 이메일
       String postStore = doc['store']; // 게시물의 'store' 필드
       String cost = doc['cost']; // 게시물의 가격
       String ownerLocation = doc['my_location']; // 오너(오더)의 위치

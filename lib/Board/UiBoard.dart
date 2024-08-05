@@ -62,7 +62,7 @@ class _BoardPageState extends State<BoardPage> {
               // 아이콘 버튼이 눌렸을 때 새 게시글 작성 화면으로 이동합니다.
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text("에러게시판 입니다..\n다시 뒤로가기 해주세요! \n 죄송함다..!",
+                  content: Text("에러게시판 입니다..\n다시 뒤로가기 해주세요! \n 죄송합니다.!",
                       style: TextStyle(fontSize: 25) ,textAlign: TextAlign.center),
                   duration: Duration(seconds: 2),),
               );

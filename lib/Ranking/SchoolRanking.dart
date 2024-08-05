@@ -44,6 +44,7 @@ class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
     //임시
     {'name': '카카오대학교', 'domain': 'kakao.com'},
     {'name': '네이버대학교', 'domain': 'naver.com'},
+    {'name': '지메일 대학교', 'domain': 'gmail.com'},
     // 도메인 추가
   ];
   //학교 이름 리턴
@@ -73,6 +74,7 @@ class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
       'jbnu.ac.kr': 'JBNU.jpg',
       'pusan.ac.kr': 'PNU.jpg',
       'naver.com' : 'naver.png',
+      'gmail.com' : 'naver.png',
     };
 
     for (var entry in logoFiles.entries){

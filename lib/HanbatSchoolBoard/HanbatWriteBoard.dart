@@ -170,7 +170,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
       QuerySnapshot existingPosts = await db
           .collection('naver_posts')
           .where('my_location', isEqualTo: _locationController.text)
-          .where('user_email', isEqualTo: email)
+          .where('email', isEqualTo: email)
           .get();
 
       if (existingPosts.docs.isNotEmpty && widget.post == null) {
@@ -183,7 +183,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
           'my_location': _locationController.text,
           'store': _storeController.text,
           'cost': _costController.text,
-          'user_email': email,
+          'email': email,
           'Request': _requestController.text,
           'date': DateTime.now(),
         });

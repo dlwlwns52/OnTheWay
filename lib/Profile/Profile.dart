@@ -360,18 +360,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   //계정 삭제하는 함수
-  void _deleteAccount() {
+  Future<void> _deleteAccount() async {
     HapticFeedback.lightImpact();
-    DeleteMember member = DeleteMember(nickname, botton_email); // 회원탈퇴 로직 추가 필요
 
-    if (nickname != null && bottom_email != null) {
-      DeleteMember member = DeleteMember(nickname, bottom_email);
-      print('Member created: ${member.nickname}, ${member.bottomEmail}');
-    }
-    print(nickname);
-    print(user);
-    print(botton_email);
-    print('회원탈퇴');
+    DeleteMember member = DeleteMember(botton_email ,nickname!); // 회원탈퇴 로직 추가 필요
+    await member.deleteMember();
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+          (Route<dynamic> route) => false,
+    );
+
   }
 
   @override

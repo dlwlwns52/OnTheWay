@@ -41,15 +41,15 @@ class _NotificationScreenState extends State<AlarmUi> {
 
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
-              textAlign: TextAlign.center,
-            ),
-            duration: Duration(seconds: 1),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
+            textAlign: TextAlign.center,
           ),
-        );
+          duration: Duration(seconds: 1),
+        ),
+      );
     });
 
   }
@@ -105,12 +105,12 @@ class _NotificationScreenState extends State<AlarmUi> {
                 AppBar(
                   backgroundColor: Colors.transparent,
                   title: Text('알림',
-                      style:
-                      TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 25,
-                      ),),
+                    style:
+                    TextStyle(
+                      fontFamily: 'NanumSquareRound',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 25,
+                    ),),
                   actions: <Widget>[
                     IconButton(
                       icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
@@ -127,8 +127,8 @@ class _NotificationScreenState extends State<AlarmUi> {
             ),
           ),
           body: Stack(
-              children: [
-                Column(
+            children: [
+              Column(
                 children: [
                   SizedBox(height: 10),
                   Expanded(
@@ -182,9 +182,9 @@ class _NotificationScreenState extends State<AlarmUi> {
                                         '도와주기를 요청하였습니다.',
                                         // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
                                         style: TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                            fontFamily: 'NanumSquareRound',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
                                             color: Colors.grey[600]
                                         ),
                                       ),
@@ -211,7 +211,13 @@ class _NotificationScreenState extends State<AlarmUi> {
                                             return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
                                           } else {
                                             // double grade = double.parse(snapshot.data!);
-                                            double gradeValue = double.parse(snapshot.data!);
+                                            double gradeValue;
+                                            try {
+                                              gradeValue = double.parse(snapshot.data ?? '0'); // 기본 값 0을 설정
+                                            } catch (e) {
+                                              gradeValue = 0.0; // 예외 발생 시 기본 값 설정
+                                            }
+
                                             Grade grade = Grade(gradeValue);
                                             return
                                               isDeleteMode  ? Text('') :  Container(
@@ -281,31 +287,31 @@ class _NotificationScreenState extends State<AlarmUi> {
                   ),
                 ],
               ),
-                if (_isAccepting)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.grey.withOpacity(0.5),
-                      child: Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Lottie.asset(
-                              'assets/lottie/congratulation.json',
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.contain,
-                            ),
-                            Lottie.asset(
-                              'assets/lottie/clapCute.json',
-                              width: 300,
-                              height: 300,
-                              fit: BoxFit.contain,
-                            ),
-                          ],
-                        ),
+              if (_isAccepting)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.grey.withOpacity(0.5),
+                    child: Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Lottie.asset(
+                            'assets/lottie/congratulation.json',
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.contain,
+                          ),
+                          Lottie.asset(
+                            'assets/lottie/clapCute.json',
+                            width: 300,
+                            height: 300,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
             ],
           ),
         ),

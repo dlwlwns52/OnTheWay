@@ -349,8 +349,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         posts.sort((a, b) {
                           Map<String, dynamic> dataA = a.data() as Map<String, dynamic>;
                           Map<String, dynamic> dataB = b.data() as Map<String, dynamic>;
-                          bool isMyPostA = dataA['user_email'] == myEmail;
-                          bool isMyPostB = dataB['user_email'] == myEmail;
+                          bool isMyPostA = dataA['email'] == myEmail;
+                          bool isMyPostB = dataB['email'] == myEmail;
                           if (isMyPostA && !isMyPostB) return -1;
                           if (!isMyPostA && isMyPostB) return 1;
                           return 0;
@@ -361,12 +361,12 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                           itemBuilder: (context, index) {
                             DocumentSnapshot doc = posts[index];
                             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                            bool isMyPost = data['user_email'] == myEmail;
+                            bool isMyPost = data['email'] == myEmail;
                             bool nextPostIsMine = false;
 
                             if (index + 1 < posts.length) {
                               Map<String, dynamic> nextData = posts[index + 1].data() as Map<String, dynamic>;
-                              nextPostIsMine = nextData['user_email'] == myEmail;
+                              nextPostIsMine = nextData['email'] == myEmail;
                             }
 
                             return Column(

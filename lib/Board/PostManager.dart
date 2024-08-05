@@ -150,7 +150,7 @@ class PostManager {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("야레야레 \n못말리는 사람이네.. \n안됩니다.. \n다시 접속해주세요! \n어디서 에러가 났지.. "
+                      content: Text("\n다시 접속해주세요! \n어디서 에러가 났지.. "
                         ,textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 25),),
                       duration: Duration(seconds: 2),
