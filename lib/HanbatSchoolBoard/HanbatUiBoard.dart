@@ -344,6 +344,26 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         return Center(child: Text('오류가 발생했습니다.'));
                       } else if (snapshot.hasData) {
                         final posts = snapshot.data!;
+                        if (posts.isEmpty) {
+                          return
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: Container(
+                                width: 300,
+                                height: 200,
+                                child: Text(
+                                  '현재 게시물이 없습니다. \n새로운 주문이 들어오면 알림과 함께 \n이곳에서 확인하실 수 있습니다.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'NanumSquareRound',
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            );
+                        }
                         final myEmail = currentUserEmail();
 
                         posts.sort((a, b) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -149,7 +150,7 @@ class LoadingScreen extends StatelessWidget {
                 style:
                 // TextStyle(
                 //   fontWeight: FontWeight.bold,
-                //   fontSize: 70,
+                //   fontSize: 70,ㅒ
                 //   color: Colors.indigo,
                 // ),
                TextStyle(
@@ -160,39 +161,12 @@ class LoadingScreen extends StatelessWidget {
               ),
                 maxLines: 1,
               ),
-            SizedBox(height: 330),
-            // SizedBox(height: 60),
-            // AutoSizeText(
-            //     'OnTheWay',
-            //     textAlign: TextAlign.center,
-            //     style:
-            //     // TextStyle(
-            //     //   fontWeight: FontWeight.bold,
-            //     //   fontSize: 70,
-            //     //   color: Colors.indigo,
-            //     // ),
-            //    TextStyle(
-            //     fontFamily: 'NanumSquareRound',
-            //     fontWeight: FontWeight.w900,
-            //     fontSize: 55,
-            //      color: Colors.indigo,
-            //   ),
-            //     maxLines: 1,
-            //   ),
-            // SizedBox(height: 30),
-            // Container(
-            //   width: 150,
-            //   height: 150,
-            //   child: Lottie.asset(
-            //         'assets/lottie/loading_indigo.json',
-            //         fit: BoxFit.contain,
-            //     ),
-            // ),
-            //
-            // SizedBox(height: 100),
-            // // CircularProgressIndicator(
-            // //   valueColor: AlwaysStoppedAnimation<Color>(Colors.indigo),
-            // // ),
+            SizedBox(height: 20),
+            Image.asset(
+              'assets/images/testlogo1.png',
+              width: 300, // 이미지 너비를 설정합니다.
+              height: 300, // 이미지 높이를 설정합니다.
+            ),
           ],
         ),
       ),
