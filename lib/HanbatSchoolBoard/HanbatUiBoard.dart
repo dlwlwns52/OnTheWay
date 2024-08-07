@@ -644,7 +644,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           else if (index == 2) {
             HapticFeedback.lightImpact();
             switch (botton_domain) {
-              case 'naver.com':
+              case 'edu.hanbat.ac.kr':
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => HanbatBoardPage()),

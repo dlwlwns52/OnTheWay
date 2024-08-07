@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //비밀번호 찾기
   void showResetPasswordDialog(BuildContext context) {
-    final TextEditingController resetEmailController = TextEditingController();
+    final TextEditingController resetEmailController = TextEditingController(text: emailController.text); // 초기값 설정
     showDialog(
       context: context,
       barrierDismissible: false, // 바깥을 눌러도 다이어로그가 닫히지 않게 설정
