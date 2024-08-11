@@ -22,6 +22,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   TextEditingController _passwordController = TextEditingController();  // 비밀번호 컨트롤러 추가
   TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인 컨트롤러 추가
   TextEditingController _emailUserController = TextEditingController();
+  TextEditingController _accountNameController = TextEditingController(); // 계좌명 컨트롤러 추가
+  TextEditingController _accountNumberController = TextEditingController(); // 계좌번호 컨트롤러 추가
   final FocusNode _buttonFocusNode = FocusNode();// 게시하기 버튼을 위한 FocusNode 추가
 
   bool _isNicknameAvailable = false; // 입력 필드 활성화 여부 설정
@@ -35,9 +37,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
   String? _confirmPasswordErrorText; // password 와 동일한가 확인
   String? _userEmailErrorText; // 이메일 에러 텍스트 확인
+  String? _accountNameErrorText; // 계좌명 에러 텍스트
+  String? _accountNumberErrorText; // 계좌번호 에러 텍스트
   final FocusNode _passwordFocusNode = FocusNode(); // 엔터눌렀을때 아이디 -> 비밀번호
   final FocusNode _confirmPasswordFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호 -> 비밀번호확인
   final FocusNode _emailFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호확인 -> 이메일
+  final FocusNode _accountNameFocusNode = FocusNode(); // 계좌명 포커스 노드 추가
+  final FocusNode _accountNumberFocusNode = FocusNode(); // 계좌번호 포커스 노드 추가
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _dropdownValue = '학교 메일 선택';
   bool isEmailVerified = false;
@@ -53,15 +60,18 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _passwordController.addListener(_onpasswordChanged);
     _confirmPasswordController.addListener(_confirmPasswordChanged);
     _emailUserController.addListener(_onEmaildChanged);
-
+    _accountNameController.addListener(_onAccountNameChanged);
+    _accountNumberController.addListener(_onAccountNumberChanged);
   }
-
 
   @override
   void dispose() {
     _nicknameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _emailUserController.dispose();
+    _accountNameController.dispose();
+    _accountNumberController.dispose();
     super.dispose();
   }
 
@@ -85,7 +95,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       }
     });
   }
-
 
   _onpasswordChanged() {
     String pattern = r'^(?=.*[@$!%*#?&_-])[A-Za-z\d@$!%*#?&_-]{8,16}$';
@@ -130,6 +139,28 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _userEmailErrorText = null;
       }
       isEmailVerified = false; // 이메일 필드가 변경되면 인증 상태를 false로 설정
+    });
+  }
+
+  _onAccountNameChanged() {
+    String value = _accountNameController.text;
+    setState(() {
+      if (value == null || value.trim().isEmpty) {
+        _accountNameErrorText = '계좌명을 입력해주세요.';
+      } else {
+        _accountNameErrorText = null;
+      }
+    });
+  }
+
+  _onAccountNumberChanged() {
+    String value = _accountNumberController.text;
+    setState(() {
+      if (value == null || value.trim().isEmpty) {
+        _accountNumberErrorText = '계좌번호를 입력해주세요.';
+      } else {
+        _accountNumberErrorText = null;
+      }
     });
   }
 
@@ -235,7 +266,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
       return false;
     }
-
+    //
     if(isEmailVerified == false){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('이메일 인증을 완료해주세요.', textAlign: TextAlign.center,),
@@ -277,6 +308,24 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     if (_dropdownValue == '학교 메일 선택') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (_accountNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('계좌명을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (_accountNumberController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('계좌번호를 입력해주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );
@@ -806,11 +855,92 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         },
         textInputAction: TextInputAction.next,
         onFieldSubmitted: (value) {
+          FocusScope.of(context).requestFocus(_accountNameFocusNode);
+        },
+      ),
+    );
+  }
+
+  // 추가된 계좌명 필드 위젯
+  Widget _buildAccountNameField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
+      child: TextFormField(
+        controller: _accountNameController,
+        focusNode: _accountNameFocusNode,
+        style: TextStyle(
+          color: Colors.black,
+        ),
+        cursorColor: Colors.indigo,
+        cursorWidth: 3,
+        showCursor: true,
+        enabled: _isNicknameAvailable,
+        decoration: InputDecoration(
+          labelText: '은행명',
+          hintText: '계좌이체 거래를 위해서 필요합니다!',
+          labelStyle: TextStyle(color: Colors.black54),
+          border: OutlineInputBorder(),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.indigo,
+            ),
+          ),
+          errorText: _accountNameErrorText,
+        ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return '계좌 명을 입력해주세요.';
+          }
+          return null;
+        },
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
+          FocusScope.of(context).requestFocus(_accountNumberFocusNode);
+        },
+
+      ),
+    );
+  }
+
+  // 추가된 계좌번호 필드 위젯
+  Widget _buildAccountNumberField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
+      child: TextFormField(
+        controller: _accountNumberController,
+        focusNode: _accountNumberFocusNode,
+        style: TextStyle(
+          color: Colors.black,
+        ),
+        cursorColor: Colors.indigo,
+        cursorWidth: 3,
+        showCursor: true,
+        enabled: _isNicknameAvailable,
+        decoration: InputDecoration(
+          labelText: '계좌번호',
+          labelStyle: TextStyle(color: Colors.black54),
+          border: OutlineInputBorder(),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.indigo,
+            ),
+          ),
+          errorText: _accountNumberErrorText,
+        ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return '계좌 번호를 입력해주세요.';
+          }
+          return null;
+        },
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
           FocusScope.of(context).requestFocus(_buttonFocusNode);
         },
       ),
     );
   }
+
 
   Widget _buildBottomAppBar(BuildContext context) {
     return BottomAppBar(
@@ -910,8 +1040,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                         HapticFeedback.lightImpact();
 
                         String nickname = _nicknameController.text;
-                        ///////////   String password = _passwordController.text;
                         String email = _emailUserController.text + "@" + _dropdownValue!;
+                        String bank = _accountNameController.text;
+                        String accountNumber = _accountNumberController.text;
                         try {
                           DateTime now = DateTime.now();
                           String formattedDate = DateFormat('yyyy-MM-dd')
@@ -928,6 +1059,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             'email': email,
                             'joined_date': formattedDate,
                             'grade': 3.0,
+                            'bank' : bank,
+                            'accountNumber' : accountNumber,
                           });
 
                           // 다이어로그를 닫음
@@ -1056,6 +1189,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                         SizedBox(height: 30),
                         _buildConfirmPasswordField(),
                         SizedBox(height: 30),
+                        _buildAccountNameField(),
+                        SizedBox(height: 30),
+                        _buildAccountNumberField(),
+
                       ],
                     ),
                   ),

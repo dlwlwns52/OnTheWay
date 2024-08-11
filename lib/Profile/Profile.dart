@@ -21,6 +21,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   User? user;
   String? nickname;
   double? grade;
+  String? bank;
+  String? accountNumber;
   int feedbackCount = 0;
   DateTime? lastFeedbackTime;
   int _selectedIndex = 4; // 기본 선택된 항목을 '프로필'으로 설정
@@ -55,6 +57,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         var data = snapshot.docs.first.data() as Map<String, dynamic>;
         setState(() {
           nickname = data['nickname'];
+          bank = data['bank'];
+          accountNumber = data['accountNumber'];
           grade = (data['grade'] as num).toDouble();
         });
       }
@@ -398,6 +402,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               SizedBox(height: 20),
               _buildProfileInfoCard('닉네임', nickname ?? '설정되지 않음'),
               _buildProfileInfoCard('이메일', user?.email ?? '설정되지 않음'),
+              _buildProfileAccount('${bank}', accountNumber ?? '설정되지 않음'),
               _buildGradeCard(userGrade),
               SizedBox(height: 40),
               _buildButton('로그아웃', _logout, Colors.indigo.shade300),
@@ -497,8 +502,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 break;
             }
           }
-
-
           // 학교 랭킹
           else if (index == 3) {
             HapticFeedback.lightImpact();
@@ -576,6 +579,175 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
+
+  Widget _buildProfileAccount(String title, String value) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: ListTile(
+          title: Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(value),
+          leading: Icon(Icons.account_balance_outlined),
+          onTap: (){
+            HapticFeedback.lightImpact();
+            _updateBankAccountInfo();
+          }
+      ),
+    );
+  }
+
+  void _updateBankAccountInfo() async {
+    TextEditingController _bankController = TextEditingController();
+    TextEditingController _accountNumberController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.account_balance, color: Colors.indigo),
+                SizedBox(width: 8),
+                Text(
+                  '계좌 정보 수정',
+                  style: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                    color: Colors.indigo,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _bankController,
+                decoration: InputDecoration(
+                  labelText: '은행명',
+                  labelStyle: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: Colors.black,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Colors.indigo,
+                    )
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _accountNumberController,
+                decoration: InputDecoration(
+                  labelText: '계좌번호',
+                  labelStyle: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: Colors.black,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: Colors.indigo,
+                      )
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                String newBank = _bankController.text.trim();
+                String newAccountNumber = _accountNumberController.text.trim();
+
+                if (newBank.isNotEmpty && newAccountNumber.isNotEmpty) {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(nickname) // Firestore에서 사용자 문서를 업데이트합니다.
+                      .update({
+                    'bank': newBank,
+                    'accountNumber': newAccountNumber,
+                  });
+
+                  setState(() {
+                    bank = newBank;
+                    accountNumber = newAccountNumber;
+                  });
+
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '계좌 정보가 성공적으로 업데이트되었습니다.',
+                        textAlign: TextAlign.center,
+                      ),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '모든 필드를 채워주세요.',
+                        textAlign: TextAlign.center,
+                      ),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              child: Text('수정'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo[400],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.of(context).pop();
+              },
+              child: Text('취소'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[600],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   Widget _buildGradeCard(Grade? grade) {
     if (grade == null) {

@@ -295,6 +295,9 @@ class HanbatPostManager {
       String helperUid = '';
       String ownerUid = '';
 
+// 헬퍼 은행명 및 계좌번호
+      String helperBank = '';
+      String helperAccount = '';
 
 // 현재 시간을 가져옵니다.
       DateTime now = DateTime.now();
@@ -304,7 +307,7 @@ class HanbatPostManager {
 
 // 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.!!!!!!!!!!!!!!!!!!
 // 현재는 100번 test용
-//       if (clickCount >= 100) {
+//       if (clickCount >= 2) {
 //         ScaffoldMessenger.of(context).showSnackBar(
 //           SnackBar(
 //             content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
@@ -339,6 +342,10 @@ class HanbatPostManager {
         helperNickname = helpUserDoc.docs.first.data()['nickname'];
         // UID를 가져옵니다.
         helperUid = helpUserDoc.docs.first.data()['uid'];
+        // 은행명
+        helperBank = helpUserDoc.docs.first.data()['bank'];
+        // 계좌번호
+        helperAccount = helpUserDoc.docs.first.data()['accountNumber'];
 
 
 
@@ -439,8 +446,11 @@ class HanbatPostManager {
         'docName' : documentName,
         'timestamp': now,
         'response': null,
+        'helperBank' : helperBank,
+        'helperAccount' : helperAccount,
 
       });
+
 
       _pushHelpButton(true);
       await Future.delayed(Duration(milliseconds: 1200));

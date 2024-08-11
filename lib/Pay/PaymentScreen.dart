@@ -110,8 +110,6 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
 
-
-
   // 페이 다이어로그 - 오더용
   void _showOrdererPaymentDialog(BuildContext context) {
     showDialog(
@@ -140,7 +138,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     Center(
                       child: Text(
                         '다른 학생에게 도움을 주셔서 감사드립니다.\n덕분에 자영업자분들도 배달 수수료 \n부담을 덜 수 있었습니다.\n '
-                            '마지막으로 결제를 완료하면 \n거래가 종료됩니다. 감사합니다!',
+                            '마지막으로 결제를 완료하면 \n거래가 종료됩니다. 감사합니다',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'NanumSquareRound',
@@ -279,7 +277,8 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
   //메시지 객체 생성 후(사진) 메시지 전송에 보냄
-  void _sendMessage(String documentName, String senderName, String receiverName, String senderUid, String receiverUid) {
+  void _sendMessage(String documentName, String senderName, String receiverName, String senderUid, String receiverUid, String helperBank, String helperAccount
+      ,String cost) {
     DateTime now = DateTime.now();
     Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
 
@@ -290,7 +289,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
       senderName : senderName,
       receiverUid: receiverUid,
       senderUid: senderUid,
-      message: '완료 사진을 전송해 드립니다.\n확인 후 정산해주세요!',
+      message: '완료 사진을 전송해 드립니다.\n확인 후 정산해주세요! \n은행명 : ${helperBank}\n계좌번호 : ${helperAccount}\n가격 : ${cost}',
       timestamp: timestamp,
       read : false,
       type : 'text',
@@ -367,7 +366,8 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
   //헬퍼용 완성 다이어로그
-  void _showHelperPaymentDialog(BuildContext context, String documentName, String senderName, String receiverName, String senderUid, String receiverUid) {
+  void _showHelperPaymentDialog(BuildContext context, String documentName, String senderName, String receiverName, String senderUid, String receiverUid
+      ,String helperBank, String helperAccount, String cost) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -461,7 +461,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                   );
 
                   //메시지 저장(채팅 목록)
-                  _sendMessage(documentName, senderName, receiverName, senderUid, receiverUid);
+                  _sendMessage(documentName, senderName, receiverName, senderUid, receiverUid, helperBank, helperAccount, cost);
 
                   //메시지 저장(채팅 메시지)
                   Reference storageReference = FirebaseStorage.instance
@@ -490,12 +490,11 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('정산 요청이 완료되었습니다.',
+                      content: Text('정산 요청이 완료되었습니다. \n정산 요청 완료 버튼을 눌러주세요.',
                           textAlign: TextAlign.center),
                       duration: Duration(seconds: 2),
                     ),
                   );
-
 
                   setState(() {
                     isPhotoSent = true;
@@ -735,8 +734,12 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                                     isHelper ? paymentData['helper_email_nickname'] :paymentData['owner_email_nickname'],
                                     isHelper ? paymentData['owner_email_nickname'] :paymentData['helper_email_nickname'],
                                     isHelper ? paymentData['helperUid'] :paymentData['ownerUid'],
-                                    isHelper ? paymentData['ownerUid'] :paymentData['helperUid']
-                    )
+                                    isHelper ? paymentData['ownerUid'] :paymentData['helperUid'],
+                                    paymentData['helperBank'],
+                                    paymentData['helperAccount'],
+                                    paymentData['cost'],
+
+                        )
                              : _showOrdererPaymentDialog(context);
                   },
                   style: ElevatedButton.styleFrom(
