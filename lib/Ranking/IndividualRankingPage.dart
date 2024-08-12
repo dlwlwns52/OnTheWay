@@ -185,6 +185,7 @@ class _IndividualRankingPageState extends State<IndividualRankingPage> {
                 ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
+                centerTitle: true,
               ),
             ),
           ),

@@ -1164,6 +1164,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                   fontSize: 25,
                 ),
               ),
+              centerTitle: true,
             ),
           ],
         ),

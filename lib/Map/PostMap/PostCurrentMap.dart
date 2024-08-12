@@ -87,6 +87,8 @@ class _MapScreenState extends State<PostCurrentMap> {
               ),
               actions: <Widget>[
               ],
+              centerTitle: true,
+
             ),
           ],
         ),

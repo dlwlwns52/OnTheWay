@@ -88,6 +88,8 @@ class _MapScreenState extends State<PostStoreMap> {
               ),
               actions: <Widget>[
               ],
+              centerTitle: true,
+
             ),
           ],
         ),

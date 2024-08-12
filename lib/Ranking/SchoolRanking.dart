@@ -239,6 +239,7 @@ class _SchoolRankingScreenState extends State<SchoolRankingScreen> {
                 ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
+                centerTitle: true,
               ),
             ),
           ),

@@ -111,7 +111,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
   // 페이 다이어로그 - 오더용
-  void _showOrdererPaymentDialog(BuildContext context) {
+  void _showOrdererPaymentDialog(BuildContext context, String documentId, String ownerNickname) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -137,8 +137,9 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                   children: <Widget>[
                     Center(
                       child: Text(
-                        '다른 학생에게 도움을 주셔서 감사드립니다.\n덕분에 자영업자분들도 배달 수수료 \n부담을 덜 수 있었습니다.\n '
-                            '마지막으로 결제를 완료하면 \n거래가 종료됩니다. 감사합니다',
+                        '상대방이 결제를 요청할 시 채팅방을 통해\n 계좌이체를 진행해 주시면 됩니다.\n카카오페이와 토스페이 결제는 \n빠른 시일 내에 출시 될 예정입니다.\n감사합니다.',
+                        // '다른 학생에게 도움을 주셔서 감사드립니다.\n덕분에 자영업자분들도 배달 수수료 \n부담을 덜 수 있었습니다.\n '
+                        //     '마지막으로 결제를 완료하면 \n거래가 종료됩니다. 감사합니다',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'NanumSquareRound',
@@ -153,19 +154,19 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     RadioListTile<String>(
                       title: Row(
                         children: [
-                          Image.asset('assets/images/payment_icon_yellow_large.png', height: 25),
+                          Icon(Icons.account_balance_outlined),
                           SizedBox(width: 10),
-                          Text('카카오페이',
+                          Text('계좌 이체',
                             style: TextStyle(
-                            fontFamily: 'NanumSquareRound',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 17,
-                            color: Colors.black87,
+                              fontFamily: 'NanumSquareRound',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
                         ],
                       ),
-                      value: 'kakaopay',
+                      value: 'Transfer',
                       groupValue: selectedPayment,
                       onChanged: (String? value) {
                         setState(() {
@@ -178,26 +179,56 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     RadioListTile<String>(
                       title: Row(
                         children: [
+                          Image.asset('assets/images/payment_icon_yellow_large.png', height: 25),
+                          SizedBox(width: 10),
+                          Text('카카오페이',
+                            style: TextStyle(
+                            fontFamily: 'NanumSquareRound',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        ],
+                      ),
+                      value: 'kakaopay',
+                      groupValue: selectedPayment,
+                      onChanged: null,  // 비활성화 상태로 설정
+                      activeColor: Colors.grey,  // 비활성화 색상
+                      // onChanged: (String? value) {
+                      //   setState(() {
+                      //     HapticFeedback.lightImpact();
+                      //     selectedPayment = value!;
+                      //   });
+                      // },
+                      // activeColor: Colors.indigo,
+                    ),
+                    RadioListTile<String>(
+                      title: Row(
+                        children: [
                           Image.asset('assets/images/Toss_Symbol_Primary.png', height: 25),
                           SizedBox(width: 10),
                           Text('토스페이',
                             style: TextStyle(
                             fontFamily: 'NanumSquareRound',
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                             fontSize: 17,
-                            color: Colors.black87,
+                            color: Colors.grey,
                           ),),
                         ],
                       ),
                       value: 'tosspay',
                       groupValue: selectedPayment,
-                      onChanged: (String? value) {
-                        setState(() {
-                          HapticFeedback.lightImpact();
-                          selectedPayment = value!;
-                        });
-                      },
-                      activeColor: Colors.indigo,
+                      onChanged: null,  // 비활성화 상태로 설정
+                      activeColor: Colors.grey,  // 비활성화 색상
+                      //아직 미출시
+                      // onChanged: (String? value) {
+                      //   setState(() {
+                      //     HapticFeedback.lightImpact();
+                      //     selectedPayment = value!;
+                      //   });
+                      // },
+                      // activeColor: Colors.indigo,
                     ),
                   ],
                 ),
@@ -224,22 +255,34 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                       ),
                     ),
                     onPressed: () {
-                      if (selectedPayment == 'kakaopay') {
-                        HapticFeedback.lightImpact();
-                        Navigator.of(context).pop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => KaKaoPay(),
-                        ));
-
-                      } else if (selectedPayment == 'tosspay') {
+                      if(selectedPayment == 'Transfer'){
+                        //결제내역 삭제
+                        ownerDeletePayment(documentId, ownerNickname);
                         HapticFeedback.lightImpact();
                         Navigator.of(context).pop();
                         Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TossPay(),
+                            MaterialPageRoute(builder: (context) => AllUsersScreen(),
                             ));
                       }
+                      // if (selectedPayment == 'kakaopay') {
+                      //   HapticFeedback.lightImpact();
+                      //   Navigator.of(context).pop();
+                      //   // Navigator.push(
+                      //   //   context,
+                      //   //   MaterialPageRoute(builder: (context) => KaKaoPay(),
+                      //   // ));
+
+                      //
+                      // } else if (selectedPayment == 'tosspay') {
+                      //   HapticFeedback.lightImpact();
+                      //   Navigator.of(context).pop();
+                      //   // Navigator.push(
+                      //   //     context,
+                      //   //     MaterialPageRoute(builder: (context) => TossPay(),
+                      //   //     ));
+
+                      // }
 
                     },
                   ),
@@ -277,14 +320,14 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
   //메시지 객체 생성 후(사진) 메시지 전송에 보냄
-  void _sendMessage(String documentName, String senderName, String receiverName, String senderUid, String receiverUid, String helperBank, String helperAccount
-      ,String cost) {
+  Future<void> _sendMessage(String documentName, String senderName, String receiverName, String senderUid, String receiverUid, String helperBank, String helperAccount
+      ,String cost) async{
     DateTime now = DateTime.now();
     Timestamp timestamp = Timestamp.fromDate(now); // DateTime을 Timestamp로 변환
 
 
     // 텍스트 메시지 객체 생성
-    Message message = Message(
+    Message firstMessage = Message(
       receiverName : receiverName,
       senderName : senderName,
       receiverUid: receiverUid,
@@ -297,12 +340,28 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
     );
 
     // _addMessageToDb 함수를 사용하여 메시지 추가
-    _addMessageToDb(message, documentName);
+    await _addMessageToDb(firstMessage, documentName);
+
+    Message secondMessage = Message(
+      receiverName : receiverName,
+      senderName : senderName,
+      receiverUid: receiverUid,
+      senderUid: senderUid,
+      message: '${helperAccount}',
+      timestamp: timestamp,
+      read : false,
+      type : 'text',
+      isDeleted : false,
+    );
+
+    // _addMessageToDb 함수를 사용하여 메시지 추가
+    await _addMessageToDb(secondMessage, documentName);
+
 
   }
 
   //채팅 목록에 1 표시 및 미리보기 메시지를 위해 설정
-  void _addMessageToDb(Message message, String documentName) async {
+  Future<void> _addMessageToDb(Message message, String documentName) async {
     Map<String, dynamic> messageMap = message.toMap();
 
     // 해당 채팅방의 messages 서브컬렉션 참조
@@ -366,7 +425,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
   //헬퍼용 완성 다이어로그
-  void _showHelperPaymentDialog(BuildContext context, String documentName, String senderName, String receiverName, String senderUid, String receiverUid
+  void _showHelperPaymentDialog(BuildContext context, String documentName, String helperNickname, String ownerNickname, String helperUid, String ownerUid
       ,String helperBank, String helperAccount, String cost) {
     showDialog(
       context: context,
@@ -421,6 +480,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                             ),
                             onPressed: () {
                               HapticFeedback.lightImpact();
+
                               Navigator.of(context).pop(true);
                             },
                           ),
@@ -450,6 +510,8 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                         ],
                       ),
                 );
+//메시지 저장(채팅 목록)
+                await _sendMessage(documentName, helperNickname, ownerNickname, helperUid, ownerUid, helperBank, helperAccount, cost);
 
                 if (shouldUpload) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -460,8 +522,6 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     ),
                   );
 
-                  //메시지 저장(채팅 목록)
-                  _sendMessage(documentName, senderName, receiverName, senderUid, receiverUid, helperBank, helperAccount, cost);
 
                   //메시지 저장(채팅 메시지)
                   Reference storageReference = FirebaseStorage.instance
@@ -477,7 +537,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                       .doc(documentName)
                       .collection('messages')
                       .add({
-                    'senderName': senderName,
+                    'senderName': helperNickname,
                     'photoUrl': downloadUrl,
                     'senderUid': FirebaseAuth.instance.currentUser?.uid,
                     'timestamp': FieldValue.serverTimestamp(),
@@ -485,7 +545,6 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                     'message': '사진',
                     'read': false,
                     'isDeleted': false,
-
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -550,15 +609,17 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 18),
                       ),
-                      onPressed: () async { //사진을 보냈을 않을 경우 클릭 o
+                      onPressed: () async { //사진을 보냈을 경우 클릭 o
                         HapticFeedback.lightImpact();
                         if (isPhotoSent) {// true 가 사진 보냈을때
+                          helperDeletePayment(documentName, helperNickname);
                           Navigator.of(context).pop();
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => AllUsersScreen()),
                               );
-                            } else {
+                            }
+                        else {
                               await _pickImageAndShowPreview();}
                       }
                     ),
@@ -601,169 +662,281 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
     return int.parse(costString);
   }
 
-  Widget _buildPaymentCard(Map<String, dynamic> paymentData, bool isHelper) {
-    int intCost = _extractCostAsInt('${paymentData['cost']}');
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 7,
-      margin: EdgeInsets.fromLTRB(0,0,0,20), // 카드 위아래에 간격 추가
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '오더: ',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        color: isHelper ? Colors.black :Colors.indigo[900] //salmon색
-                      ),
-                    ),
-                    TextSpan(
-                      text: '${paymentData['owner_email_nickname']}',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        color: isHelper ? Colors.black : Colors.indigo[900]
-                      ),
-                    ),
-                    TextSpan(
-                      text: '   ⇢   ',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        color: Colors.black
-                      ),
-                    ),
-                    TextSpan(
-                      text: '헬퍼: ',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        color: isHelper ? Colors.indigo[900] : Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: '${paymentData['helper_email_nickname']}',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        color: isHelper ? Colors.indigo[900] : Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Divider(thickness: 2),
-            SizedBox(height: 10),
-            Center(
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${paymentData['post_store']}',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        color: Colors.indigo[900],
-                      ),
-                    ),
-                    TextSpan(
-                      text: '  ⇢  ',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: '${paymentData['orderer_location']}',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        color: Colors.indigo[900],
-                      ),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+  // helper의 isDeleted_ 활성화
+  Future<void> helperDeletePayment(String documentId, String helperNickname) async {
+    await FirebaseFirestore.instance.collection('Payments').doc(documentId).update({
+      'isDeleted_$helperNickname': true
+    });
+  }
 
-            SizedBox(height: 7),
-            Divider(thickness: 2),
-            SizedBox(height: 7),
-            Center(
+  //owner의 isDeleted_ 활성화
+  Future<void> ownerDeletePayment(String documentId, String ownerNickname) async {
+    await FirebaseFirestore.instance.collection('Payments').doc(documentId).update({
+      'isDeleted_$ownerNickname' : true
+
+    });
+  }
+
+  // 결제 내역  삭제하기 dialog
+  void showDeletePaymentDialog(BuildContext context, String documentId, String nickname, bool isHelper) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          title: Text(
+            '결제내역 삭제하기',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+          content: Text(
+            '정산 요청이 완료되면 자동으로 삭제됩니다. \n직접 결제 내역을 삭제 하실 거면 \'삭제\' 버튼을 눌러주세요.',
+            style: TextStyle(
+              fontFamily: 'NanumSquareRound',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
               child: Text(
-                '금액 : $intCost원',
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                  color: Color(0xFFF84A38)
-                  // Color(0xFFF52613)
-                ),
-                textAlign: TextAlign.center,
+                '삭제',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
+              onPressed: () {
+                // 헬퍼와 오너에 따라 다른 함수 호출
+                if (isHelper) {
+                  helperDeletePayment(documentId, nickname);
+                } else {
+                  ownerDeletePayment(documentId, nickname);
+                }
+                Navigator.of(context).pop();
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "결제 내역이 삭제되었습니다.",
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
             ),
-            SizedBox(height: 10),
-            Divider(thickness: 3),
-            SizedBox(height: 10),
-            Center(
-              child: SizedBox(
-                width: double.infinity, // 너비를 부모의 너비로 설정
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                        isHelper ? _showHelperPaymentDialog(context, paymentData['docName'],
-                                    isHelper ? paymentData['helper_email_nickname'] :paymentData['owner_email_nickname'],
-                                    isHelper ? paymentData['owner_email_nickname'] :paymentData['helper_email_nickname'],
-                                    isHelper ? paymentData['helperUid'] :paymentData['ownerUid'],
-                                    isHelper ? paymentData['ownerUid'] :paymentData['helperUid'],
-                                    paymentData['helperBank'],
-                                    paymentData['helperAccount'],
-                                    paymentData['cost'],
-
-                        )
-                             : _showOrdererPaymentDialog(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    backgroundColor: Colors.indigo[600],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                  ),
-                  icon: Icon(Icons.payment), // 버튼 아이콘
-                  label: Text(
-                    isHelper ? '결제 요청하기' : '결제하기',
-                    style: TextStyle(
-                      fontFamily: 'NanumSquareRound',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 20,
-                    ),
-                  ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
+              child: Text(
+                '취소',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPaymentCard(Map<String, dynamic> paymentData, bool isHelper) {
+    int intCost = _extractCostAsInt('${paymentData['cost']}');
+    //나가기 버튼 사용시 상대방 대화 안보이게 하기
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    String? currentUserEmail = currentUser?.email;
+    if (paymentData['helper_email'] == currentUserEmail && paymentData['isDeleted_${paymentData['helper_email_nickname']}'] == true) {
+      return Container(); // 또는 적절한 '삭제됨' UI를 표시
+    }
+    if (paymentData['owner_email'] == currentUserEmail && paymentData['isDeleted_${paymentData['owner_email_nickname']}'] == true) {
+      return Container(); // 또는 적절한 '삭제됨' UI를 표시
+    }
+
+    return GestureDetector(
+        onLongPress: (){
+          if (paymentData['helper_email'] == currentUserEmail){
+            showDeletePaymentDialog(context, paymentData['docName'], paymentData['helper_email_nickname'], true);
+          }
+          if(paymentData['owner_email'] == currentUserEmail){
+            showDeletePaymentDialog(context, paymentData['docName'], paymentData['owner_email_nickname'], false);
+          }
+        },
+        child : Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 7,
+        margin: EdgeInsets.fromLTRB(0,0,0,20), // 카드 위아래에 간격 추가
+
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '오더: ',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: isHelper ? Colors.black :Colors.indigo[900] //salmon색
+                        ),
+                      ),
+                      TextSpan(
+                        text: '${paymentData['owner_email_nickname']}',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: isHelper ? Colors.black : Colors.indigo[900]
+                        ),
+                      ),
+                      TextSpan(
+                        text: '   ⇢   ',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: Colors.black
+                        ),
+                      ),
+                      TextSpan(
+                        text: '헬퍼: ',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: isHelper ? Colors.indigo[900] : Colors.black,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '${paymentData['helper_email_nickname']}',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          color: isHelper ? Colors.indigo[900] : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Divider(thickness: 2),
+              SizedBox(height: 10),
+              Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${paymentData['post_store']}',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: Colors.indigo[900],
+                        ),
+                      ),
+                      TextSpan(
+                        text: '  ⇢  ',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: Colors.black,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '${paymentData['orderer_location']}',
+                        style: TextStyle(
+                          fontFamily: 'NanumSquareRound',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: Colors.indigo[900],
+                        ),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              SizedBox(height: 7),
+              Divider(thickness: 2),
+              SizedBox(height: 7),
+              Center(
+                child: Text(
+                  '금액 : $intCost원',
+                  style: TextStyle(
+                    fontFamily: 'NanumSquareRound',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: Color(0xFFF84A38)
+                    // Color(0xFFF52613)
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 10),
+              Divider(thickness: 3),
+              SizedBox(height: 10),
+              Center(
+                child: SizedBox(
+                  width: double.infinity, // 너비를 부모의 너비로 설정
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      //헬퍼일 경우
+                          isHelper ? _showHelperPaymentDialog(context,
+                                      paymentData['docName'], paymentData['helper_email_nickname'],
+                                      paymentData['owner_email_nickname'], paymentData['helperUid'],
+                                      paymentData['ownerUid'], paymentData['helperBank'],
+                                      paymentData['helperAccount'], paymentData['cost'],)
+                          //오더일 경우
+                               : _showOrdererPaymentDialog(context, paymentData['docName'], paymentData['owner_email_nickname']);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      backgroundColor: Colors.indigo[600],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                    ),
+                    icon: Icon(Icons.payment), // 버튼 아이콘
+                    label: Text(
+                      isHelper ? '결제 요청하기' : '결제하기',
+                      style: TextStyle(
+                        fontFamily: 'NanumSquareRound',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 
@@ -794,6 +967,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
               ),
               centerTitle: true,
               automaticallyImplyLeading: false, // '<' 이 뒤로가기 버튼 삭제
+
             ),
           ],
         ),

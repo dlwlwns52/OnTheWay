@@ -23,6 +23,8 @@ class TossPay extends StatelessWidget {
         iconTheme: IconThemeData(
           color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
         ),
+        centerTitle: true,
+
       ),
       body: IamportPayment(
         // 결제 모듈 설정

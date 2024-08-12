@@ -89,6 +89,8 @@ class _MapScreenState extends State<StoreMapScreen> {
               ),
               actions: <Widget>[
               ],
+              centerTitle: true,
+
             ),
           ],
         ),

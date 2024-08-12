@@ -547,19 +547,42 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
   }
 
+  //메시지 복사
+
+  void _copyMessage(String message){
+    Clipboard.setData(ClipboardData(text: message));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "메시지가 복사되었습니다.",
+          textAlign: TextAlign.center,
+        ),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
 
 
   //메시지 삭제 및 수정 바텀 시트
-  Future<void> showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot) async {
+  Future<void> showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot,
+      bool text, bool isSentMy) async {
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 150,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Wrap(
+
             children: <Widget>[
+              if(text)
+              ListTile(
+                leading: Icon(Icons.copy),
+                title: Text('복사'),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.of(context).pop("copy");
+                },
+              ),
+              if(isSentMy)
               ListTile(
                 leading: Icon(Icons.delete),
                 title: Text('삭제'),
@@ -568,25 +591,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   Navigator.of(context).pop("delete");
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.clear),
-                title: Text('닫기'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
+              Container(
+                height: 80,
+                child: ListTile(
+                  leading: Icon(Icons.clear),
+                  title: Text('닫기'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
               ),
             ],
-          ),
-        );
+          );
+        // );
       },
     );
 
+    if(action == 'copy'){
+      _copyMessage(snapshot['message']);
+    }
     if (action == "delete") {
       _deleteMessageImage(snapshot.id);
-    } else if (action == "edit") {
-      // 수정할 메시지의 새로운 내용을 입력받는 과정 필요
-      // 예시에서는 바로 _editMessage 메서드를 호출하고 있으나, 실제로는 사용자 입력을 받는 단계를 추가해야 할 수 있습니다.
-      // _editMessage(snapshot.id, snapshot['message']);
     }
   }
 
@@ -822,7 +847,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         if (isSentByMe && !isMessageRead)
           Text('1', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
 
-        if (!isSentByMe )
+        if (!isSentByMe)
           // Stack(
           //   children:[
           CircleAvatar(
@@ -856,7 +881,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 GestureDetector(
                   onTap: () {
                     // 이미지 클릭 시 FullScreenImage 보여주기
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -869,7 +893,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   onLongPress: () {
                     HapticFeedback.lightImpact();
                     if (isSentByMe) {
-                      showMessageOptionsBottomSheet(context, snapshot);
+                      showMessageOptionsBottomSheet(context, snapshot, false, true);
+                    }
+                    else if(!isSentByMe){
+                      showMessageOptionsBottomSheet(context, snapshot, false, false);
                     }
                   },
 
@@ -930,14 +957,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               },
 
 
-
             //텍스트 전송
             if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == false) ...{
               GestureDetector(
                 onLongPress: () {
                   HapticFeedback.lightImpact();
                   if (isSentByMe) {
-                    showMessageOptionsBottomSheet(context, snapshot);
+                    showMessageOptionsBottomSheet(context, snapshot, true, true);
+                  }
+                  else if(!isSentByMe){
+                    showMessageOptionsBottomSheet(context, snapshot, true, false);
                   }
                 },
                 child: Container(
@@ -1044,6 +1073,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             iconTheme: IconThemeData(
               color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
             ),
+            centerTitle: true,
 
             actions: <Widget>[
               Container(

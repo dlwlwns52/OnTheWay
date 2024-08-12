@@ -116,6 +116,8 @@ class _OwnerTMapViewState extends State<OwnerTMapView> {
               ),
               actions: <Widget>[
               ],
+              centerTitle: true,
+
             ),
           ],
         ),

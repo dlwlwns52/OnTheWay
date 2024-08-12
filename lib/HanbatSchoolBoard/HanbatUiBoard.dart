@@ -212,7 +212,6 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                           return IconButton(
                             icon: Icon(Icons.notifications),
                             onPressed: () async {
-
                               HapticFeedback.lightImpact();
                               await resetMessageCount(ownerNickname);
                               Navigator.of(context).push(

@@ -249,6 +249,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                       fontSize : 25,
                   ),
                 ),
+                centerTitle: true,
               ),
             ],
           ),

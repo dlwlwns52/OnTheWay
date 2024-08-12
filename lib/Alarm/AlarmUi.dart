@@ -110,7 +110,8 @@ class _NotificationScreenState extends State<AlarmUi> {
                       fontFamily: 'NanumSquareRound',
                       fontWeight: FontWeight.w600,
                       fontSize: 25,
-                    ),),
+                    ),
+                  ),
                   actions: <Widget>[
                     IconButton(
                       icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
@@ -122,6 +123,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                       },
                     ),
                   ],
+                  centerTitle: true,
                 ),
               ],
             ),

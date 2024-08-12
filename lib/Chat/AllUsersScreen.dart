@@ -483,6 +483,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                     ),
                     actions: <Widget>[
                     ],
+                    centerTitle: true,
                   ),
                 ],
               ),

@@ -391,6 +391,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
