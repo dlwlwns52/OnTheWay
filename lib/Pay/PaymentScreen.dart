@@ -347,7 +347,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
       senderName : senderName,
       receiverUid: receiverUid,
       senderUid: senderUid,
-      message: '${helperAccount}',
+      message: '${helperBank} ${helperAccount}',
       timestamp: timestamp,
       read : false,
       type : 'text',

@@ -108,10 +108,8 @@ flutter:
     - assets/images/payment_icon_yellow_large.png
     - assets/images/payment_icon_yellow_medium.png
     - assets/images/payment_icon_yellow_small.png
-    - assets/images/testlogo1.jpg
-    - assets/images/testlogo2.jpg
-    - assets/images/first_logo.png
-    - assets/images/testlogo1.png
+    - assets/images/LoginLogo.png
+    - assets/images/LoginLogo2.png
 
     - assets/fonts/
   fonts:

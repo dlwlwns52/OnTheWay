@@ -6,6 +6,7 @@ import 'package:OnTheWay/Map/Navigation/OwnerTMapView.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
@@ -83,6 +84,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _startListeningToMessages(); // 메시지 변경 사항을 실시간으로 듣기
     _startListeningToUserDelete();
     _fetchNicknames();
+
   }
 
   @override

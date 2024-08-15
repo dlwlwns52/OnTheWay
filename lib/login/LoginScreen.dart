@@ -8,6 +8,7 @@ import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatUiBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
+import '../LocationTest.dart';
 
 class LoginScreen extends StatefulWidget {
 
@@ -535,7 +536,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             HapticFeedback.lightImpact();
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => CreateAccount())
+                                MaterialPageRoute(builder: (context) => IsolateExample())
+                            // CreateAccount
                             );
                           },
                           style: ElevatedButton.styleFrom(

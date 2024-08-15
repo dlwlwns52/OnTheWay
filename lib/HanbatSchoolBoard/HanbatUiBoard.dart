@@ -156,7 +156,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             AppBar(
               automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
               backgroundColor: Colors.transparent,
-              title: Text('광주교대 게시판',
+              title: Text('연세대학교 게시판',
                 style: TextStyle(
                   fontSize: 23,
                   fontWeight: FontWeight.w600,
