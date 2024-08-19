@@ -17,6 +17,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:background_locator_2/background_locator.dart';
 
+import 'LocationTest.dart';
 import 'Map/Navigation/LocationCallbackHandler.dart';
 
 
@@ -116,6 +117,7 @@ class _MyAppState extends State<MyApp> {
               switch (domain) {
                 case 'naver.com':
                   return HanbatBoardPage();
+                  // return IsolateExample();
               // 여기에 다른 도메인별 게시판 페이지 조건을 추가
 
                 default:
@@ -123,9 +125,10 @@ class _MyAppState extends State<MyApp> {
               }
             } else {
               // return LoginScreen(); // 로그인 화면
-              return HanbatBoardPage(); // 임시
+              return LoginScreen(); // 임시
             }
-          } else {
+          }
+          else {
             return LoginScreen(); // 오류 화면
           }
         },
@@ -143,33 +146,26 @@ class LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
           children: <Widget>[
-            // SizedBox(height: 60),
-            Text(
-                'OnTheWay',
-                textAlign: TextAlign.center,
-                style:
-                // TextStyle(
-                //   fontWeight: FontWeight.bold,
-                //   fontSize: 70,ㅒ
-                //   color: Colors.indigo,
-                // ),
-               TextStyle(
-                fontFamily: 'NanumSquareRound',
-                fontWeight: FontWeight.w900,
-                fontSize: 55,
-                 color: Colors.indigo,
-              ),
-                maxLines: 1,
-              ),
-            SizedBox(height: 20),
             Image.asset(
-              'assets/images/testlogo1.png',
-              width: 300, // 이미지 너비를 설정합니다.
-              height: 300, // 이미지 높이를 설정합니다.
+              'assets/images/LoginLogo.png',
+              width: 200, // 이미지 너비를 설정합니다.
+              height: 200, // 이미지 높이를 설정합니다.
             ),
+            // Image.asset(
+            //   'assets/images/LoginLogo2.png',
+            //   width: 300, // 이미지 너비를 설정합니다.
+            //   height: 600, // 이미지 높이를 설정합니다.
+            // ),
+            SizedBox(height: 100),
           ],
         ),
       ),
     );
   }
 }
+
+
+
+
+
+

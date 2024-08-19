@@ -153,19 +153,20 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
       return;
     }
 
-    // if(currentLocationSet == false){
-    //   _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
-    //   return;
-    // }
-    //
-    // if(storeLocationSet == false){
-    //   _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
-    //   return;
-    // }
+    if(currentLocationSet == false){
+      _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
+      return;
+    }
+
+    if(storeLocationSet == false){
+      _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
+      return;
+    }
 
     try {
       FirebaseFirestore db = FirebaseFirestore.instance;
       String? email = getUserEmail();
+      String? nickname;
 
       QuerySnapshot existingPosts = await db
           .collection('naver_posts')
@@ -173,11 +174,32 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
           .where('email', isEqualTo: email)
           .get();
 
+      QuerySnapshot nicknameSnapshot = await db
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      // 문서가 하나 이상 반환되었을 때만 접근
+      if (nicknameSnapshot.docs.isNotEmpty) {
+        // 첫 번째 문서에 접근 (여기서는 이메일이 유일하다고 가정)
+        DocumentSnapshot documentSnapshot = nicknameSnapshot.docs.first;
+
+        // 'nickname' 필드 값 가져오기
+        nickname = documentSnapshot['nickname'];
+
+        print('Nickname: $nickname');
+      } else {
+        print('No user found with the given email.');
+      }
+      print(nickname);
+
+
       if (existingPosts.docs.isNotEmpty && widget.post == null) {
         _showSnackBar('동일한 제목의 게시물이 이미 존재합니다.');
       } else {
         String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
         await db.collection('naver_posts').doc(documentName).set({
+          'nickname' : nickname,
           'store_location' :_storeSelectedLocation ?? '가게 위치 미설정',
           'current_location' : _currentSelectedLocation ?? '현재 위치 미설정',
           'my_location': _locationController.text,

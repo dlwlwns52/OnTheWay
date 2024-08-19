@@ -378,11 +378,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   }
 
+
   @override
   Widget build(BuildContext context) {
     Grade? userGrade = grade != null ? Grade(grade!) : null;
 
     return Scaffold(
+
+
       appBar: AppBar(
         automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
         title: Text('프로필', style:
@@ -393,6 +396,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         iconTheme: IconThemeData(color: Colors.black),
         centerTitle: true,
       ),
+
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -529,19 +534,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Center(
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[200],
-            child: user?.photoURL != null
-                ? null
-                : Icon(
-              Icons.account_circle,
-              size: 100,
-              color: Colors.grey,
+          InkWell(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('구글 프로필 사진을 변경하시면 해당 프로필사진이 변경됩니다.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[200],
+              child: user?.photoURL != null
+                  ? null
+                  : Icon(
+                Icons.account_circle,
+                size: 100,
+                color: Colors.indigo,
+              ),
+              backgroundImage: user?.photoURL != null
+                  ? NetworkImage(user!.photoURL!)
+                  : null,
             ),
-            backgroundImage: user?.photoURL != null
-                ? NetworkImage(user!.photoURL!)
-                : null,
           ),
           SizedBox(height: 16),
           Text(

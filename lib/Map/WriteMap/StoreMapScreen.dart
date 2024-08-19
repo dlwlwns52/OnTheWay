@@ -107,7 +107,7 @@ class _MapScreenState extends State<StoreMapScreen> {
           _mapController = controller; // Kakao Map Controller 생성 및 할당
         },
         markers: markers.toList(), // 마커 리스트 설정
-        center: storeSelectedLocation ?? LatLng(36.351041, 127.301007), // 초기 중심 위치 설정   (현재 한밭대)
+        center: storeSelectedLocation ?? LatLng(37.5718, 126.9769), // 초기 중심 위치 설정
         onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
           if (markerDragType == MarkerDragType.end) {
             markerPosition = latLng;

@@ -108,7 +108,7 @@ class _MapScreenState extends State<PostStoreMap> {
             },
             markers: markers.toList(),
             // 마커 리스트 설정
-            center: storeSelectedLocation ?? LatLng(36.351041, 127.301007),
+            center: storeSelectedLocation ?? LatLng(37.5718, 126.9769),
             // 초기 중심 위치 설정
             onMarkerDragChangeCallback: (String markerId, LatLng latLng,
                 int zoomLevel, MarkerDragType markerDragType) {

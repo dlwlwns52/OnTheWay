@@ -82,6 +82,13 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("계정 인증 중 입니다. \n잠시만 기다려주세요.",textAlign: TextAlign.center,),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text,
@@ -97,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           //자동 로그인 기이능
           if(_isAutoLogin == true){
+
             final FirebaseFirestore firestore = FirebaseFirestore.instance;
             QuerySnapshot querySnapshot = await firestore.collection('users')
                 .where('email', isEqualTo: email)
@@ -536,7 +544,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             HapticFeedback.lightImpact();
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => IsolateExample())
+                                MaterialPageRoute(builder: (context) => CreateAccount())
+                                // MaterialPageRoute(builder: (context) => Iso입lateExample())
                             // CreateAccount
                             );
                           },

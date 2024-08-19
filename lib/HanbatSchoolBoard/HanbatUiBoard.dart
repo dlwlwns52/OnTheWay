@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import '../Alarm/AlarmUi.dart';
 
 import '../Board/UiBoard.dart';
@@ -16,8 +17,6 @@ import '../Ranking/SchoolRanking.dart';
 import 'HanbatWriteBoard.dart';
 import 'HanbatPostManager.dart';
 import '../Alarm/Alarm.dart';
-import 'package:OnTheWay/Map/PostMap/PostStoreMap.dart';
-import 'package:OnTheWay/Map/PostMap/PostCurrentMap.dart';
 import 'dart:io' show Platform;
 import 'package:lottie/lottie.dart';
 
@@ -48,6 +47,12 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   //닉네임 가져오기
   late Future<String?> _nickname;
 
+  //프로필 사진 유저정도
+  User? user;
+
+  // 초기 게시글 개수를 0으로 설정
+  int postCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -58,9 +63,15 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
 
+
     //닉네임 가져옴
     _nickname = getNickname();
 
+
+    //프로필 사진
+    user = _auth.currentUser;
+
+    // _loadPostCount(); // 위젯 초기화 시 게시글 개수를 로드
   }
 
 
@@ -111,9 +122,9 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   //userStatus에서 본인 nickname 찾기
   Future<String?> getNickname() async {
     var querySnapshot = await FirebaseFirestore.instance
-      .collection('users')
-      .where('email', isEqualTo: botton_email)
-      .get();
+        .collection('users')
+        .where('email', isEqualTo: botton_email)
+        .get();
 
     if (querySnapshot.docs.isNotEmpty){
       return querySnapshot.docs.first['nickname'];
@@ -137,551 +148,690 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
   }
 
+  // //게시글 갯수 - 다른학교 추가시 수정
+  // Future<int> getPostCount() async{
+  //   try{
+  //     QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('naver_posts').get();
+  //     return querySnapshot.size;
+  //   }
+  //   catch(e)
+  //   {
+  //     print('Error fetching post count: $e');
+  //     return 0; // 오류가 발생하면 0을 반환합니다.
+  //   }
+  // }
+  //
+  // void _loadPostCount() async {
+  //   int count = await getPostCount(); // Firestore에서 게시글 개수를 가져옴
+  //   setState(() {
+  //     postCount = count; // 가져온 게시글 개수를 상태에 반영
+  //   });
+  // }
+
+
+  String formatTimeAgo(Timestamp timestamp) {
+    // Timestamp를 DateTime으로 변환
+    DateTime dateTime = timestamp.toDate();
+    final Duration difference = DateTime.now().difference(dateTime);
+
+    if (difference.inMinutes <= 1) {
+      return '방금 전';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}분 전';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}시간 전';
+    } else {
+      return '${difference.inDays}일 전';
+    }
+  }
+
+  //게시글 내용
+  Widget _buildPostCard({
+    required String userName,
+    required String timeAgo,
+    required String location,
+    required String cost,
+    required String storeName,
+    required bool isMyPost,
+  }) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Color(0xFFD0D0D0)),
+        borderRadius: BorderRadius.circular(12),
+        color: Color(0xFFFFFFFF),
+      ),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container( //           프로필사진
+                          margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
+                          child: CircleAvatar(
+                            radius: 16, // 반지름 설정 (32 / 2)
+                            backgroundColor: Colors.grey[200],
+                            child: user?.photoURL != null
+                                ? null
+                                : Icon(
+                              Icons.account_circle,
+                              size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                              color: Colors.indigo,
+                            ),
+                            backgroundImage: user?.photoURL != null
+                                ? NetworkImage(user!.photoURL!)
+                                : null,
+                          ),
+
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
+                        child: Text(
+                          isMyPost ? '${userName} - 내 게시글' : userName,
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            height: 1,
+                            letterSpacing: -0.5,
+                            color: isMyPost ? Color(0xFF1D4786) : Color(0xFF222222),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 9),
+                    child: Text(
+                      timeAgo,
+                      style: TextStyle(
+                        fontFamily: 'Pretendard', // Pretendard 폰트 지정
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        height: 1,
+                        letterSpacing: -0.5,
+                        color: Color(0xFFAAAAAA),
+                      ),
+
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              width: 303,
+              height: 1,
+              color: Color(0xFFF6F6F6),
+            ),
+            _buildInfoRow(
+              iconPath: 'assets/pigma/location.svg',
+              label: '위치',
+              value: location,
+            ),
+            _buildInfoRow(
+              iconPath: 'assets/pigma/dollar_circle.svg',
+              label: '비용',
+              value: cost,
+            ),
+            _buildInfoRow(
+              iconPath: 'assets/pigma/vuesaxbulkhouse.svg',
+              label: '매장명',
+              value: storeName,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  //게시글 구조
+  Widget _buildInfoRow({
+    required String iconPath,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                width: 24,
+                height: 24,
+                child: SvgPicture.asset(
+                  iconPath,
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    height: 1,
+                    letterSpacing: -0.4,
+                    color: Color(0xFF767676),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+            child: Text(
+              value,
+              style:TextStyle(
+                fontFamily: 'Pretendard',
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                height: 1,
+                letterSpacing: 0.5,
+                color: Color(0xFF222222),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  //바텀바
+  Widget _buildBottomNavItem({
+    required String iconPath,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              width: 24,
+              height: 24,
+              color: isActive ? Colors.indigo : Colors.black,
+            ),
+            SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'NanumSquareRound',
+                fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+                fontSize: isActive ? 13 : 12,
+                color: isActive ? Colors.indigo : Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
 
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Lottie.asset(
-                'assets/lottie/blue2.json',
-                fit: BoxFit.fill,
-              ),
-            ),
-            AppBar(
-              automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
-              backgroundColor: Colors.transparent,
-              title: Text('연세대학교 게시판',
-                style: TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'NanumSquareRound',
-                ),
-              ),
-              centerTitle: true,
-              actions: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: <Widget>[
-
-                      FutureBuilder<String?>(
-                        future: _nickname,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return IconButton(
-                              icon: Icon(Icons.notifications),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    duration: Duration(seconds: 1),
-                                  ),
-                                );
-                              },
-                            );
-                          } else if (!snapshot.hasData || snapshot.data == null) {
-                            return IconButton(
-                              icon: Icon(Icons.notifications),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    duration: Duration(seconds: 1),
-                                  ),
-                                );
-                              },
-                            );
-                          }
-
-                          String ownerNickname = snapshot.data!;
-                          return IconButton(
-                            icon: Icon(Icons.notifications),
-                            onPressed: () async {
-                              HapticFeedback.lightImpact();
-                              await resetMessageCount(ownerNickname);
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => AlarmUi(),
-                                ),
-                              );
-                            },
-                        );
-                      },
-                    ),
-                      // if (messageCount > 0)
-                      FutureBuilder<String?>(
-                        future: _nickname,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Container();
-                          } else if (!snapshot.hasData || snapshot.data == null) {
-                            return Container();
-                          }
-
-                          String ownerNickname = snapshot.data!;
-                          return StreamBuilder<DocumentSnapshot>(
-                            stream: getMessageCountStream(ownerNickname),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData || !snapshot.data!.exists) {
-                                return Container();
-                              }
-                              var data = snapshot.data!.data() as Map<String, dynamic>;
-                              int messageCount = data['messageCount'] ?? 0;
-
-                              return Positioned(
-                                right: 11,
-                                top: 11,
-                                child: messageCount > 0
-                                    ? Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  constraints: BoxConstraints(
-                                    minWidth: 14,
-                                    minHeight: 14,
-                                  ),
-                                  child: Text(
-                                    '$messageCount',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                                    : Container(),
-                              );
-                            },
+      appBar: AppBar(
+        title: Text(
+          '한국대학교 게시판',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            height: 1.0,
+            // letterSpacing: -0.5,
+            color: Color(0xFF222222),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+        actions: [
+          Container(
+            margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: <Widget>[
+                FutureBuilder<String?>(
+                  future: _nickname,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                      return IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/pigma/notifications.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 1),
+                            ),
                           );
                         },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+                      );
+                    }
 
-      //게시판 몸통
-      body: Stack(
-          children: [
-            Column(
-              children: <Widget>[
-                SizedBox(height: 10), // AppBar와 Row 사이에 20픽셀의 높이를 가진 공간을 추가합니다.
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.store,),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("가게 위치 입니다.", textAlign: TextAlign.center,),
-                            // behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 1),
+                    String ownerNickname = snapshot.data!;
+                    return IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/pigma/notifications.svg',
+                        width: 25,
+                        height: 25,
+                      ),
+                      onPressed: () async {
+                        HapticFeedback.lightImpact();
+                        await resetMessageCount(ownerNickname);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => AlarmUi(),
                           ),
                         );
                       },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.location_on,), // 원하는 색상으로 설정
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "상대방이 있는 위치 입니다.",
+                    );
+                  },
+                ),
+                FutureBuilder<String?>(
+                  future: _nickname,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                      return Container();
+                    }
+
+                    String ownerNickname = snapshot.data!;
+                    return StreamBuilder<DocumentSnapshot>(
+                      stream: getMessageCountStream(ownerNickname),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData || !snapshot.data!.exists) {
+                          return Container();
+                        }
+                        var data = snapshot.data!.data() as Map<String, dynamic>;
+                        int messageCount = data['messageCount'] ?? 0;
+
+                        return Positioned(
+                          right: 9,
+                          top: 9,
+                          child: messageCount > 0
+                              ? Container(
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            constraints: BoxConstraints(
+                              minWidth: 14,
+                              minHeight: 14,
+                            ),
+                            child: Text(
+                              '$messageCount',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold
+                              ),
                               textAlign: TextAlign.center,
                             ),
-                            duration: Duration(seconds: 1),
-                          ),
+                          )
+                              : Container(),
                         );
                       },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.monetization_on),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("도움 비용입니다.", textAlign: TextAlign.center,),
-                            // behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                    ),
-
-                  ],
-                ),
-                Flexible(
-                  child: StreamBuilder<List<DocumentSnapshot>>(
-                    stream: getPosts(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('오류가 발생했습니다.'));
-                      } else if (snapshot.hasData) {
-                        final posts = snapshot.data!;
-                        if (posts.isEmpty) {
-                          return
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: Container(
-                                width: 300,
-                                height: 200,
-                                child: Text(
-                                  '현재 게시물이 없습니다. \n새로운 주문이 들어오면 알림과 함께 \n이곳에서 확인하실 수 있습니다.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    fontFamily: 'NanumSquareRound',
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                            );
-                        }
-                        final myEmail = currentUserEmail();
-
-                        posts.sort((a, b) {
-                          Map<String, dynamic> dataA = a.data() as Map<String, dynamic>;
-                          Map<String, dynamic> dataB = b.data() as Map<String, dynamic>;
-                          bool isMyPostA = dataA['email'] == myEmail;
-                          bool isMyPostB = dataB['email'] == myEmail;
-                          if (isMyPostA && !isMyPostB) return -1;
-                          if (!isMyPostA && isMyPostB) return 1;
-                          return 0;
-                        });
-
-                        return ListView.builder(
-                          itemCount: posts.length,
-                          itemBuilder: (context, index) {
-                            DocumentSnapshot doc = posts[index];
-                            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                            bool isMyPost = data['email'] == myEmail;
-                            bool nextPostIsMine = false;
-
-                            if (index + 1 < posts.length) {
-                              Map<String, dynamic> nextData = posts[index + 1].data() as Map<String, dynamic>;
-                              nextPostIsMine = nextData['email'] == myEmail;
-                            }
-
-                            return Column(
-                              children: <Widget>[
-                                InkWell(
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    postManager.helpAndExit(context, doc, _pushHelpButton);
-                                  },
-                                  child: Card(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    elevation: 3.0,
-                                    color: isMyPost ? Colors.indigo[50] : Colors.white,
-                                    child: Container(
-                                      height: 100,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: <Widget>[
-                                            Expanded(
-                                              child: Center(
-                                                child: Container(
-                                                  width: 80,
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      if (!isMyPost) {
-                                                        HapticFeedback.heavyImpact();
-                                                        Navigator.of(context).push(MaterialPageRoute(
-                                                          builder: (context) => PostStoreMap(documentId: doc.id),
-                                                        ));
-                                                      } else {
-                                                        postManager.helpAndExit(context, doc, _pushHelpButton);
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      padding: EdgeInsets.all(5.0),
-                                                      decoration: BoxDecoration(
-                                                        color: isMyPost ? Colors.indigo[50] : Colors.white,
-                                                        borderRadius: BorderRadius.circular(20),
-                                                        boxShadow: isMyPost ? [] : [
-                                                          BoxShadow(
-                                                            color: Colors.blueGrey.withOpacity(0.25),
-                                                            spreadRadius: 1,
-                                                            offset: Offset(0, 2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Text(
-                                                        data['store'] ?? '내용 없음',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: getTextSize(isMyPost),
-                                                          fontWeight: FontWeight.w800,
-                                                          fontFamily: 'NanumSquareRound',
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Center(
-                                                child: Container(
-                                                  width: 80,
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      HapticFeedback.heavyImpact();
-                                                      if (!isMyPost) {
-                                                        Navigator.of(context).push(MaterialPageRoute(
-                                                          builder: (context) => PostCurrentMap(documentId: doc.id),
-                                                        ));
-                                                      } else {
-                                                        postManager.helpAndExit(context, doc, _pushHelpButton);
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      padding: EdgeInsets.all(5.0),
-                                                      decoration: BoxDecoration(
-                                                        color: isMyPost ? Colors.indigo[50] : Colors.white,
-                                                        borderRadius: BorderRadius.circular(20.0),
-                                                        boxShadow: isMyPost ? [] : [
-                                                          BoxShadow(
-                                                            color: Colors.blueGrey.withOpacity(0.25),
-                                                            spreadRadius: 1,
-                                                            offset: Offset(0, 2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Text(
-                                                        data['my_location'] ?? '내용 없음',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: getTextSize(isMyPost),
-                                                          fontWeight: FontWeight.w800,
-                                                          fontFamily: 'NanumSquareRound',
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                data['cost'] ?? '추가 내용 없음',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: getTextSize(isMyPost),
-                                                  fontWeight: FontWeight.w800,
-                                                  fontFamily: 'NanumSquareRound',
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (isMyPost && !nextPostIsMine)
-                                  Divider(
-                                    color: Colors.indigo[50],
-                                    thickness: 3.0,
-                                  ),
-                              ],
-                            );
-                          },
-                        );
-                      } else {
-                        return Center(child: Text('게시글이 없습니다.'));
-                      }
-                    },
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
-            if (_pushHelp)
-              Container(
-                color: Colors.grey.withOpacity(0.5),
-                child: Center(
-                  child: Lottie.asset(
-                    'assets/lottie/smile.json',
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.contain,
+          ),
+        ],
+      ),
+      //게시판 몸통
+      body: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: 10), // AppBar와 Row 사이에 10픽셀의 높이를 가진 공간을 추가합니다.
+                Container(
+                margin: EdgeInsets.fromLTRB(20, 0, 20, 19),
+                  child: Align(
+                  alignment: Alignment.topLeft,
+                  child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('naver_posts').snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Text("Error: ${snapshot.error}");
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+
+                    postCount = snapshot.data?.size ?? 0;
+                    return RichText(
+                      text: TextSpan(
+                        text: '총 ',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          height: 1,
+                          letterSpacing: -0.5,
+                          color: Color(0xFF222222),
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '$postCount건',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              height: 1.3,
+                              letterSpacing: -0.5,
+                              color: Color(0xFF1D4786),
+                            ),
+                          ),
+                          TextSpan(
+                            text: '의 게시글이 있어요!',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              height: 1,
+                              letterSpacing: -0.5,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   ),
                 ),
               ),
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
-                  return Container(
-                    // width: 100,
-                    // height: 45,
-                    child: FloatingActionButton(
-                      onPressed: () {
-                        // 글쓰기 버튼 눌렀을 때의 동작
-                        HapticFeedback.lightImpact();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HanbatNewPostScreen()),
+              Flexible(
+                child: StreamBuilder<List<DocumentSnapshot>>(
+                  stream: getPosts(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('오류가 발생했습니다.'));
+                    } else if (snapshot.hasData) {
+                      final posts = snapshot.data!;
+
+                      if (posts.isEmpty) {
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            width: 300,
+                            height: 200,
+                            child: Text(
+                              '현재 게시물이 없습니다. \n새로운 주문이 들어오면 알림과 함께 \n이곳에서 확인하실 수 있습니다.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                fontFamily: 'NanumSquareRound',
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
                         );
-                      },
-                      // label: Text('글쓰기'),
-                      child: Icon(Icons.edit),
-                      backgroundColor: Colors.indigo[300],
-                      foregroundColor: Colors.white,
-                      elevation: 3.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                    ),
-                  );
-                },
+                      }
+                      final myEmail = currentUserEmail();
+
+                      posts.sort((a, b) {
+                        Map<String, dynamic> dataA = a.data() as Map<String, dynamic>;
+                        Map<String, dynamic> dataB = b.data() as Map<String, dynamic>;
+                        bool isMyPostA = dataA['email'] == myEmail;
+                        bool isMyPostB = dataB['email'] == myEmail;
+                        if (isMyPostA && !isMyPostB) return -1;
+                        if (!isMyPostA && isMyPostB) return 1;
+                        return 0;
+                      });
+
+                      return ListView.builder(
+                        itemCount: posts.length,
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot doc = posts[index];
+                          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                          bool isMyPost = data['email'] == myEmail;
+                          bool nextPostIsMine = false;
+                          if (index + 1 < posts.length) {
+                            Map<String, dynamic> nextData = posts[index + 1]
+                                .data() as Map<String, dynamic>;
+                            nextPostIsMine = nextData['email'] == myEmail;
+                          }
+
+                          return Column(
+                            children: <Widget>[
+                              Container(
+                                width: MediaQuery.of(context).size.width * 0.9,
+
+                                child: InkWell(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  postManager.helpAndExit(context, doc, _pushHelpButton);
+                                },
+                                child: _buildPostCard(
+                                  userName: data['nickname'] ?? '사용자 이름 없음',
+                                  timeAgo: data['date'] != null ? formatTimeAgo(data['date'] as Timestamp) : '시간 정보 없음',
+                                  location: data['my_location'] ?? '위치 정보 없음',
+                                  cost: data['cost'] ?? '비용 정보 없음',
+                                  storeName: data['store'] ?? '가게 이름 없음',
+                                  isMyPost: isMyPost,
+                                ),
+                              ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(child: Text('게시글이 없습니다.'));
+                    }
+                  },
+                ),
               ),
+            ],
+          ),
+            if (_pushHelp)
+            Container(
+              color: Colors.grey.withOpacity(0.5),
+              child: Center(
+                child: Lottie.asset(
+                  'assets/lottie/smile.json',
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Container(
+                  // width: 100,
+                  // height: 45,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      // 글쓰기 버튼 눌렀을 때의 동작
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HanbatNewPostScreen()),
+                      );
+                    },
+                    child: Icon(Icons.edit),
+                    backgroundColor:Color(0xFF1D4786),
+                    foregroundColor: Colors.white,
+                    elevation: 3.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+
+      ),
+
+
+
+
+
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 45),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              children: [
+                SizedBox(height: 20,)
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/chatbubbles.svg',
+                  label: '채팅',
+                  isActive: _selectedIndex == 0,
+                  onTap: () {
+                    if (_selectedIndex != 0) {
+                      setState(() {
+                        _selectedIndex = 0;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AllUsersScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/footsteps.svg',
+                  label: '진행상황',
+                  isActive: _selectedIndex == 1,
+                  onTap: () {
+                    if (_selectedIndex != 1) {
+                      setState(() {
+                        _selectedIndex = 1;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/book.svg',
+                  label: '게시판',
+                  isActive: _selectedIndex == 2,
+                  onTap: () {
+                    if (_selectedIndex != 2) {
+                      setState(() {
+                        _selectedIndex = 2;
+                      });
+                      HapticFeedback.lightImpact();
+                      switch (botton_domain) {
+                        case 'naver.com':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+                          );
+                          break;
+                        default:
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => BoardPage()),
+                          );
+                          break;
+                      }
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/school.svg',
+                  label: '학교랭킹',
+                  isActive: _selectedIndex == 3,
+                  onTap: () {
+                    if (_selectedIndex != 3) {
+                      setState(() {
+                        _selectedIndex = 3;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/person.svg',
+                  label: '프로필',
+                  isActive: _selectedIndex == 4,
+                  onTap: () {
+                    if (_selectedIndex != 4) {
+                      setState(() {
+                        _selectedIndex = 4;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         ),
-
-
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum_rounded, color: _selectedIndex == 0 ? Colors.indigo : Colors.black),
-            label: '채팅',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.hourglass_empty_rounded,color: _selectedIndex == 1 ? Colors.indigo : Colors.black), //search
-            label: '진행 상황',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_outlined, color: _selectedIndex == 2 ? Colors.indigo : Colors.black),
-            label: '게시판',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school, color: _selectedIndex == 3 ? Colors.indigo : Colors.black),
-            label: '학교 랭킹',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: _selectedIndex == 4 ? Colors.indigo : Colors.black),
-            label: '프로필',
-          ),
-        ],
-        selectedLabelStyle: TextStyle(
-          fontFamily: 'NanumSquareRound',
-          fontWeight: FontWeight.w800,
-          fontSize: 13,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: 'NanumSquareRound',
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
-        selectedItemColor: Colors.indigo,    // 선택된 항목의 텍스트 색상
-        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
-
-        currentIndex: _selectedIndex,
-
-        onTap: (index) {
-          if (_selectedIndex == index) {
-            // 현재 선택된 탭을 다시 눌렀을 때 아무 동작도 하지 않음
-            return;
-          }
-
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          // 채팅방으로 이동
-          if (index == 0) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AllUsersScreen()),
-            );
-          }
-          //진행 상황
-          else if (index == 1) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
-            );
-          }
-
-
-          //새 게시글 만드는 곳으로 이동
-          else if (index == 2) {
-            HapticFeedback.lightImpact();
-            switch (botton_domain) {
-              case 'naver.com':
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                );
-                break;
-            // case 'hanbat.ac.kr':
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(builder: (context) => HanbaBoardPage()),
-            //   );
-            //   break;
-              default:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BoardPage()),
-                );
-                break;
-            }
-          }
-
-
-          // 학교 랭킹
-          else if (index == 3) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
-            );
-          }
-          // 프로필
-          else if (index == 4) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserProfileScreen()),
-            );
-          }
-        },
       ),
     );
   }

@@ -16,7 +16,8 @@ dependencies:
   kakao_map_plugin: ^0.2.4
   webview_flutter: ^4.0.0
   location: ^5.0.3
-  http: ^0.13.1
+  http: ^1.1.0
+#    http: ^0.13.1
   cloud_functions: ^4.6.0
   webview_flutter_wkwebview: ^3.10.2
   webview_flutter_android: ^3.16.0
@@ -44,7 +45,7 @@ dependencies:
   cupertino_icons: ^1.0.5
 
   #인증 및 별제 관련
-  twilio_flutter: 0.0.9
+#  twilio_flutter: 0.0.9
   iamport_flutter: any
   url_launcher: ^6.0.4
   app_links: ^3.5.1
@@ -66,6 +67,14 @@ dependencies:
   #학점 관리
   font_awesome_flutter: ^10.7.0
   flutter_rating_bar: ^4.0.1
+
+
+  #피그마 디자인
+  flutter_svg: ^2.0.10+1
+  google_fonts: 6.1.0
+
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -112,6 +121,20 @@ flutter:
     - assets/images/LoginLogo2.png
 
     - assets/fonts/
+
+#    pigma 디자인 투입
+    - assets/pigma/notifications.svg
+    - assets/pigma/location.svg
+    - assets/pigma/dollar_circle.svg
+    - assets/pigma/vuesaxbulkhouse.svg
+    - assets/pigma/Ellipse.svg
+    - assets/pigma/pen.svg
+    - assets/pigma/book.svg
+    - assets/pigma/chatbubbles.svg
+    - assets/pigma/footsteps.svg
+    - assets/pigma/person.svg
+    - assets/pigma/school.svg
+
   fonts:
     - family: NanumSquareRound
       fonts:
