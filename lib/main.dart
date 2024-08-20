@@ -11,7 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
-import 'HanbatSchoolBoard/HanbatUiBoard.dart';
+import 'HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/date_symbol_data_local.dart';

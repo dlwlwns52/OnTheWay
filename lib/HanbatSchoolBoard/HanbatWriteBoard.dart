@@ -1,3 +1,4 @@
+import 'package:OnTheWay/HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -187,11 +188,10 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
         // 'nickname' 필드 값 가져오기
         nickname = documentSnapshot['nickname'];
 
-        print('Nickname: $nickname');
       } else {
         print('No user found with the given email.');
       }
-      print(nickname);
+
 
 
       if (existingPosts.docs.isNotEmpty && widget.post == null) {
@@ -216,13 +216,23 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
           _isUploading = true;
         });
 
+
         Future.delayed(Duration(seconds: 2), () {
-          Navigator.pop(context); // 애니메이션이 끝난 후 화면을 닫음
+          Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
+            MaterialPageRoute(
+              builder: (context) => HanbatBoardPage(),
+            ),
+          );
+
           setState(() {
             _isUploading = false;
           });
+
+
           _showSnackBar("게시물이 업로드 되었습니다.");
         });
+
+
 
       }
     } catch (e) {

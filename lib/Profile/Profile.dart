@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import '../Alarm/Grade.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
-import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Pay/PaymentScreen.dart';
 import '../Ranking/SchoolRanking.dart';
 

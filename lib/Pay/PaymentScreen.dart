@@ -16,7 +16,7 @@ import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/ChatScreen.dart';
 import '../Chat/Message.dart';
-import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 

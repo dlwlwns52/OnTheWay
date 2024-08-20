@@ -134,6 +134,9 @@ flutter:
     - assets/pigma/footsteps.svg
     - assets/pigma/person.svg
     - assets/pigma/school.svg
+    - assets/pigma/ellipsis.svg
+    - assets/pigma/ellipsis_white.svg
+    - assets/pigma/notification_white.svg
 
   fonts:
     - family: NanumSquareRound

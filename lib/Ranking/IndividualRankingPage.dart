@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
-import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import 'SchoolRanking.dart';

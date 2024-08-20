@@ -5,7 +5,7 @@ import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
-import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
 import '../LocationTest.dart';

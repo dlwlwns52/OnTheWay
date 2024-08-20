@@ -12,7 +12,7 @@ import 'package:lottie/lottie.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../Board/UiBoard.dart';
-import '../HanbatSchoolBoard/HanbatUiBoard.dart';
+import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
 import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
