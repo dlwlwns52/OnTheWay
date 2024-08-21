@@ -6,8 +6,7 @@
 <title>simpleMap</title>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-database.js"></script>
+
 <style>
   #map_div {
     width: 100%;
@@ -16,20 +15,6 @@
   
 </style>
 <script type="text/javascript">
-
-    // Firebase 초기화(오더에게 경로 제공)
-    var firebaseConfig = {
-      apiKey: "AIzaSyBvs5ieh7_rK1IpB4LlYUI7Ze1Nzl4hw6E",
-      authDomain: "ontheway-b2bdf.firebaseapp.com",
-      databaseURL: "https://ontheway-b2bdf.firebaseio.com",
-      projectId: "ontheway-b2bdf",
-      storageBucket: "ontheway-b2bdf.appspot.com",
-      messagingSenderId: "40009619030",
-      appId: "1:40009619030:web:95744e424f55b55adc8df7"
-    };
-    firebase.initializeApp(firebaseConfig);
-    var database = firebase.database();
-
 
 	var map;
 	var marker_s, marker_e, marker_p1, marker_p2;
@@ -42,73 +27,7 @@
 	var helperLocationMarker; //헬퍼 마커
 	var helperLatLng; // 헬퍼 위치
 
-	var prevLat = null; // 이전 위치 저장
-	var prevLon = null; // 이전 위치 저장
-	var prevHelperLat = null; // 헬퍼 이전 위치 저장
-	var prevHelperLon = null; // 헬퍼 이전 위치 저장
 
-	// 헬퍼 ID 설정 및 위치 리스닝 시작
-	function setHelperId(id) {
-      helperId = id;
-      startListeningToHelperLocation();
-    }
-
-    // Firebase에서 헬퍼의 위치를 실시간으로 가져오는 함수
-    function startListeningToHelperLocation() {
-      var locationRef = firebase.database().ref('locations/' + helperId);
-      locationRef.on('value', function(snapshot) {
-        var data = snapshot.val();
-        if (data) {
-          var lat = data.latitude;
-          var lon = data.longitude;
-          if (prevHelperLat == null || prevHelperLon == null) {
-            prevHelperLat = lat;
-            prevHelperLon = lon;
-            updateHelperLocation(lat, lon);
-          }
-        }
-      });
-    }
-
-		// 거리 계산 함수 (Haversine formula 사용)
-	function getDistance(lat1, lon1, lat2, lon2) {
-		function toRad(value) {
-			return value * Math.PI / 180;
-		}
-		var R = 6371; // 지구의 반지름 (km)
-		var dLat = toRad(lat2 - lat1);
-		var dLon = toRad(lon2 - lon1);
-		var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-			Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-			Math.sin(dLon / 2) * Math.sin(dLon / 2);
-		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		var d = R * c;
-		return d * 1000; // 결과를 미터로 변환
-	}
-
-	// Firebase Realtime Database에 헬퍼 위치 저장
-	function saveHelperLocation(helperId, lat, lon) {
-      database.ref('locations/' + helperId).set({
-        latitude: lat,
-        longitude: lon
-      });
-    }
-
-	// 헬퍼 위치로 지도 업데이트
-    function updateHelperLocation(lat, lon) {
-      helperLatLng = new Tmapv2.LatLng(lat, lon);
-
-      if (helperLocationMarker) {
-        helperLocationMarker.setPosition(helperLatLng);
-      } else {
-        helperLocationMarker = new Tmapv2.Marker({
-          position: helperLatLng,
-          icon: "/resources/images/common/current_location_marker.png",
-          iconSize: new Tmapv2.Size(72, 72),
-          map: map
-        });
-      }
-    }
 
 	function initTmap() {
 		// 지도 초기화
@@ -123,43 +42,31 @@
 
 		if (navigator.geolocation) {
 			// 현재 본인 위치 - 헬퍼 사용
-			if (!helperId) {
-				// 사용자의 위치가 변경될 때마다 위치를 업데이트하는 watchPosition 사용
-				navigator.geolocation.watchPosition(function(position) {
-					currentLat = position.coords.latitude;
-					currentLon = position.coords.longitude;
+			// 사용자의 위치가 변경될 때마다 위치를 업데이트하는 watchPosition 사용
+			navigator.geolocation.watchPosition(function(position) {
+				currentLat = position.coords.latitude;
+				currentLon = position.coords.longitude;
 
-					if (prevLat == null || prevLon == null || getDistance(prevLat, prevLon, currentLat, currentLon) > 3) {
-						prevLat = currentLat;
-						prevLon = currentLon;
+				// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
+				if (currentLocationMarker) {
+					currentLocationMarker.setPosition(new Tmapv2.LatLng(currentLat, currentLon));
+				} else {
+					currentLocationMarker = new Tmapv2.Marker({
+						position: new Tmapv2.LatLng(currentLat, currentLon),
+						icon: "/resources/images/common/current_location_marker.png",
+						iconSize: new Tmapv2.Size(72, 72),
+						map: map
+					});
+				}
+				
+			}, function(error) {
+				console.error("Error occurred. Error code: " + error.code);
+			}, {
+				enableHighAccuracy: true,
+				maximumAge: 30000,
+				timeout: 27000
+			});
 
-						// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
-						if (currentLocationMarker) {
-							currentLocationMarker.setPosition(new Tmapv2.LatLng(currentLat, currentLon));
-						} else {
-							currentLocationMarker = new Tmapv2.Marker({
-								position: new Tmapv2.LatLng(currentLat, currentLon),
-								icon: "/resources/images/common/current_location_marker.png",
-								iconSize: new Tmapv2.Size(72, 72),
-								map: map
-							});
-						}
-						// 헬퍼의 위치를 Firebase에 저장
-						saveHelperLocation(helperId, currentLat, currentLon);
-					}
-				}, function(error) {
-					console.error("Error occurred. Error code: " + error.code);
-				}, {
-					enableHighAccuracy: true,
-					maximumAge: 30000,
-					timeout: 27000
-				});
-			} 
-			//상대방(헬퍼) 위치 - 오너 사용
-			else {
-				// 헬퍼의 위치를 실시간으로 가져옴
-				startListeningToHelperLocation();
-			}
 		} else {
 			alert("Geolocation is not supported by this browser.");
 		}
@@ -174,13 +81,25 @@
 		}
 	}
 
-	//헬퍼 위치로 이동 
-    function moveToHelperLocation(){
-		if(helperLatLng){
-			map.setCenter(helperLatLng);
-			map.setZoom(20);
-		}
+	//헬퍼 위치
+	function updateHelperLocation(helperLat, helperLng){
+
+		var helperPosition = new Tmapv2.LatLng(helperLat, helperLng)
+
+		if (helperLocationMarker) {
+            helperLocationMarker.setPosition(helperPosition);
+        } else {
+            helperLocationMarker = new Tmapv2.Marker({
+                position: helperPosition,
+                icon: "/resources/images/common/helper_icon.png", // 아이콘 경로 변경
+                iconSize: new Tmapv2.Size(72, 72),
+                map: map
+            });
+        }
+		map.setCenter(helperPosition); // 헬퍼의 위치로 지도 중심 이동
+
 	}
+
 
 
     // 2. 시작, 도착 심볼찍기(길찾기)

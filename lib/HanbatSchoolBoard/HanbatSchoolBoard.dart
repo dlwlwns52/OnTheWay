@@ -15,10 +15,12 @@ import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'HanbatWriteBoard.dart';
-import 'HanbatPostManager.dart';
+import 'CnuHelpScreen.dart';
 import '../Alarm/Alarm.dart';
 import 'dart:io' show Platform;
 import 'package:lottie/lottie.dart';
+
+import 'HelpScreenArguments.dart';
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
 class HanbatBoardPage extends StatefulWidget {
@@ -31,7 +33,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수락 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // PostManager 인스턴스 생성
-  final postManager = HanbatPostManager();
+  // final helpManager = HelpScreen();
 
   // NaverAlarm 인스턴스를 생성합니다.
   late Alarm alarm;
@@ -202,7 +204,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
         color: Color(0xFFFFFFFF),
       ),
       child: Container(
-        padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+        padding: EdgeInsets.fromLTRB(15, 15, 15, 5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,19 +278,19 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               color: Color(0xFFF6F6F6),
             ),
             _buildInfoRow(
+              iconPath: 'assets/pigma/vuesaxbulkhouse.svg',
+              label: '픽업 장소',
+              value: storeName,
+            ),
+            _buildInfoRow(
               iconPath: 'assets/pigma/location.svg',
-              label: '위치',
+              label: '드랍 장소',
               value: location,
             ),
             _buildInfoRow(
               iconPath: 'assets/pigma/dollar_circle.svg',
               label: '비용',
               value: cost,
-            ),
-            _buildInfoRow(
-              iconPath: 'assets/pigma/vuesaxbulkhouse.svg',
-              label: '매장명',
-              value: storeName,
             ),
           ],
         ),
@@ -347,7 +349,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 height: 1,
-                letterSpacing: 0.5,
+                letterSpacing: -0.1,
                 color: Color(0xFF222222),
               ),
             ),
@@ -404,14 +406,14 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontWeight: FontWeight.w600,
-            fontSize: 18,
+            fontSize: 19,
             height: 1.0,
             // letterSpacing: -0.5,
-            color: Color(0xFF222222),
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF1D4786),
         elevation: 0,
         leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
         actions: [
@@ -428,7 +430,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
                       return IconButton(
                         icon: SvgPicture.asset(
-                          'assets/pigma/notifications.svg',
+                          'assets/pigma/notification_white.svg',
                           width: 24,
                           height: 24,
                         ),
@@ -449,7 +451,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     String ownerNickname = snapshot.data!;
                     return IconButton(
                       icon: SvgPicture.asset(
-                        'assets/pigma/notifications.svg',
+                        'assets/pigma/notification_white.svg',
                         width: 25,
                         height: 25,
                       ),
@@ -646,7 +648,26 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                 child: InkWell(
                                 onTap: () {
                                   HapticFeedback.lightImpact();
-                                  postManager.helpAndExit(context, doc, _pushHelpButton);
+                                  // helpManager.helpAndExit(context, doc, _pushHelpButton);
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => HelpScreen(
+                                      HelpScreenArguments(
+                                        doc: doc,
+                                        pushHelpButton: _pushHelpButton,
+                                        userName: data['nickname'] ?? '사용자 이름 없음',
+                                        timeAgo: data['date'] != null ? formatTimeAgo(data['date'] as Timestamp) : '시간 정보 없음',
+                                        location: data['my_location'] ?? '위치 정보 없음',
+                                        cost: data['cost'] ?? '비용 정보 없음',
+                                        storeName: data['store'] ?? '가게 이름 없음',
+                                        email : data['email'],
+                                        request : data['Request'],
+                                        current_location : data['current_location'],
+                                        store_location : data['store_location'],
+                                        isMyPost: isMyPost,
+                                      ),
+                                    ),
+                                  ));
+
                                 },
                                 child: _buildPostCard(
                                   userName: data['nickname'] ?? '사용자 이름 없음',

@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
 
-import '../Map/Navigation/FirstLocation.dart';
-import '../Map/Navigation/HelperLocationService.dart';
+
 import '../Map/Navigation/HelperTMapView.dart';
 import '../Map/Navigation/PostDetailMapView.dart';
+import '../test/LocationTest.dart';
 import 'HanbatSchoolBoard.dart';
 import 'HelpScreenArguments.dart';
 
@@ -28,8 +28,7 @@ class _HelpScreenState extends State<HelpScreen> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   User? user;
 
-   String currentLocation = '36.40230558448602,127.42486183776347';
-  String storeLocation = ' 36.449698678,127.428528343';
+  bool _isListening = false;
 
   @override
   void initState() {
@@ -503,7 +502,8 @@ class _HelpScreenState extends State<HelpScreen> {
             child: ElevatedButton(
               onPressed: () {
                 HapticFeedback.lightImpact();
-                helpPost(context, widget.args.doc, widget.args.pushHelpButton); // 도와주기 기능 실행
+                // helpPost(context, widget.args.doc, widget.args.pushHelpButton); // 도와주기 기능 실행
+                buildCustomHelpDialog(context, widget.args.doc);
               },
               style: ElevatedButton.styleFrom(
                 primary: Color(0xFF1D4786), // 배경색
@@ -834,6 +834,137 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
 
+  //도와주기 신청 확정하는 다이어로그
+  void buildCustomHelpDialog (BuildContext context,DocumentSnapshot doc) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 45),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '도와주기 신청을 보내시겠습니까? \n상대방이 동의하면 거래가 매칭됩니다!',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF222222),
+                      ),
+                    ),
+                    TextSpan(
+                      text: '\n\n⚠️ 거래가 매칭되면 안전한 거래를 위해 \n거래 기간 동안 사용자의 위치 정보가 \n일시적으로 공유되며, 종료 시 자동 삭제됩니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                        fontSize: 12, // 작은 글씨 크기 설정
+                        color: Colors.grey, // 회색으로 설정
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 40),
+              Divider(color: Colors.grey, height: 1,),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF636666),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 0.5, // 구분선의 두께
+                    height: 60, // 구분선의 높이
+                    color: Colors.grey, // 구분선의 색상
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        helpPost(context, widget.args.doc, widget.args.pushHelpButton);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '확인',
+                          style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1D4786)
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  //위치 추적시 response와 ownerClick 값 추적
+  void listenToResponseChanges(String documentName, LocationTracker locationTracker) {
+    if (_isListening) {
+      print("이미 리스너가 등록되었습니다.");
+      return; // 리스너가 이미 등록된 경우 중복 등록 방지
+    }
+
+    _isListening = true; // 리스너 등록 상태로 변경
+    FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(documentName)
+        .snapshots()
+        .listen((DocumentSnapshot snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final response = data['response'];
+        final ownerClick = data['ownerClick'];
+        if (response == 'accepted' && ownerClick == true) {
+          print('위치 시작');
+          locationTracker.startTracking();
+        }
+
+        else { // 우선 임시로 취소
+          print('위치 취소');
+          locationTracker.stopTracking();
+        }
+
+      }
+    });
+  }
+
+
   void helpPost(BuildContext context, DocumentSnapshot doc, Function(bool) _pushHelpButton) async {
     try {
 // 현재 로그인된 사용자 가져오기
@@ -952,6 +1083,26 @@ class _HelpScreenState extends State<HelpScreen> {
         return;
       }
 
+      // 위치 추적 서비스 인스턴스 생성
+      LocationTracker locationTracker = LocationTracker(documentName);
+
+      bool hasPermission = await locationTracker.requestPermission();
+      if (!hasPermission) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("위치 권한이 허락되어야 거래를 진행할 수 있습니다.", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+
+      // LocationTracker클래스를 활용해 'ChatActions' 컬렉션에 리스너 추가하여 response, ownerClick 변경 감지
+      listenToResponseChanges(documentName, locationTracker);
+
+
 
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 
@@ -961,8 +1112,8 @@ class _HelpScreenState extends State<HelpScreen> {
 
       // String documentName = "${postStore}_${helperEmail}";
       // 헬퍼의 초기 위치 저장
-      FirstLocation locationService = FirstLocation(helperNickname);
-      await locationService.saveInitialLocation();
+      // FirstLocation locationService = FirstLocation(helperNickname);
+      // await locationService.saveInitialLocation();
 
 
 
@@ -979,9 +1130,11 @@ class _HelpScreenState extends State<HelpScreen> {
         'response': null,
       });
 
+
       await _alarmMessageCount(OwnerNickname);
 
       // 대화상자를 닫고 스낵바 표시
+      Navigator.of(context).pop();
       Navigator.of(context).pop();
 
       // 성공 메시지 표시

@@ -8,7 +8,7 @@ import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
-import '../LocationTest.dart';
+import '../test/LocationTest.dart';
 
 class LoginScreen extends StatefulWidget {
 

@@ -103,8 +103,7 @@ flutter:
     - assets/lottie/smile.json
     - assets/lottie/loading_indigo.json
     - assets/lottie/check1.json
-    - assets/lottie/check2.json
-    - assets/lottie/check_help.json
+    - assets/lottie/check_indigo.json
     - assets/lottie/clap.json
     - assets/lottie/congratulation.json
     - assets/lottie/clapCute.json

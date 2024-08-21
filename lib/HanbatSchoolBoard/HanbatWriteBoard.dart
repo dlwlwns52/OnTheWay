@@ -408,7 +408,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                 color: Colors.grey.withOpacity(0.5),
                 child: Center(
                   child: Lottie.asset(
-                    'assets/lottie/check1.json',
+                    'assets/lottie/check_indigo.json',
                     width: 200,
                     height: 200,
                     fit: BoxFit.contain

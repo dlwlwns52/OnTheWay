@@ -13,12 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:background_locator_2/background_locator.dart';
 
-import 'LocationTest.dart';
-import 'Map/Navigation/LocationCallbackHandler.dart';
 
 
 

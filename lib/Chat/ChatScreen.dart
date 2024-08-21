@@ -102,23 +102,23 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        print("앱이 활성화되었습니다.");
+
         _updateUserStatusInChatRoom(true); // 앱이 다시 활성화될 때 업데이트
         break;
       case AppLifecycleState.inactive:
-        print("앱이 비활성화되었습니다.");
+
         // 앱이 비활성화될 때 수행할 작업
         break;
       case AppLifecycleState.paused:
-        print("앱이 일시 중지되었습니다.");
+
         _updateUserStatusInChatRoom(false); // 앱이 백그라운드로 가거나 종료될 때 업데이트
         break;
       case AppLifecycleState.detached:
-        print("앱이 종료되었습니다.");
+
         _updateUserStatusInChatRoom(false); // 앱이 백그라운드로 가거나 종료될 때 업데이트
         break;
       case AppLifecycleState.hidden:
-        print("앱이 숨겨졌습니다.");
+
         _updateUserStatusInChatRoom(false); // 앱이 숨겨졌을 때 업데이트
         break;
     }
@@ -1046,6 +1046,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
 
+
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -1126,14 +1128,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         String currentLocation = tmapDirections[0];
                         String storeLocation = tmapDirections[1];
                         // 여기에 헬퍼 위치 보이게 하기
-                        String? helperNickname = nicknames!['helperNickname'] ??
-                            'defaultHelperId';
+                        String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) =>
                               OwnerTMapView(
                                 currentLocation: currentLocation,
                                 storeLocation: storeLocation,
                                 helperId: helperNickname,
+                                documentName: widget.documentName,
                               ),
                         ));
                       }
