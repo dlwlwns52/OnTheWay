@@ -63,37 +63,32 @@ class _MapScreenState extends State<StoreMapScreen> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: lottie.Lottie.asset(
-                  'assets/lottie/blue3.json',
-                  fit: BoxFit.fill,
-                  options: lottie.LottieOptions(
-
-                  )
-              ),
-            ),
-            AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 1,
-              shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('가게 위치 설정',
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w600,
-                  fontSize : 22,
-                ),
-              ),
-              actions: <Widget>[
-              ],
-              centerTitle: true,
-
-            ),
-          ],
+      appBar: AppBar(
+        title: Text(
+          '픽업 장소',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontWeight: FontWeight.w600,
+            fontSize: 19,
+            height: 1.0,
+            letterSpacing: -0.5,
+            color: Colors.white,
+          ),
         ),
+
+        centerTitle: true,
+        backgroundColor: Color(0xFF1D4786),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+          color: Colors.white, // 아이콘 색상
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context); // 뒤로가기 기능
+          },
+        ),
+        actions: <Widget>[
+        ],
       ),
       // appBar: AppBar(
       //   backgroundColor: Color(0xFFFF8B13),
@@ -132,7 +127,7 @@ class _MapScreenState extends State<StoreMapScreen> {
                       ],
                     ),
                     child: Text(
-                      '위치 설정',
+                      '위치 찾기',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -162,7 +157,7 @@ class _MapScreenState extends State<StoreMapScreen> {
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-            color: Colors.indigo[300], // 버튼 배경색
+            color: Color(0xFF1D4786), // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
           ),
@@ -201,7 +196,7 @@ class _MapScreenState extends State<StoreMapScreen> {
               ],
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigo[300],
+              backgroundColor: Color(0xFF1D4786),
               elevation: 0, // 경계선을 제거합니다.
             ),
           ),

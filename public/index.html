@@ -32,54 +32,93 @@
 	function initTmap() {
 		// 지도 초기화
 		map = new Tmapv2.Map("map_div", {
-			center : new Tmapv2.LatLng(36.351073954997, 127.29801308566),
+			center : new Tmapv2.LatLng(37.5718, 126.9769),
 			width : "100%",
 			height : "100vh",
 			zoom : 17,
 			zoomControl : true,
 			scrollwheel : true
 		});
+	}
 
+	// function setCurrentLocation() {
+	// 	if (navigator.geolocation) {
+	// 		// 현재 본인 위치 - 헬퍼 사용
+	// 		// 사용자의 위치가 변경될 때마다 위치를 업데이트하는 watchPosition 사용
+	// 		navigator.geolocation.watchPosition(function(position) {
+	// 			currentLat = position.coords.latitude;
+	// 			currentLon = position.coords.longitude;
+
+	// 			// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
+	// 			if (currentLocationMarker) {
+	// 				currentLocationMarker.setPosition(new Tmapv2.LatLng(currentLat, currentLon));
+	// 			} else {
+	// 				currentLocationMarker = new Tmapv2.Marker({
+	// 					position: new Tmapv2.LatLng(currentLat, currentLon),
+	// 					icon: "/resources/images/common/current_location_marker.png",
+	// 					iconSize: new Tmapv2.Size(72, 72),
+	// 					map: map
+	// 				});
+	// 			}
+				
+	// 		}, function(error) {
+	// 			console.error("Error occurred. Error code: " + error.code);
+	// 		}, {
+	// 			enableHighAccuracy: true,
+	// 			maximumAge: 30000,
+	// 			timeout: 27000
+	// 		});
+
+	// 	} else {
+	// 		alert("Geolocation is not supported by this browser.");
+	// 	}
+	// }
+
+	// //현재 위치로 이동 
+	// function moveToCurrentLocation() {
+	// 	if (currentLat && currentLon) {
+	// 		map.setCenter(new Tmapv2.LatLng(currentLat, currentLon));
+	// 		map.setZoom(20); 
+	// 	}
+	// }
+
+
+
+// 현재 위치로 이동
+	function moveToCurrentLocation() {
 		if (navigator.geolocation) {
-			// 현재 본인 위치 - 헬퍼 사용
-			// 사용자의 위치가 변경될 때마다 위치를 업데이트하는 watchPosition 사용
-			navigator.geolocation.watchPosition(function(position) {
+			navigator.geolocation.getCurrentPosition(function (position) {
 				currentLat = position.coords.latitude;
 				currentLon = position.coords.longitude;
 
+				var currentPosition = new Tmapv2.LatLng(currentLat, currentLon);
+
 				// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
 				if (currentLocationMarker) {
-					currentLocationMarker.setPosition(new Tmapv2.LatLng(currentLat, currentLon));
+					currentLocationMarker.setPosition(currentPosition);
 				} else {
 					currentLocationMarker = new Tmapv2.Marker({
-						position: new Tmapv2.LatLng(currentLat, currentLon),
+						position: currentPosition,
 						icon: "/resources/images/common/current_location_marker.png",
 						iconSize: new Tmapv2.Size(72, 72),
 						map: map
 					});
 				}
-				
-			}, function(error) {
+
+				map.setCenter(currentPosition); // 현재 위치로 지도 중심 이동
+				map.setZoom(20); // 줌 레벨 설정
+			}, function (error) {
 				console.error("Error occurred. Error code: " + error.code);
 			}, {
 				enableHighAccuracy: true,
 				maximumAge: 30000,
 				timeout: 27000
 			});
-
 		} else {
 			alert("Geolocation is not supported by this browser.");
 		}
 	}
 
-
-	//현재 위치로 이동 
-	function moveToCurrentLocation() {
-		if (currentLat && currentLon) {
-			map.setCenter(new Tmapv2.LatLng(currentLat, currentLon));
-			map.setZoom(20); 
-		}
-	}
 
 	//헬퍼 위치
 	function updateHelperLocation(helperLat, helperLng){

@@ -61,37 +61,32 @@ class _MapScreenState extends State<CurrentMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: lottie.Lottie.asset(
-                  'assets/lottie/blue3.json',
-                  fit: BoxFit.fill,
-                  options: lottie.LottieOptions(
-
-                  )
-              ),
-            ),
-            AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 1,
-              shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('현재 위치 설정',
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w600,
-                  fontSize : 22,
-                ),
-              ),
-              actions: <Widget>[
-              ],
-              centerTitle: true,
-
-            ),
-          ],
+      appBar: AppBar(
+        title: Text(
+          '드랍 장소',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontWeight: FontWeight.w600,
+            fontSize: 19,
+            height: 1.0,
+            letterSpacing: -0.5,
+            color: Colors.white,
+          ),
         ),
+
+        centerTitle: true,
+        backgroundColor: Color(0xFF1D4786),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+          color: Colors.white, // 아이콘 색상
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context); // 뒤로가기 기능
+          },
+        ),
+        actions: <Widget>[
+        ],
       ),
       // appBar: AppBar(
       //   backgroundColor: Color(0xFFFF8B13),
@@ -131,19 +126,23 @@ class _MapScreenState extends State<CurrentMapScreen> {
                   ),
                   child: Text(
                     '위치 설정',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 SizedBox(height: 8),
                 Container(
-                  width: 80.0, // 원하는 버튼의 너비
-                  height: 80.0, // 원하는 버튼의 높이
+                  width: 72.0, // 원하는 버튼의 너비
+                  height: 72.0, // 원하는 버튼의 높이
                   child: FloatingActionButton(
                     onPressed: _moveToCurrentLocation,
                     backgroundColor: Colors.white,
                     child: Icon(
                       Icons.my_location,
-                      size: 60, // 아이콘 크기 조절
+                      size: 54, // 아이콘 크기 조절
                       color: Colors.black,), // 아이콘 크기
                     tooltip: '설정된 위치로 이동',
                   ),
@@ -161,7 +160,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-              color: Colors.indigo[300], // 버튼 배경색
+              color: Color(0xFF1D4786), // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
 
           ),
@@ -201,7 +200,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
               ],
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigo[300],
+              backgroundColor: Color(0xFF1D4786),
               elevation: 0, // 경계선을 제거합니다.
             ),
           ),

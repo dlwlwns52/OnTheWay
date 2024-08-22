@@ -8,7 +8,7 @@ import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
-import '../test/LocationTest.dart';
+import '../Map/LocationTracker.dart';
 
 class LoginScreen extends StatefulWidget {
 
@@ -320,7 +320,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: '이메일 입력',
                     labelStyle: TextStyle(color: Colors.indigo[400]),
-
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

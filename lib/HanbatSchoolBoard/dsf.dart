@@ -1,728 +1,472 @@
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_svg/svg.dart';
-//
-// class HelpScreen extends StatefulWidget {
-//
-//
-//   @override
-//   State<HelpScreen> createState() => _HelpScreenState();
-// }
-//
-// class _HelpScreenState extends State<HelpScreen> {
-//
-//   Widget _buildPostCard({
-//     required String userName,
-//     required String timeAgo,
-//     required String location,
-//     required String cost,
-//     required String storeName,
-//   }) {
-//     return Container(
-//       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//       decoration: BoxDecoration(
-//         border: Border.all(color: Color(0xFFD0D0D0)),
-//         borderRadius: BorderRadius.circular(12),
-//         color: Color(0xFFFFFFFF),
-//       ),
-//       child: Container(
-//         padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Container(
-//               margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.start,
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Container(
-//                         margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-//                         child: Container(
-//                           decoration: BoxDecoration(
-//                             borderRadius: BorderRadius.circular(16),
-//                           ),
-//                           child: ClipRRect(
-//                             borderRadius: BorderRadius.circular(16),
-//                             child: SvgPicture.asset(
-//                               'assets/pigma/notifications.svg',
-//                               width: 32,
-//                               height: 32,
-//                               fit: BoxFit.cover,
-//                             ),
-//                           ),
-//                           width: 32,
-//                           height: 32,
-//                         ),
-//                       ),
-//                       Container(
-//                         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-//                         child: Text(
-//                           userName,
-//                           style: TextStyle(
-//                             fontFamily: 'Pretendard',
-//                             fontWeight: FontWeight.w600,
-//                             fontSize: 16,
-//                             height: 1,
-//                             letterSpacing: -0.4,
-//                             color: Color(0xFF222222),
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(0, 10, 0, 9),
-//                     child: Text(
-//                       timeAgo,
-//                       style: TextStyle(
-//                         fontFamily: 'Pretendard',
-//                         fontWeight: FontWeight.w500,
-//                         fontSize: 13,
-//                         height: 1,
-//                         letterSpacing: -0.3,
-//                         color: Color(0xFFAAAAAA),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             Container(
-//               margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//               width: 303,
-//               height: 1,
-//               color: Color(0xFFF6F6F6),
-//             ),
-//             _buildInfoRow(
-//               iconPath: 'assets/pigma/location.svg',
-//               label: '위치',
-//               value: location,
-//             ),
-//             _buildInfoRow(
-//               iconPath: 'assets/pigma/dollar_circle.svg',
-//               label: '비용',
-//               value: cost,
-//             ),
-//             _buildInfoRow(
-//               iconPath: 'assets/pigma/vuesaxbulkhouse.svg',
-//               label: '매장명',
-//               value: storeName,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildBottomNavItem({
-//     required String iconPath,
-//     required String label,
-//     required bool isActive,
-//   }) {
-//     return Expanded(
-//       child: Container(
-//         decoration: BoxDecoration(
-//           color: Color(0xFFFFFFFF),
-//           border: Border(
-//             top: BorderSide(
-//               color: Color(0xFFEEEEEE),
-//               width: 1,
-//             ),
-//           ),
-//         ),
-//         child: Container(
-//           padding: EdgeInsets.symmetric(vertical: 6),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               Container(
-//                 margin: EdgeInsets.only(bottom: 6),
-//                 width: 24,
-//                 height: 24,
-//                 child: SvgPicture.asset(
-//                   iconPath,
-//                   width: 24,
-//                   height: 24,
-//                 ),
-//               ),
-//               Text(
-//                 label,
-//                 style: TextStyle(
-//                   fontFamily: 'Pretendard',
-//                   fontWeight: FontWeight.w400,
-//                   fontSize: 11,
-//                   height: 1,
-//                   letterSpacing: -0.3,
-//                   color: isActive ? Color(0xFF1D4786) : Color(0xFF767676),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildInfoRow({
-//     required String iconPath,
-//     required String label,
-//     required String value,
-//   }) {
-//     return Container(
-//       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Container(
-//                 margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-//                 width: 24,
-//                 height: 24,
-//                 child: SvgPicture.asset(
-//                   iconPath,
-//                   width: 24,
-//                   height: 24,
-//                 ),
-//               ),
-//               Container(
-//                 margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                 child: Text(
-//                   label,
-//                   style: TextStyle(
-//                     fontFamily: 'Pretendard',
-//                     fontWeight: FontWeight.w500,
-//                     fontSize: 14,
-//                     height: 1,
-//                     letterSpacing: -0.4,
-//                     color: Color(0xFF767676),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//           Container(
-//             margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//             child: Text(
-//               value,
-//               style: TextStyle(
-//                 fontFamily: 'Pretendard',
-//                 fontWeight: FontWeight.w600,
-//                 fontSize: 14,
-//                 height: 1,
-//                 letterSpacing: -0.4,
-//                 color: Color(0xFF222222),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           '게시글 상세',
-//           style: TextStyle(
-//             fontFamily: 'Pretendard',
-//             fontWeight: FontWeight.w600,
-//             fontSize: 21,
-//             height: 1.0,
-//             letterSpacing: -0.5,
-//             color: Color(0xFF222222),
-//           ),
-//         ),
-//
-//         centerTitle: true,
-//         backgroundColor: Colors.white,
-//         elevation: 0,
-//         leading: IconButton(
-//           icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
-//           color: Color(0xFF222222), // 아이콘 색상
-//           onPressed: () {
-//             Navigator.pop(context); // 뒤로가기 기능
-//           },
-//         ),
-//         // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
-//         actions: [
-//           Container(
-//             margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
-//             child: GestureDetector(
-//               onTap: () {
-//                 print(1);
-//               },
-//               child: SvgPicture.asset(
-//                 'assets/pigma/ellipsis.svg',
-//                 width: 26, // 아이콘 너비
-//                 height: 26, // 아이콘 높이
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//
-//
-//       body: SingleChildScrollView( // 내용이 화면을 넘어갈 때 스크롤할 수 있도록 함
-//         child: Column(
-//           children: [
-//             SizedBox(height: 35,),
-//             Container(
-//               margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.start,
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Container(
-//                         margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-//                         child: Container(
-//                           width: 32,
-//                           height: 32,
-//                           decoration: BoxDecoration(
-//                             borderRadius: BorderRadius.circular(16),
-//                           ),
-//                           child: SvgPicture.asset(
-//                             'assets/pigma/person.svg',
-//                             width: 26, // 아이콘 너비
-//                             height: 26, // 아이콘 높이
-//                           ),
-//                         ),
-//                       ),
-//                       Container(
-//                         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-//                         child: Text(
-//                           '이은*님',
-//                           style: TextStyle(
-//                             fontFamily: 'Pretendard',
-//                             fontWeight: FontWeight.w600,
-//                             fontSize: 16,
-//                             height: 1,
-//                             letterSpacing: -0.4,
-//                             color: Color(0xFF222222),
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(0, 10, 0, 9),
-//                     child: Text(
-//                       '3분 전',
-//                       style: TextStyle(
-//                         fontFamily: 'Pretendard',
-//                         fontWeight: FontWeight.w500,
-//                         fontSize: 13,
-//                         height: 1,
-//                         letterSpacing: -0.3,
-//                         color: Color(0xFFAAAAAA),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             Container(
-//               margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-//               width: 335,
-//               height: 1,
-//               child:
-//               Container(
-//                 decoration: BoxDecoration(
-//                   color: Color(0xFFF6F6F6),
-//                 ),
-//                 child: Container(
-//                   width: 335,
-//                   height: 0,
-//                 ),
-//               ),
-//             ),
-//             Container(
-//               margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-//               child: Column(
-//                 mainAxisAlignment: MainAxisAlignment.start,
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//                     child: Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Row(
-//                           mainAxisAlignment: MainAxisAlignment.start,
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Container(
-//                               margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-//                               width: 24,
-//                               height: 24,
-//                               child:
-//                               SizedBox(
-//                                 width: 24,
-//                                 height: 24,
-//                                 child: SvgPicture.asset(
-//                                   'assets/pigma/location.svg',
-//                                 ),
-//                               ),
-//                             ),
-//                             Container(
-//                               margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                               child: Text(
-//                                 '위치',
-//                                 style: TextStyle(
-//                                   fontFamily: 'Pretendard',
-//                                   fontWeight: FontWeight.w500,
-//                                   fontSize: 14,
-//                                   height: 1,
-//                                   letterSpacing: -0.4,
-//                                   color: Color(0xFF767676),
-//                                 ),
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                         Container(
-//                           margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                           child: Text(
-//                             '연세대학교 도서관 4층',
-//                             style: TextStyle(
-//                               fontFamily: 'Pretendard',
-//                               fontWeight: FontWeight.w600,
-//                               fontSize: 14,
-//                               height: 1,
-//                               letterSpacing: -0.4,
-//                               color: Color(0xFF222222),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//                     child: Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Row(
-//                           mainAxisAlignment: MainAxisAlignment.start,
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Container(
-//                               margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-//                               width: 24,
-//                               height: 24,
-//                               child:
-//                               SizedBox(
-//                                 width: 24,
-//                                 height: 24,
-//                                 child: SvgPicture.asset(
-//                                   'assets/pigma/dollar_circle.svg',
-//                                 ),
-//                               ),
-//                             ),
-//                             Container(
-//                               margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                               child: Text(
-//                                 '비용',
-//                                 style: TextStyle(
-//                                   fontFamily: 'Pretendard',
-//                                   fontWeight: FontWeight.w500,
-//                                   fontSize: 14,
-//                                   height: 1,
-//                                   letterSpacing: -0.4,
-//                                   color: Color(0xFF767676),
-//                                 ),
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                         Container(
-//                           margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                           child: Text(
-//                             '3,000원',
-//                             style: TextStyle(
-//                               fontFamily: 'Pretendard',
-//                               fontWeight: FontWeight.w600,
-//                               fontSize: 14,
-//                               height: 1,
-//                               letterSpacing: -0.4,
-//                               color: Color(0xFF222222),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Row(
-//                         mainAxisAlignment: MainAxisAlignment.start,
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Container(
-//                             margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-//                             width: 24,
-//                             height: 24,
-//                             child:
-//                             SizedBox(
-//                               width: 24,
-//                               height: 24,
-//                               child: SvgPicture.asset(
-//                                 'assets/pigma/vuesaxbulkhouse.svg',
-//                               ),
-//                             ),
-//                           ),
-//                           Container(
-//                             margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                             child: Text(
-//                               '매장명',
-//                               style: TextStyle(
-//                                 fontFamily: 'Pretendard',
-//                                 fontWeight: FontWeight.w500,
-//                                 fontSize: 14,
-//                                 height: 1,
-//                                 letterSpacing: -0.4,
-//                                 color: Color(0xFF767676),
-//                               ),
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                       Container(
-//                         margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-//                         child: Text(
-//                           '베스킨라빈스',
-//                           style: TextStyle(
-//                             fontFamily: 'Pretendard',
-//                             fontWeight: FontWeight.w600,
-//                             fontSize: 14,
-//                             height: 1,
-//                             letterSpacing: -0.4,
-//                             color: Color(0xFF222222),
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//
-//
-//             Container(
-//               margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-//               width: 335,
-//               height: 1,
-//               child:
-//               Container(
-//                 decoration: BoxDecoration(
-//                   color: Color(0xFFF6F6F6),
-//                 ),
-//                 child: Container(
-//                   width: 335,
-//                   height: 0,
-//                 ),
-//               ),
-//             ),
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//             Container(
-//               margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-//               child: Column(
-//                 mainAxisAlignment: MainAxisAlignment.start,
-//                 crossAxisAlignment: CrossAxisAlignment.center,
-//                 children: [
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
-//                     child: Column(
-//                       mainAxisAlignment: MainAxisAlignment.start,
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Container(
-//                           margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//                           child: Align(
-//                             alignment: Alignment.topLeft,
-//                             child: Text(
-//                               '요청사항',
-//                               style: TextStyle(
-//                                 fontFamily: 'Pretendard',
-//                                 fontWeight: FontWeight.w600,
-//                                 fontSize: 16,
-//                                 height: 1,
-//                                 letterSpacing: -0.4,
-//                                 color: Color(0xFF222222),
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                         Container(
-//                           decoration: BoxDecoration(
-//                             border: Border.all(color: Color(0xFFD0D0D0)),
-//                             borderRadius: BorderRadius.circular(12),
-//                             color: Color(0xFFFFFFFF),
-//                           ),
-//                           child: Container(
-//                             padding: EdgeInsets.fromLTRB(15, 19, 27.3, 19),
-//                             child:
-//                             Text(
-//                               '직접 받겠습니다. 조심히 오세요 감사합니다!! 직접 받겠습니다. 조심히 오세요 감사합니다!! ',
-//                               style: TextStyle(
-//                                 fontFamily: 'Pretendard',
-//                                 fontWeight: FontWeight.w500,
-//                                 fontSize: 14,
-//                                 height: 1.4,
-//                                 letterSpacing: -0.4,
-//                                 color: Color(0xFF222222),
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-//                     width: double.infinity,
-//                     height: 10,
-//                     child:
-//                     Container(
-//                       decoration: BoxDecoration(
-//                         color: Color(0xFFF6F6F6),
-//                       ),
-//                       child: Container(
-//                         width: 375,
-//                         height: 10,
-//                       ),
-//                     ),
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-//                     child: Column(
-//                       mainAxisAlignment: MainAxisAlignment.start,
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Container(
-//                           margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-//                           child: Align(
-//                             alignment: Alignment.topLeft,
-//                             child: Text(
-//                               '위치',
-//                               style: TextStyle(
-//                                 fontFamily: 'Pretendard',
-//                                 fontWeight: FontWeight.w600,
-//                                 fontSize: 16,
-//                                 height: 1,
-//                                 letterSpacing: -0.4,
-//                                 color: Color(0xFF222222),
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                         Container(
-//                           decoration: BoxDecoration(
-//                             color: Color(0xFFFFFFFF),
-//                             borderRadius: BorderRadius.circular(12),
-//                           ),
-//                           child: Container(
-//                             width: 335,
-//                             height: 219,
-//                             child:
-//                             Positioned(
-//                               left: -136,
-//                               bottom: -141,
-//                               child: Container(
-//                                 decoration: BoxDecoration(
-//                                   image: DecorationImage(
-//                                     fit: BoxFit.cover,
-//                                     image: NetworkImage(
-//                                       'assets/images/rectangle.png',
-//                                     ),
-//                                   ),
-//                                 ),
-//                                 child: Container(
-//                                   width: 500,
-//                                   height: 500,
-//                                 ),
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//
-//             // 여기에 추가 컨텐츠를 넣을 수 있습니다.
-//           ],
-//         ),
-//       ),
-//
-//
-//       bottomNavigationBar:Column(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Container(
-//             height: 75,
-//             child: ElevatedButton(
-//               onPressed: () {
-//                 // 버튼을 눌렀을 때의 동작을 여기에 추가하세요.
-//               },
-//               style: ElevatedButton.styleFrom(
-//                 primary: Color(0xFF1D4786), // 배경색
-//                 onPrimary: Colors.white, // 텍스트 색상
-//                 padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
-//                 minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
-//                   side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
-//                 ),
-//               ),
-//               child: Text(
-//                 '도와주기',
-//                 style: TextStyle(
-//                   fontFamily: 'Pretendard',
-//                   fontWeight: FontWeight.w600,
-//                   fontSize: 18,
-//                   height: 1,
-//                   letterSpacing: -0.5,
-//                   color: Colors.white, // 텍스트 색상
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-// }
-//
+import 'package:OnTheWay/HanbatSchoolBoard/HanbatSchoolBoard.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+
+import '../Map/WriteMap/CurrentMapScreen.dart';
+import '../Map/WriteMap/StoreMapScreen.dart';
+
+class HanbatNewPostScreen extends StatefulWidget {
+  final DocumentSnapshot? post;
+
+  HanbatNewPostScreen({this.post});
+
+  @override
+  _HanbatNewPostScreenState createState() => _HanbatNewPostScreenState();
+}
+
+class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
+  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _storeController = TextEditingController();
+  final TextEditingController _costController = TextEditingController();
+  final TextEditingController _requestController = TextEditingController();
+  final FocusNode _buttonFocusNode = FocusNode();
+
+
+  //위치 관련 변수
+  String? _currentSelectedLocation; //위치 저장
+  String? _storeSelectedLocation;
+  bool currentLocationSet = false; //버튼 활성화
+  bool storeLocationSet = false;
+
+  //스낵바가 이미 표시되었는지를 추적하는 플래그
+  bool _snackBarShown = false;
+  bool _isUploading = false;
+
+//게시물 수정하기 누를때 전 정보를 불러옴
+  @override
+  void initState() {
+    super.initState();
+    if (widget.post != null) {
+      _locationController.text = widget.post!['my_location'] ?? '';
+      _storeController.text = widget.post!['store'] ?? '';
+      _costController.text = widget.post!['cost'] ?? '';
+      _requestController.text = widget.post!['Request'] ?? '';
+      _storeSelectedLocation = widget.post!['store_location'] ?? '';
+      _currentSelectedLocation = widget.post!['current_location'] ?? '';
+      // 위치 정보가 있다면 변수들을 true로 설정합니다.
+      if (_storeSelectedLocation != null && _storeSelectedLocation!.isNotEmpty) {
+        storeLocationSet = true;
+      }
+      if (_currentSelectedLocation != null && _currentSelectedLocation!.isNotEmpty) {
+        currentLocationSet = true;
+      }
+    }
+
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    _storeController.dispose();
+    _costController.dispose();
+    _requestController.dispose();
+    _buttonFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _checkMaxLength(TextEditingController controller, int maxLength) {
+    if (controller.text.length == maxLength && !_snackBarShown) {
+      controller.text = controller.text.substring(0, maxLength);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '최대 ${maxLength}글자까지 입력 가능합니다. \n 상세내용은 채팅방을 이용해주세요.',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      _snackBarShown = true;
+    } else if (controller.text.length < maxLength){
+      _snackBarShown = false;
+    }
+  }
+
+
+
+  //현재위치 받는 메소드
+  void _currentChooseLocation() async {
+    // MapScreen으로부터 반환된 위치를 받습니다.
+    HapticFeedback.lightImpact();
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CurrentMapScreen()),
+    );
+
+    // 반환된 위치를 변수에 저장합니다.
+    if (result != null) {
+      setState(() {
+        // LatLng 객체를 문자열 형태로 저장
+        _currentSelectedLocation = "${result.latitude},${result.longitude}";
+        currentLocationSet = true;
+      });
+    }
+  }
+
+  //가게위치 받는 메소드
+  void _storeChooseLocation() async {
+    // MapScreen으로부터 반환된 위치를 받습니다.
+    HapticFeedback.lightImpact();
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => StoreMapScreen()),
+    );
+
+    // 반환된 위치를 변수에 저장합니다.
+    if (result != null) {
+      setState(() {
+        // LatLng 객체를 문자열 형태로 저장
+        _storeSelectedLocation = "${result.latitude},${result.longitude}";
+        storeLocationSet = true;
+      });
+    }
+  }
+
+
+  String? getUserEmail() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user != null ? user.email : '이메일 없음';
+  }
+
+  Future<void> _uploadPost() async {
+    HapticFeedback.lightImpact();
+
+    if (_locationController.text.isEmpty) {
+      _showSnackBar("\'본인 위치\' 칸을 입력해주세요.");
+      return;
+    }
+
+    if (_storeController.text.isEmpty) {
+      _showSnackBar("\'주문 시킬 가게\' 칸을 입력해주세요.");
+      return;
+    }
+
+    if (_costController.text.isEmpty) {
+      _showSnackBar("\'비용\' 칸을 입력해주세요.");
+      return;
+    }
+
+    if (_requestController.text.isEmpty) {
+      _showSnackBar("\'요청 사항\' 칸을 입력해주세요.");
+      return;
+    }
+
+    if(currentLocationSet == false){
+      _showSnackBar("\'본인 위치 설정\' 을 완료해주세요.");
+      return;
+    }
+
+    if(storeLocationSet == false){
+      _showSnackBar("\'가게 위치 설정\' 을 완료해주세요.");
+      return;
+    }
+
+    try {
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      String? email = getUserEmail();
+      String? nickname;
+
+      QuerySnapshot existingPosts = await db
+          .collection('naver_posts')
+          .where('my_location', isEqualTo: _locationController.text)
+          .where('email', isEqualTo: email)
+          .get();
+
+      QuerySnapshot nicknameSnapshot = await db
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      // 문서가 하나 이상 반환되었을 때만 접근
+      if (nicknameSnapshot.docs.isNotEmpty) {
+        // 첫 번째 문서에 접근 (여기서는 이메일이 유일하다고 가정)
+        DocumentSnapshot documentSnapshot = nicknameSnapshot.docs.first;
+
+        // 'nickname' 필드 값 가져오기
+        nickname = documentSnapshot['nickname'];
+
+      } else {
+        print('No user found with the given email.');
+      }
+
+
+
+      if (existingPosts.docs.isNotEmpty && widget.post == null) {
+        _showSnackBar('동일한 제목의 게시물이 이미 존재합니다.');
+      } else {
+        String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
+        await db.collection('naver_posts').doc(documentName).set({
+          'nickname' : nickname,
+          'store_location' :_storeSelectedLocation ?? '가게 위치 미설정',
+          'current_location' : _currentSelectedLocation ?? '현재 위치 미설정',
+          'my_location': _locationController.text,
+          'store': _storeController.text,
+          'cost': _costController.text,
+          'email': email,
+          'Request': _requestController.text,
+          'date': DateTime.now(),
+        });
+
+
+        //check 애니메이션
+        setState(() {
+          _isUploading = true;
+        });
+
+
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
+            MaterialPageRoute(
+              builder: (context) => HanbatBoardPage(),
+            ),
+          );
+
+          setState(() {
+            _isUploading = false;
+          });
+
+
+          _showSnackBar("게시물이 업로드 되었습니다.");
+        });
+
+
+
+      }
+    } catch (e) {
+      print(e);
+      _showSnackBar("게시물 업로드에 실패했습니다.");
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // appBar: AppBar(
+      //   title: Text('게시물 작성',style: TextStyle(fontWeight: FontWeight.bold), ),
+      //   backgroundColor:Color(0xFFFF8B13),
+      // ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Lottie.asset(
+                'assets/lottie/blue2.json',
+                fit: BoxFit.fill,
+              ),
+            ),
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 4,
+              shadowColor: Colors.indigo.withOpacity(0.5),
+              title: Text('게시물 작성',
+                style: TextStyle(
+                  fontFamily: 'NanumSquareRound',
+                  fontWeight: FontWeight.w600,
+                  fontSize : 25,
+                ),
+              ),
+              centerTitle: true,
+            ),
+          ],
+        ),
+      ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+
+                    //본인 위치 입력
+                    TextFormField(
+                      controller: _locationController,
+                      decoration: InputDecoration(
+                        hintText: '세부 주소는 채팅을 통해 제공하실 수 있습니다. ',
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        hintStyle: TextStyle(color: Colors.grey),
+                        labelText: '본인 위치',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 8,
+                      onChanged: (value) => _checkMaxLength(_locationController, 8),
+                      onFieldSubmitted: (value) => _currentChooseLocation(),
+                    ),
+
+
+
+
+                    // 본인 위치 지도로 설정 버튼
+                    ElevatedButton.icon(
+                      onPressed: _currentChooseLocation,
+                      icon: Icon(Icons.location_on, color: Colors.white),
+                      label: Text(
+                        '본인 위치 설정',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: currentLocationSet ? Colors.indigo : Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                    //주문 시킬 가게
+                    //
+                    //
+                    //
+                    // 입력
+                    TextFormField(
+                      controller: _storeController,
+                      decoration: InputDecoration(
+                        labelText: '주문 시킬 가게',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 8,
+                      onChanged: (value) => _checkMaxLength(_storeController, 8),
+                      onFieldSubmitted: (value) => _storeChooseLocation(),
+                    ),
+                    //가게 위치 지도로
+                    //
+                    //
+                    //
+                    // 설정 버튼
+                    ElevatedButton.icon(
+                      onPressed: _storeChooseLocation,
+                      icon: Icon(Icons.location_on, color: Colors.white),
+                      label: Text(
+                        '가게 위치 설정',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: storeLocationSet ? Colors.indigo : Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+
+
+
+
+                    TextFormField(
+                      controller: _costController,
+                      decoration: InputDecoration(
+                        labelText: '비용',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        hintText: '숫자로 가격을 입력해주세요.  ex) 이천원 x, 2000원 o',
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        hintStyle: TextStyle(color: Colors.grey),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLines: null,
+                      maxLength: 7,
+                      onChanged: (value) => _checkMaxLength(_costController, 7),
+                    ),
+
+
+
+                    SizedBox(height: 16.0),
+
+
+
+
+
+                    TextFormField(
+                      controller: _requestController,
+                      decoration: InputDecoration(
+                        hintText: '민감한 세부 정보는 채팅을 이용해 주세요.',
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        hintStyle: TextStyle(color: Colors.grey),
+                        labelText: '요청사항',
+                        contentPadding: EdgeInsets.only(top: 20.0, bottom: 8.0),
+                        alignLabelWithHint: true,
+                      ),
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.done,
+                      minLines: 7,
+                      maxLines: null,
+                      maxLength: 30,
+                      onChanged: (value) => _checkMaxLength(_requestController, 30),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          if (_isUploading)
+            Container(
+              color: Colors.grey.withOpacity(0.5),
+              child: Center(
+                child: Lottie.asset(
+                  'assets/lottie/check_indigo.json',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain
+                  ,
+                ),
+              ),
+            ),
+        ],
+      ),
+
+      bottomNavigationBar: BottomAppBar(
+        // color: Colors.transparent, // 배경 색상을 투명하게 설정
+        child: Container(
+          margin: EdgeInsets.all(16.0), // 여백 추가
+          decoration: BoxDecoration(
+            color: Colors.indigo[300], // 버튼 배경색
+            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
+
+          ),
+          child: ElevatedButton.icon(
+            onPressed: _uploadPost,
+            icon: Icon(Icons.send), // 버튼 아이콘
+            label: Text(
+              '게시하기',
+              style: TextStyle(fontSize: 18),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent, // 버튼 색상 투명하게 설정
+              shadowColor: Colors.transparent, // 그림자 색상 투명하게 설정
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

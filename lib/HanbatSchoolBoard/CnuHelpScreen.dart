@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,7 +11,7 @@ import 'package:lottie/lottie.dart';
 
 import '../Map/Navigation/HelperTMapView.dart';
 import '../Map/Navigation/PostDetailMapView.dart';
-import '../test/LocationTest.dart';
+import '../Map/LocationTracker.dart';
 import 'HanbatSchoolBoard.dart';
 import 'HelpScreenArguments.dart';
 
@@ -36,504 +38,6 @@ class _HelpScreenState extends State<HelpScreen> {
     user = _auth.currentUser;
     super.initState();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '게시글 상세',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontWeight: FontWeight.w600,
-            fontSize: 19,
-            height: 1.0,
-            letterSpacing: -0.5,
-            color: Colors.white,
-          ),
-        ),
-
-        centerTitle: true,
-        backgroundColor: Color(0xFF1D4786),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
-          color: Colors.white, // 아이콘 색상
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            Navigator.pop(context); // 뒤로가기 기능
-          },
-        ),
-        // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
-        actions: [
-          if(widget.args.isMyPost)
-            Container(
-              margin: EdgeInsets.only(right: 9), // 오른쪽 여백 설정
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent, // 터치 가능한 영역을 넓히도록 설정
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showEditDeleteDialog(context, widget.args.doc);
-                  // _showEditDeleteDialog(context, widget.args.doc);
-                },
-                child: SizedBox(
-                  width: 46, // 원하는 터치 영역의 너비
-                  height: 46, // 원하는 터치 영역의 높이
-                  child: Align(
-                    alignment: Alignment.center, // 아이콘을 중앙에 배치
-                    child: SvgPicture.asset(
-                      'assets/pigma/ellipsis_white.svg',
-                      width: 26, // 아이콘 너비
-                      height: 26, // 아이콘 높이
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-
-
-      body: SingleChildScrollView( // 내용이 화면을 넘어갈 때 스크롤할 수 있도록 함
-        child: Column(
-          children: [
-            SizedBox(height: 20,),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container( //           프로필사진
-                        margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
-                        child: CircleAvatar(
-                          radius: 16, // 반지름 설정 (32 / 2)
-                          backgroundColor: Colors.grey[200],
-                          child: user?.photoURL != null
-                              ? null
-                              : Icon(
-                            Icons.account_circle,
-                            size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
-                            color: Colors.indigo,
-                          ),
-                          backgroundImage: user?.photoURL != null
-                              ? NetworkImage(user!.photoURL!)
-                              : null,
-                        ),
-
-                      ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                        child: Text(
-                          '${widget.args.userName}',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            height: 1,
-                            letterSpacing: -0.4,
-                            color: Color(0xFF222222),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 10, 0, 9),
-                    child: Text(
-                      '${widget.args.timeAgo}',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                        height: 1,
-                        letterSpacing: -0.3,
-                        color: Color(0xFFAAAAAA),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-              width: double.infinity,
-              height: 2,
-              child:
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFF6F6F6),
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-                              width: 24,
-                              height: 24,
-                              child:
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: SvgPicture.asset(
-                                  'assets/pigma/location.svg',
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                              child: Text(
-                                '픽업 장소',
-                                style: TextStyle(
-                                  fontFamily: 'Pretendard',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                  height: 1,
-                                  letterSpacing: -0.4,
-                                  color: Color(0xFF767676),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                          child: Text(
-                            '${widget.args.location}',
-                            style: TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              height: 1,
-                              letterSpacing: -0.4,
-                              color: Color(0xFF222222),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-                              width: 24,
-                              height: 24,
-                              child:
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: SvgPicture.asset(
-                                  'assets/pigma/dollar_circle.svg',
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                              child: Text(
-                                '비용',
-                                style: TextStyle(
-                                  fontFamily: 'Pretendard',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                  height: 1,
-                                  letterSpacing: -0.4,
-                                  color: Color(0xFF767676),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                          child: Text(
-                            '${widget.args.cost}',
-                            style: TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              height: 1,
-                              letterSpacing: -0.4,
-                              color: Color(0xFF222222),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
-                            width: 24,
-                            height: 24,
-                            child:
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: SvgPicture.asset(
-                                'assets/pigma/vuesaxbulkhouse.svg',
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                            child: Text(
-                              '매장명',
-                              style: TextStyle(
-                                fontFamily: 'Pretendard',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                height: 1,
-                                letterSpacing: -0.4,
-                                color: Color(0xFF767676),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                        child: Text(
-                          '${widget.args.storeName}',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            height: 1,
-                            letterSpacing: -0.4,
-                            color: Color(0xFF222222),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
-              width: double.infinity,
-              height: 2,
-              child:
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFF6F6F6),
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              '요청사항',
-                              style: TextStyle(
-                                fontFamily: 'Pretendard',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                height: 1,
-                                letterSpacing: -0.4,
-                                color: Color(0xFF222222),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: MediaQuery.of(context).size.width*0.9,
-                          // height: MediaQuery.of(context).size.width*0.2,
-                          padding: EdgeInsets.fromLTRB(15, 25, 27.3, 25),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFD0D0D0)),
-                            borderRadius: BorderRadius.circular(12),
-                            color: Color(0xFFFFFFFF),
-                          ),
-                          child: Container(
-                            child:
-                            Text(
-                              '${widget.args.request}',
-                              style: TextStyle(
-                                fontFamily: 'Pretendard',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                height: 1.4,
-                                letterSpacing: -0.4,
-                                color: Color(0xFF222222),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                    width: double.infinity,
-                    height: 10,
-                    child:
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF6F6F6),
-                      ),
-                      child: Container(
-                        width: 375,
-                        height: 10,
-                      ),
-                    ),
-                  ),
-                  Container(   //지도넣기
-                    margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              '위치',
-                              style: TextStyle(
-                                fontFamily: 'Pretendard',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                height: 1,
-                                letterSpacing: -0.4,
-                                color: Color(0xFF222222),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Listener(
-                          // behavior: HitTestBehavior.translucent,  // 이 속성을 추가합니다.
-                          onPointerDown: (_) {
-                            HapticFeedback.lightImpact();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => HelperTMapView(
-                                currentLocation: widget.args.current_location,
-                                storeLocation: widget.args.store_location,
-                              ),
-                            ));
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            height: MediaQuery.of(context).size.height * 0.3,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: PostDetailMapView(
-                                currentLocation: widget.args.current_location,
-                                storeLocation: widget.args.store_location,
-                              ),
-                            ),
-                          ),
-                        ),
-
-
-
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 여기에 추가 컨텐츠를 넣을 수 있습니다.
-          ],
-        ),
-      ),
-
-
-      bottomNavigationBar:Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if(!widget.args.isMyPost)
-          Container(
-            height: MediaQuery.of(context).size.width*0.22,
-            child: ElevatedButton(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                // helpPost(context, widget.args.doc, widget.args.pushHelpButton); // 도와주기 기능 실행
-                buildCustomHelpDialog(context, widget.args.doc);
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xFF1D4786), // 배경색
-                onPrimary: Colors.white, // 텍스트 색상
-                padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
-                minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
-                  side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
-                ),
-              ),
-              child: Text(
-                '도와주기',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                  height: 1,
-                  letterSpacing: -0.5,
-                  color: Colors.white, // 텍스트 색상
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   //수정,삭제,닫기 바텀시트
   void _showEditDeleteDialog(BuildContext context, DocumentSnapshot doc) {
@@ -1275,6 +779,527 @@ class _HelpScreenState extends State<HelpScreen> {
       SetOptions(merge: true),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+        onWillPop: () async{
+          return true;
+        },
+        child: GestureDetector(
+            onHorizontalDragEnd: (details){
+              if (details.primaryVelocity! >  0){
+                Navigator.pop(context);
+              }
+            },
+            child: Scaffold(
+              appBar: PreferredSize(
+                preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+                child: AppBar(
+                  title: Text(
+                    '게시글 상세',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 19,
+                      height: 1.0,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  centerTitle: true,
+                  backgroundColor: Color(0xFF1D4786),
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+                    color: Colors.white, // 아이콘 색상
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(context); // 뒤로가기 기능
+                    },
+                  ),
+                  // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+                  actions: [
+                    if(widget.args.isMyPost)
+                      Container(
+                        margin: EdgeInsets.only(right: 9), // 오른쪽 여백 설정
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent, // 터치 가능한 영역을 넓히도록 설정
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _showEditDeleteDialog(context, widget.args.doc);
+                            // _showEditDeleteDialog(context, widget.args.doc);
+                          },
+                          child: SizedBox(
+                            width: 46, // 원하는 터치 영역의 너비
+                            height: 46, // 원하는 터치 영역의 높이
+                            child: Align(
+                              alignment: Alignment.center, // 아이콘을 중앙에 배치
+                              child: SvgPicture.asset(
+                                'assets/pigma/ellipsis_white.svg',
+                                width: 26, // 아이콘 너비
+                                height: 26, // 아이콘 높이
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+
+              body: SingleChildScrollView( // 내용이 화면을 넘어갈 때 스크롤할 수 있도록 함
+                child: Column(
+                  children: [
+                    SizedBox(height: 20,),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container( //           프로필사진
+                                margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
+                                child: CircleAvatar(
+                                  radius: 16, // 반지름 설정 (32 / 2)
+                                  backgroundColor: Colors.grey[200],
+                                  child: user?.photoURL != null
+                                      ? null
+                                      : Icon(
+                                    Icons.account_circle,
+                                    size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                                    color: Colors.indigo,
+                                  ),
+                                  backgroundImage: user?.photoURL != null
+                                      ? NetworkImage(user!.photoURL!)
+                                      : null,
+                                ),
+
+                              ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                child: Text(
+                                  '${widget.args.userName}',
+                                  style: TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    height: 1,
+                                    letterSpacing: -0.4,
+                                    color: Color(0xFF222222),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 10, 0, 9),
+                            child: Text(
+                              '${widget.args.timeAgo}',
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                                height: 1,
+                                letterSpacing: -0.3,
+                                color: Color(0xFFAAAAAA),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      width: double.infinity,
+                      height: 2,
+                      child:
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFFF6F6F6),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //픽업 장소
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                                      width: 24,
+                                      height: 24,
+                                      child:
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: SvgPicture.asset(
+                                          'assets/pigma/vuesaxbulkhouse.svg',
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                      child: Text(
+                                        '픽업 장소',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF767676),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                  child: Text(
+                                    '${widget.args.storeName}',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1,
+                                      letterSpacing: -0.4,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+
+                          //드랍 장소
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                                      width: 24,
+                                      height: 24,
+                                      child:
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: SvgPicture.asset(
+                                          'assets/pigma/location.svg',
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                      child: Text(
+                                        '드랍 장소',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF767676),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                  child: Text(
+                                    '${widget.args.location}',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1,
+                                      letterSpacing: -0.4,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          //비용
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                                      width: 24,
+                                      height: 24,
+                                      child:
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: SvgPicture.asset(
+                                          'assets/pigma/dollar_circle.svg',
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                      child: Text(
+                                        '비용',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF767676),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                  child: Text(
+                                    '${widget.args.cost}',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1,
+                                      letterSpacing: -0.4,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+
+                    Container(
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      width: double.infinity,
+                      height: 2,
+                      child:
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFFF6F6F6),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                  child: Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Text(
+                                      '요청사항',
+                                      style: TextStyle(
+                                        fontFamily: 'Pretendard',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        height: 1,
+                                        letterSpacing: -0.4,
+                                        color: Color(0xFF222222),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width*0.9,
+                                  // height: MediaQuery.of(context).size.width*0.2,
+                                  padding: EdgeInsets.fromLTRB(15, 25, 27.3, 25),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Color(0xFFD0D0D0)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Color(0xFFFFFFFF),
+                                  ),
+                                  child: Container(
+                                    child:
+                                    Text(
+                                      '${widget.args.request}',
+                                      style: TextStyle(
+                                        fontFamily: 'Pretendard',
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
+                                        height: 1.4,
+                                        letterSpacing: -0.4,
+                                        color: Color(0xFF222222),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                            width: double.infinity,
+                            height: 10,
+                            child:
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Color(0xFFF6F6F6),
+                              ),
+                              child: Container(
+                                width: 375,
+                                height: 10,
+                              ),
+                            ),
+                          ),
+                          Container(   //지도넣기
+                            margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                  child: Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Text(
+                                      '위치',
+                                      style: TextStyle(
+                                        fontFamily: 'Pretendard',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        height: 1,
+                                        letterSpacing: -0.4,
+                                        color: Color(0xFF222222),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Listener(
+                                  // behavior: HitTestBehavior.translucent,  // 이 속성을 추가합니다.
+                                  onPointerDown: (_) {
+                                    HapticFeedback.lightImpact();
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => HelperTMapView(
+                                        currentLocation: widget.args.current_location,
+                                        storeLocation: widget.args.store_location,
+                                      ),
+                                    ));
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: MediaQuery.of(context).size.height * 0.3,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: PostDetailMapView(
+                                        currentLocation: widget.args.current_location,
+                                        storeLocation: widget.args.store_location,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+
+
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 여기에 추가 컨텐츠를 넣을 수 있습니다.
+                  ],
+                ),
+              ),
+
+
+              bottomNavigationBar:Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if(!widget.args.isMyPost)
+                    Container(
+                      height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.15 : MediaQuery.of(context).size.width * 0.20,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          // helpPost(context, widget.args.doc, widget.args.pushHelpButton); // 도와주기 기능 실행
+                          buildCustomHelpDialog(context, widget.args.doc);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: Color(0xFF1D4786), // 배경색
+                          onPrimary: Colors.white, // 텍스트 색상
+                          padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
+                          minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
+                            side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
+                          ),
+                        ),
+                        child: Text(
+                          '도와주기',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            height: 1,
+                            letterSpacing: -0.5,
+                            color: Colors.white, // 텍스트 색상
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            )
+        )
+    );
+  }
+
 
 }
 

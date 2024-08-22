@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
               switch (domain) {
                 case 'naver.com':
                   return HanbatBoardPage();
-                  // return IsolateExample();
+
               // 여기에 다른 도메인별 게시판 페이지 조건을 추가
 
                 default:

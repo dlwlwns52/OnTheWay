@@ -136,6 +136,8 @@ flutter:
     - assets/pigma/ellipsis.svg
     - assets/pigma/ellipsis_white.svg
     - assets/pigma/notification_white.svg
+    - assets/pigma/write_locate.svg
+
 
   fonts:
     - family: NanumSquareRound

@@ -1,0 +1,194 @@
+margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
+
+
+margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+
+margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
+
+
+
+            Container(
+              margin: EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  //픽업 장소
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                            width: 24,
+                            height: 24,
+                            child:
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: SvgPicture.asset(
+                                'assets/pigma/vuesaxbulkhouse.svg',
+                              ),
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                            child: Text(
+                              '픽업 장소',
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                                height: 1,
+                                letterSpacing: -0.4,
+                                color: Color(0xFF767676),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        child: Text(
+                          '${widget.args.storeName}',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            height: 1,
+                            letterSpacing: -0.4,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+
+                  //드랍 장소
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                              width: 24,
+                              height: 24,
+                              child:
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: SvgPicture.asset(
+                                  'assets/pigma/location.svg',
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                              child: Text(
+                                '드랍 장소',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  height: 1,
+                                  letterSpacing: -0.4,
+                                  color: Color(0xFF767676),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                          child: Text(
+                            '${widget.args.location}',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  //비용
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                              width: 24,
+                              height: 24,
+                              child:
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: SvgPicture.asset(
+                                  'assets/pigma/dollar_circle.svg',
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                              child: Text(
+                                '비용',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  height: 1,
+                                  letterSpacing: -0.4,
+                                  color: Color(0xFF767676),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                          child: Text(
+                            '${widget.args.cost}',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+
+                  드랍  margin: EdgeInsets.fromLTRB(0, 0, 0, 13),
+
+                  비용
+
+                  픽업

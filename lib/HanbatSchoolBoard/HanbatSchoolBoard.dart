@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:OnTheWay/Chat/AllUsersScreen.dart';
+import 'package:OnTheWay/test/WriteDesignTest.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
@@ -400,126 +401,129 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '한국대학교 게시판',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontWeight: FontWeight.w600,
-            fontSize: 19,
-            height: 1.0,
-            // letterSpacing: -0.5,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Color(0xFF1D4786),
-        elevation: 0,
-        leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
-        actions: [
-          Container(
-            margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
-            child: Stack(
-              alignment: Alignment.topRight,
-              children: <Widget>[
-                FutureBuilder<String?>(
-                  future: _nickname,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                      return IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/pigma/notification_white.svg',
-                          width: 24,
-                          height: 24,
-                        ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
-                                textAlign: TextAlign.center,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+          child: AppBar(
+              title: Text(
+                '한국대학교 게시판',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 19,
+                  height: 1.0,
+                  // letterSpacing: -0.5,
+                  color: Colors.white,
+                ),
+              ),
+              centerTitle: true,
+              backgroundColor: Color(0xFF1D4786),
+              elevation: 0,
+              leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+              actions: [
+                Container(
+                  margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: <Widget>[
+                      FutureBuilder<String?>(
+                        future: _nickname,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                            return IconButton(
+                              icon: SvgPicture.asset(
+                                'assets/pigma/notification_white.svg',
+                                width: 24,
+                                height: 24,
                               ),
-                              duration: Duration(seconds: 1),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                            );
+                          }
+
+                          String ownerNickname = snapshot.data!;
+                          return IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/pigma/notification_white.svg',
+                              width: 25,
+                              height: 25,
                             ),
+                            onPressed: () async {
+                              HapticFeedback.lightImpact();
+                              await resetMessageCount(ownerNickname);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => AlarmUi(),
+                                ),
+                              );
+                            },
                           );
                         },
-                      );
-                    }
-
-                    String ownerNickname = snapshot.data!;
-                    return IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/pigma/notification_white.svg',
-                        width: 25,
-                        height: 25,
                       ),
-                      onPressed: () async {
-                        HapticFeedback.lightImpact();
-                        await resetMessageCount(ownerNickname);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => AlarmUi(),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-                FutureBuilder<String?>(
-                  future: _nickname,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                      return Container();
-                    }
+                      FutureBuilder<String?>(
+                        future: _nickname,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                            return Container();
+                          }
 
-                    String ownerNickname = snapshot.data!;
-                    return StreamBuilder<DocumentSnapshot>(
-                      stream: getMessageCountStream(ownerNickname),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData || !snapshot.data!.exists) {
-                          return Container();
-                        }
-                        var data = snapshot.data!.data() as Map<String, dynamic>;
-                        int messageCount = data['messageCount'] ?? 0;
+                          String ownerNickname = snapshot.data!;
+                          return StreamBuilder<DocumentSnapshot>(
+                            stream: getMessageCountStream(ownerNickname),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return Container();
+                              }
+                              var data = snapshot.data!.data() as Map<String, dynamic>;
+                              int messageCount = data['messageCount'] ?? 0;
 
-                        return Positioned(
-                          right: 9,
-                          top: 9,
-                          child: messageCount > 0
-                              ? Container(
-                            padding: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            constraints: BoxConstraints(
-                              minWidth: 14,
-                              minHeight: 14,
-                            ),
-                            child: Text(
-                              '$messageCount',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                              : Container(),
-                        );
-                      },
-                    );
-                  },
+                              return Positioned(
+                                right: 9,
+                                top: 9,
+                                child: messageCount > 0
+                                    ? Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    minWidth: 14,
+                                    minHeight: 14,
+                                  ),
+                                  child: Text(
+                                    '$messageCount',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                )
+                                    : Container(),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
       ),
       //게시판 몸통
       body: Stack(
@@ -624,7 +628,11 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         bool isMyPostB = dataB['email'] == myEmail;
                         if (isMyPostA && !isMyPostB) return -1;
                         if (!isMyPostA && isMyPostB) return 1;
-                        return 0;
+                        // 이메일이 같을 경우 시간을 기준으로 정렬
+                        Timestamp timeA = dataA['date'];
+                        Timestamp timeB = dataB['date'];
+
+                        return timeB.compareTo(timeA); // 최신 순으로 정렬
                       });
 
                       return ListView.builder(
@@ -719,6 +727,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
+                          // builder: (context) => WriteDesignTest()),
                       );
                     },
                     child: Icon(Icons.edit),
@@ -742,15 +751,15 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
 
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 45),
+        padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 8, top: 8): const EdgeInsets.only(bottom: 30, top: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              children: [
-                SizedBox(height: 20,)
-              ],
-            ),
+            // Column(
+            //   children: [
+            //     SizedBox(height: 20,)
+            //   ],
+            // ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

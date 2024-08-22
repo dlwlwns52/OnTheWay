@@ -29,6 +29,12 @@ class _HelperTMapViewState extends State<HelperTMapView> {
     controller.runJavaScript(
         "update('${startCoords[0]}', '${startCoords[1]}', '${endCoords[0]}', '${endCoords[1]}');"
     );
+
+  }
+
+  // 초기 위치 설정
+  void setCurrentLocation() {
+    controller.runJavaScript("setCurrentLocation();");
   }
 
   //현재위치 호출
@@ -134,57 +140,6 @@ class _HelperTMapViewState extends State<HelperTMapView> {
           ],
         ),
       ),
-      // bottomNavigationBar:Column(
-      //   mainAxisSize: MainAxisSize.min,
-      //   children: [
-      //       Container(
-      //         height: MediaQuery.of(context).size.width*0.22,
-      //         child: ElevatedButton(
-      //                 onPressed: () {
-      //                   HapticFeedback.lightImpact();
-      //                   ScaffoldMessenger.of(context).showSnackBar(
-      //                     SnackBar(
-      //                       content: Text(
-      //                         '현재 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
-      //                         textAlign: TextAlign.center,
-      //                       ),
-      //                       duration: Duration(seconds: 1),
-      //                     ),
-      //                   );
-      //                   moveToCurrentLocation();
-      //                 },
-      //
-      //           style: ElevatedButton.styleFrom(
-      //             primary: Color(0xFF1D4786), // 배경색
-      //             onPrimary: Colors.white, // 텍스트 색상
-      //             // padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
-      //             minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
-      //             shape: RoundedRectangleBorder(
-      //               borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
-      //               side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
-      //             ),
-      //           ),
-      //             child: Row(
-      //               mainAxisAlignment: MainAxisAlignment.center,
-      //               children: [
-      //                 Icon(Icons.pin_drop), // 저장 아이콘
-      //                 SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
-      //                 Text('현재 위치로 이동',
-      //                   style: TextStyle(
-      //                   fontFamily: 'Pretendard',
-      //                   fontWeight: FontWeight.w600,
-      //                   fontSize: 18,
-      //                   height: 1,
-      //                   letterSpacing: -0.5,
-      //                   color: Colors.white, // 텍스트 색상
-      //                 ),
-      //                 ),
-      //               ],
-      //           ),
-      //         ),
-      //       )
-      //   ],
-      // ),
       bottomNavigationBar: BottomAppBar(
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
