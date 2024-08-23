@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:OnTheWay/Profile/DeleteMember.dart';
 import 'package:OnTheWay/login/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import '../Alarm/Grade.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
@@ -379,154 +382,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
 
-  @override
-  Widget build(BuildContext context) {
-    Grade? userGrade = grade != null ? Grade(grade!) : null;
-
-    return Scaffold(
-
-
-      appBar: AppBar(
-        automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
-        title: Text('프로필', style:
-        TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold)
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-        centerTitle: true,
-      ),
-
-
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildProfileHeader(),
-              SizedBox(height: 20),
-              _buildProfileInfoCard('닉네임', nickname ?? '설정되지 않음'),
-              _buildProfileInfoCard('이메일', user?.email ?? '설정되지 않음'),
-              _buildProfileAccount('${bank}', accountNumber ?? '설정되지 않음'),
-              _buildGradeCard(userGrade),
-              SizedBox(height: 40),
-              _buildButton('로그아웃', _logout, Colors.indigo.shade300),
-              _buildTextButton('개발자에게 하고 싶은 말', _showFeedbackDialog, Colors.blue), // 추가된 부분
-              _buildTextButton('회원탈퇴', _checkNicknameAvailability, Colors.red),
-            ],
-          ),
+  //바텀바 구조
+  Widget _buildBottomNavItem({
+    required String iconPath,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              width: isActive ? 26 : 24,
+              height: isActive ? 26 : 24,
+              color: isActive ? Colors.indigo : Colors.black,
+            ),
+            SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+                fontSize: isActive ? 14 : 12,
+                color: isActive ? Colors.indigo : Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum_rounded, color: _selectedIndex == 0 ? Colors.indigo : Colors.black),
-            label: '채팅',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.hourglass_empty_rounded,color: _selectedIndex == 1 ? Colors.indigo : Colors.black), //search
-            label: '진행 상황',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_outlined, color: _selectedIndex == 2 ? Colors.indigo : Colors.black),
-            label: '게시판',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school, color: _selectedIndex == 3 ? Colors.indigo : Colors.black),
-            label: '학교 랭킹',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: _selectedIndex == 4 ? Colors.indigo : Colors.black),
-            label: '프로필',
-          ),
-        ],
-        selectedLabelStyle: TextStyle(
-          fontFamily: 'NanumSquareRound',
-          fontWeight: FontWeight.w800,
-          fontSize: 13,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: 'NanumSquareRound',
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
-        selectedItemColor: Colors.indigo,    // 선택된 항목의 텍스트 색상
-        unselectedItemColor: Colors.black,  // 선택되지 않은 항목의 텍스트 색상
-
-        currentIndex: _selectedIndex,
-
-        onTap: (index) {
-          if (_selectedIndex == index) {
-            // 현재 선택된 탭을 다시 눌렀을 때 아무 동작도 하지 않음
-            return;
-          }
-
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          // 채팅방으로 이동
-          if (index == 0) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AllUsersScreen()),
-            );
-          }
-          //진행 상황
-          else if (index == 1) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
-            );
-          }
-
-          //새 게시글 만드는 곳으로 이동
-          else if (index == 2) {
-            HapticFeedback.lightImpact();
-            switch (botton_domain) {
-              case 'naver.com':
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                );
-                break;
-            // case 'hanbat.ac.kr':
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(builder: (context) => HanbaBoardPage()),
-            //   );
-            //   break;
-              default:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BoardPage()),
-                );
-                break;
-            }
-          }
-          // 학교 랭킹
-          else if (index == 3) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
-            );
-          }
-          // 프로필
-          else if (index == 4) {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserProfileScreen()),
-            );
-          }
-        },
-      ),
-
     );
   }
 
@@ -825,6 +712,158 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    Grade? userGrade = grade != null ? Grade(grade!) : null;
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
+        title: Text('프로필', style:
+        TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold)
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
+        centerTitle: true,
+      ),
+
+
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildProfileHeader(),
+              SizedBox(height: 20),
+              _buildProfileInfoCard('닉네임', nickname ?? '설정되지 않음'),
+              _buildProfileInfoCard('이메일', user?.email ?? '설정되지 않음'),
+              _buildProfileAccount('${bank}', accountNumber ?? '설정되지 않음'),
+              _buildGradeCard(userGrade),
+              SizedBox(height: 40),
+              _buildButton('로그아웃', _logout, Colors.indigo.shade300),
+              _buildTextButton('개발자에게 하고 싶은 말', _showFeedbackDialog, Colors.blue), // 추가된 부분
+              _buildTextButton('회원탈퇴', _checkNicknameAvailability, Colors.red),
+            ],
+          ),
+        ),
+      ),
+
+
+      bottomNavigationBar: Padding(
+        padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 8, top: 8): const EdgeInsets.only(bottom: 30, top: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/chatbubbles.svg',
+                  label: '채팅',
+                  isActive: _selectedIndex == 0,
+                  onTap: () {
+                    if (_selectedIndex != 0) {
+                      setState(() {
+                        _selectedIndex = 0;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AllUsersScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/footsteps.svg',
+                  label: '진행상황',
+                  isActive: _selectedIndex == 1,
+                  onTap: () {
+                    if (_selectedIndex != 1) {
+                      setState(() {
+                        _selectedIndex = 1;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PaymentStatusScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/book.svg',
+                  label: '게시판',
+                  isActive: _selectedIndex == 2,
+                  onTap: () {
+                    if (_selectedIndex != 2) {
+                      setState(() {
+                        _selectedIndex = 2;
+                      });
+                      HapticFeedback.lightImpact();
+                      switch (botton_domain) {
+                        case 'naver.com':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
+                          );
+                          break;
+                        default:
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => BoardPage()),
+                          );
+                          break;
+                      }
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/school.svg',
+                  label: '학교랭킹',
+                  isActive: _selectedIndex == 3,
+                  onTap: () {
+                    if (_selectedIndex != 3) {
+                      setState(() {
+                        _selectedIndex = 3;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildBottomNavItem(
+                  iconPath: 'assets/pigma/person.svg',
+                  label: '프로필',
+                  isActive: _selectedIndex == 4,
+                  onTap: () {
+                    if (_selectedIndex != 4) {
+                      setState(() {
+                        _selectedIndex = 4;
+                      });
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+
     );
   }
 }

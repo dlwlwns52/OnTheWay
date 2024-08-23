@@ -438,7 +438,7 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
   //위치 추적시 response와 ownerClick 값 추적
-  void listenToResponseChanges(String documentName, LocationTracker locationTracker) {
+  Future<void> listenToResponseChanges(String documentName, LocationTracker locationTracker) async {
     if (_isListening) {
       print("이미 리스너가 등록되었습니다.");
       return; // 리스너가 이미 등록된 경우 중복 등록 방지
@@ -592,7 +592,6 @@ class _HelpScreenState extends State<HelpScreen> {
 
       bool hasPermission = await locationTracker.requestPermission();
       if (!hasPermission) {
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("위치 권한이 허락되어야 거래를 진행할 수 있습니다.", textAlign: TextAlign.center,),
@@ -601,10 +600,8 @@ class _HelpScreenState extends State<HelpScreen> {
         );
         return;
       }
-
-
       // LocationTracker클래스를 활용해 'ChatActions' 컬렉션에 리스너 추가하여 response, ownerClick 변경 감지
-      listenToResponseChanges(documentName, locationTracker);
+      await listenToResponseChanges(documentName, locationTracker);
 
 
 

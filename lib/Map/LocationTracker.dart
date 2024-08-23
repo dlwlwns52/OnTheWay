@@ -41,8 +41,14 @@ class LocationTracker {
     }
 
     trackingEnabled = true;
+    // 위치를 즉시 한 번 저장
+    Position initialPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    saveLocation(initialPosition);
 
-    _timer = Timer.periodic(Duration(seconds: 120), (Timer t) async {
+
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );

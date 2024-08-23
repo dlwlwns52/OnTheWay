@@ -42,6 +42,9 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   bool _snackBarShown = false;
   bool _isUploading = false;
 
+  // 게시하기 색상 변경
+  bool _helpButtonColor = false;
+
 //게시물 수정하기 누를때 전 정보를 불러옴
   @override
   void initState() {

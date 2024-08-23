@@ -118,8 +118,8 @@ flutter:
     - assets/images/payment_icon_yellow_small.png
     - assets/images/LoginLogo.png
     - assets/images/LoginLogo2.png
+    - assets/images/FindPassword.png
 
-    - assets/fonts/
 
 #    pigma 디자인 투입
     - assets/pigma/notifications.svg
@@ -137,6 +137,10 @@ flutter:
     - assets/pigma/ellipsis_white.svg
     - assets/pigma/notification_white.svg
     - assets/pigma/write_locate.svg
+    - assets/pigma/arrow.svg
+    - assets/pigma/close_eye.svg
+    - assets/pigma/open_eye.svg
+    - assets/pigma/check_autologin.svg
 
 
   fonts:

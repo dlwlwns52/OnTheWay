@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:OnTheWay/Chat/AllUsersScreen.dart';
+import 'package:OnTheWay/login/PasswordFind.dart';
 import 'package:OnTheWay/test/WriteDesignTest.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
@@ -375,17 +376,17 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
           children: [
             SvgPicture.asset(
               iconPath,
-              width: 24,
-              height: 24,
+              width: isActive ? 26 : 24,
+              height: isActive ? 26 : 24,
               color: isActive ? Colors.indigo : Colors.black,
             ),
             SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'NanumSquareRound',
+                fontFamily: 'Pretendard',
                 fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-                fontSize: isActive ? 13 : 12,
+                fontSize: isActive ? 14 : 12,
                 color: isActive ? Colors.indigo : Colors.black,
               ),
             ),
@@ -727,7 +728,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
-                          // builder: (context) => WriteDesignTest()),
+                          // builder: (context) => PassWordFind(email: 'dlwlwns52')),
                       );
                     },
                     child: Icon(Icons.edit),
@@ -743,11 +744,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             ),
           ),
         ],
-
       ),
-
-
-
 
 
       bottomNavigationBar: Padding(
@@ -755,11 +752,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Column(
-            //   children: [
-            //     SizedBox(height: 20,)
-            //   ],
-            // ),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
