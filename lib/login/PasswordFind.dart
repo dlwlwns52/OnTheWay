@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'PasswordResetConfirmationScreen.dart';
+
 class PassWordFind extends StatefulWidget {
   final String email;
 
@@ -52,6 +54,7 @@ class _PassWordFindState extends State<PassWordFind> {
 
   //비밀번호 재전송
   Future<void> _resetPassword(String email) async {
+    //이메일 형식 아님
     if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("유효하지 않은 이메일 형식입니다.", textAlign: TextAlign.center,),
@@ -61,14 +64,53 @@ class _PassWordFindState extends State<PassWordFind> {
       return;
     }
     try {
-
+      //구글 Authentication에 저장 안됨
+      // final email = emailController.text.trim();
+      // print(email);
+      // final signInMethods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      // print(signInMethods);
+      // if (signInMethods.isEmpty){
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Container(
+      //         width: MediaQuery.of(context).size.width * 0.9,
+      //         height: MediaQuery.of(context).size.height * 0.065,
+      //         alignment: Alignment.center,
+      //         decoration: BoxDecoration(
+      //           color: Color(0xB2000000), // 반투명 검정 배경
+      //           borderRadius: BorderRadius.circular(8), // 둥근 모서리
+      //         ),
+      //         child: Text(
+      //           '등록되지 않은 이메일입니다.\n회원가입하신 이메일로 다시 시도해 주세요.',
+      //           textAlign: TextAlign.center,
+      //           style: TextStyle(
+      //             fontFamily: 'Pretendard',
+      //             fontWeight: FontWeight.w500,
+      //             fontSize: 14,
+      //             height: 1,
+      //             letterSpacing: -0.4,
+      //             color: Color(0xFFFFFFFF), // 흰색 텍스트
+      //           ),
+      //         ),
+      //       ),
+      //       duration: Duration(seconds: 2),
+      //       backgroundColor: Colors.transparent, // 배경을 투명하게 설정
+      //       elevation: 0, // 그림자 제거
+      //       behavior: SnackBarBehavior.floating, // 플로팅 스타일
+      //       margin: EdgeInsets.only(left: 10, right: 10, top: 8), // 화면 가장자리와의 여백 설정
+      //     ),
+      //   );
+      //   return;
+      // }
+      // 인증 성공
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호 재설정 이메일을 전송했습니다. \n새 비밀번호로 변경 후 접속이 안 될 경우 \n앱을 재시작해 주시길 바랍니다.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 5),
-        ),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PasswordResetConfirmationScreen(email : emailController.text.trim())),
       );
     } catch (e) {
+      //인증 실패
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호 재설정 이메일 전송에 실패했습니다. \n다시 시도해 주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 2),
@@ -180,6 +222,7 @@ class _PassWordFindState extends State<PassWordFind> {
                                       child: TextFormField(
                                         controller: emailController,
                                         textInputAction: TextInputAction.done,
+                                        cursorColor: Color(0xFF1D4786),
                                         onTap: () {
                                           HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
                                         },

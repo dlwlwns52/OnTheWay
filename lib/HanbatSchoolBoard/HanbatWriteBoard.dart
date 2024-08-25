@@ -373,9 +373,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                                       child: Align(
                                         alignment: Alignment.topLeft,
-                                        child:
-
-                                        Text(
+                                        child: Text(
                                           '픽업 장소',
                                           style: TextStyle(
                                             fontFamily: 'Pretendard',
@@ -404,7 +402,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                           maxLength: 10,
                                           onChanged: (value) => _checkMaxLength(_storeController, 10),
                                           onFieldSubmitted: (value) => _storeChooseLocation(),
-
+                                          cursorColor: Color(0xFF1D4786),
                                           decoration: InputDecoration(
                                             hintText: '픽업 장소를 입력해주세요.',
                                             hintStyle: TextStyle(
@@ -528,7 +526,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                         maxLength: 10,
                                         onChanged: (value) => _checkMaxLength(_locationController, 10),
                                         onFieldSubmitted: (value) => _currentChooseLocation(),
-
+                                        cursorColor: Color(0xFF1D4786),
                                         decoration: InputDecoration(
                                           hintText: '드랍 장소를 입력해주세요.',
                                           hintStyle: TextStyle(
@@ -648,7 +646,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                         maxLines: 1,
                                         maxLength: 10,
                                         onChanged: (value) => _checkMaxLength(_costController, 10),
-
+                                        cursorColor: Color(0xFF1D4786),
                                         decoration: InputDecoration(
                                           hintText: '₩ 금액을 입력해주세요.',
                                           hintStyle: TextStyle(
@@ -723,7 +721,8 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                       textInputAction: TextInputAction.done,
                                       expands: true,
                                       maxLines: null, // 여러 줄 입력 가능
-                                      minLines: null, // 줄 수 제한을 제거
+                                      minLines: null, // 줄 수 제한을 제거항
+                                      cursorColor: Color(0xFF1D4786),
                                       onChanged: (value) => _checkMaxLength(_requestController, 50),
                                       decoration: InputDecoration(
                                         hintText: '요청사항을 입력해주세요. \n(민감한 세부 정보는 채팅을 이용해주세요.)',

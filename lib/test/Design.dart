@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,14 +14,13 @@ import '../login/LoginScreen.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
 
 
-class CreateAccount extends StatefulWidget {
-
+class Design extends StatefulWidget {
   @override
-  _CreateAccountState createState() => _CreateAccountState();
-
+  _WriteDesignTestState createState() => _WriteDesignTestState();
 }
 
-class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserver{
+class _WriteDesignTestState extends State<Design> {
+
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nicknameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();  // 비밀번호 컨트롤러 추가
@@ -26,7 +30,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   TextEditingController _accountNumberController = TextEditingController(); // 계좌번호 컨트롤러 추가
   final FocusNode _buttonFocusNode = FocusNode();// 게시하기 버튼을 위한 FocusNode 추가
 
-  bool _isNicknameAvailable = false; // 입력 필드 활성화 여부 설정
+
+
+  bool _isNicknameAvailable = false;
+
+
   String _buttonText = '중복확인';
   Color _buttonColor = Colors.white70;
   Color _buttonTextColor = Colors.black87;
@@ -46,12 +54,24 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   final FocusNode _accountNumberFocusNode = FocusNode(); // 계좌번호 포커스 노드 추가
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? _dropdownValue = '학교 메일 선택';
+
+
+  String? _dropdownValue = null;
+
+
   bool isEmailVerified = false;
   bool _congratulation = false;
 
   //이메일인증
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  // 보더 색상 관리 변수
+  bool _emailHasText = false;
+  bool _nicknameHasText = false;
+  bool _passwordHasText = false;
+  bool _confirmPasswordHasText = false;
+  bool _accountNumberHasText = false;
+
 
   @override
   void initState() {
@@ -62,6 +82,36 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _emailUserController.addListener(_onEmaildChanged);
     _accountNameController.addListener(_onAccountNameChanged);
     _accountNumberController.addListener(_onAccountNumberChanged);
+
+    _emailUserController.addListener(() {
+      setState(() {
+        _emailHasText = _emailUserController.text.isNotEmpty;
+      });
+    });
+
+    _nicknameController.addListener(() {
+      setState(() {
+        _nicknameHasText = _nicknameController.text.isNotEmpty;
+      });
+    });
+
+    _passwordController.addListener(() {
+      setState(() {
+        _passwordHasText = _passwordController.text.isNotEmpty;
+      });
+    });
+
+    _confirmPasswordController.addListener(() {
+      setState(() {
+        _confirmPasswordHasText = _confirmPasswordController.text.isNotEmpty;
+      });
+    });
+
+    _accountNumberController.addListener(() {
+      setState(() {
+        _accountNumberHasText = _accountNumberController.text.isNotEmpty;
+      });
+    });
   }
 
   @override
@@ -73,6 +123,652 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _accountNameController.dispose();
     _accountNumberController.dispose();
     super.dispose();
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+        child: AppBar(
+          title: Text(
+            '회원가입',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontWeight: FontWeight.w600,
+              fontSize: 19,
+              height: 1.0,
+              letterSpacing: -0.5,
+              color: Colors.white,
+            ),
+          ),
+
+          centerTitle: true,
+          backgroundColor: Color(0xFF1D4786),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+            color: Colors.white, // 아이콘 색상
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context); // 뒤로가기 기능
+            },
+          ),
+          // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+          actions: [
+
+          ],
+        ),
+      ),
+
+      body: GestureDetector(
+        onTap: () {
+          // 화면의 다른 부분을 터치했을 때 포커스 해제
+          FocusScope.of(context).unfocus();
+        },
+        child: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Center(
+                  child: Column(
+                    children: [
+
+                      Container(
+                        margin: EdgeInsets.fromLTRB(20, 0, 18, 88),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 2, 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 20),
+                                        Container(
+                                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                          child: Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              '이메일',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFF424242),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Container(
+                                                margin: EdgeInsets.fromLTRB(0, 0, 6, 0), // 상단 컨테이너와 동일한 마진
+                                                child: Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: TextFormField(
+                                                    controller: _emailUserController,
+                                                    textInputAction: TextInputAction.next,
+
+                                                    onTap: () {
+                                                      HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
+                                                    },
+
+                                                    // enabled: _isemailAvailable,
+
+
+
+                                                    decoration: InputDecoration(
+                                                      contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 15), // 상단 컨테이너의 패딩과 일치시킴
+                                                      hintText: '이메일 입력',
+                                                      hintStyle: TextStyle(
+                                                        fontFamily: 'Pretendard',
+                                                        fontWeight: FontWeight.w400, // 상단 텍스트 스타일과 동일하게 설정
+                                                        fontSize: 16, // 상단 텍스트 스타일과 동일하게 설정
+                                                        height: 1,
+                                                        letterSpacing: -0.4,
+                                                        color: Color(0xFF767676),
+                                                      ),
+                                                      errorText: _userEmailErrorText,
+                                                      border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(8), // 동일한 테두리 반경
+                                                      ),
+                                                      enabledBorder: OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: _emailHasText ? Colors.indigo : Color(0xFFD0D0D0),
+                                                        ), // 텍스트가 있으면 인디고, 없으면 회색
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      focusedBorder: OutlineInputBorder(
+                                                        borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      counterText: '', // 하단의 '0/10' 텍스트를 숨김
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+
+                                            ),
+
+
+                                            // Container(
+                                            //   margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                            //   decoration: BoxDecoration(
+                                            //     color: Color(0xFFFFFFFF),
+                                            //   ),
+                                            //   child: Align(
+                                            //     alignment: Alignment.topLeft,
+                                            //     child: TextFormField(
+                                            //       controller: _emailUserController,
+                                            //       textInputAction: TextInputAction.next,
+                                            //       enabled: _isemailAvailable,
+                                            //
+                                            //       decoration: InputDecoration(
+                                            //         hintText: '이메일 입력',
+                                            //         hintStyle: TextStyle(
+                                            //           fontFamily: 'Pretendard',
+                                            //           fontWeight: FontWeight.w500,
+                                            //           fontSize: 17,
+                                            //           height: 1,
+                                            //           letterSpacing: -0.4,
+                                            //           color: Color(0xFF767676),
+                                            //         ),
+                                            //         errorText: _userEmailErrorText,
+                                            //         border: OutlineInputBorder(
+                                            //           borderRadius: BorderRadius.circular(10),
+                                            //         ),
+                                            //         enabledBorder: OutlineInputBorder(
+                                            //           borderSide: BorderSide(
+                                            //             color: _emailHasText ? Colors.indigo : Color(0xFFD0D0D0),
+                                            //           ), // 텍스트가 있으면 인디고, 없으면 회색
+                                            //           borderRadius: BorderRadius.circular(8),
+                                            //         ),
+                                            //         focusedBorder: OutlineInputBorder(
+                                            //           borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                            //           borderRadius: BorderRadius.circular(8),
+                                            //         ),
+                                            //         counterText: '', // 이 부분이 하단의 '0/10' 텍스트를 숨깁니다.
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
+
+
+
+
+
+
+
+                                            Container(
+                                              margin: EdgeInsets.fromLTRB(0, 16, 8.7, 16),
+                                              child: Text(
+                                                '@',
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 16,
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFF767676),
+                                                ),
+                                              ),
+                                            ),
+
+
+
+
+
+
+
+                                            Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
+                                                  _showSchoolEmailDialog(context);
+                                                },
+                                                child:Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(color: _dropdownValue != null ? Colors.indigo : Color(0xFFD0D0D0)),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  color: Color(0xFFFFFFFF),
+                                                ),
+                                                child: Container(
+                                                  padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+
+
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Container(
+                                                        child:
+                                                        Text(
+                                                          _dropdownValue ?? '선택',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Pretendard',
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 16,
+                                                            height: 1,
+                                                            letterSpacing: -0.4,
+                                                            color: Color(0xFF767676),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                                        child: ClipRRect(
+                                                          borderRadius: BorderRadius.circular(1),
+                                                          child: SizedBox(
+                                                            width: 12,
+                                                            height: 8,
+                                                            child: SvgPicture.asset(
+                                                              'assets/pigma/Polygon.svg',
+                                                                color: _dropdownValue != null ? Colors.indigo : Color(0xFFD0D0D0)
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap:(){
+                                      HapticFeedback.lightImpact();
+                                      _emailUserController.text.isNotEmpty ? _signInWithGoogle : null;
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: isEmailVerified ? Color(0xFF1D4786):Color(0xFFF6F7F8)),
+                                        borderRadius: BorderRadius.circular(8),
+                                        color: isEmailVerified ? Color(0xFF1D4786) : Color(0xFFF6F7F8),
+                                      ),
+                                      child: Container(
+                                        padding: EdgeInsets.fromLTRB(3.3, 15, 0, 15),
+                                        child:
+                                        Text(
+                                          '이메일 인증',
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 16,
+                                            height: 1,
+                                            letterSpacing: -0.4,
+                                            color: Color(0xFF767676),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        '닉네임',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF424242),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Color(0xFFD0D0D0)),
+                                            borderRadius: BorderRadius.circular(8),
+                                            color: Color(0xFFFFFFFF),
+                                          ),
+                                          child: Container(
+                                            padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                                            child:
+                                            Text(
+                                              '닉네임을 입력해주세요.',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 16,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFF767676),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Color(0xFFE8EFF8)),
+                                            borderRadius: BorderRadius.circular(8),
+                                            color: Color(0xFFE8EFF8),
+                                          ),
+                                          child: Container(
+                                            padding: EdgeInsets.fromLTRB(13.7, 15, 13.7, 15),
+                                            child:
+                                            Text(
+                                              '중복확인',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFFFFFFFF),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 2, 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        '비밀번호',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF424242),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Color(0xFFD0D0D0)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Color(0xFFFFFFFF),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(15, 11, 15, 11),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                            child:
+                                            Text(
+                                              '비밀번호를 입력해주세요.',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 16,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFF767676),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 24,
+                                            height: 24,
+                                            child:
+                                            SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: SvgPicture.asset(
+                                                'assets/pigma/close_eye.svg',
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Color(0xFFD0D0D0)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Color(0xFFFFFFFF),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(15, 11, 15, 11),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                            child:
+                                            Text(
+                                              '비밀번호를 재입력해주세요.',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 16,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFF767676),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 24,
+                                            height: 24,
+                                            child:
+                                            SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: SvgPicture.asset(
+                                                'assets/pigma/close_eye.svg',
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 2, 0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        '은행',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF424242),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Color(0xFFD0D0D0)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Color(0xFFFFFFFF),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            child:
+                                            Text(
+                                              '은행명',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 16,
+                                                height: 1,
+                                                letterSpacing: -0.4,
+                                                color: Color(0xFF767676),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(1),
+                                              child: SizedBox(
+                                                width: 12,
+                                                height: 8,
+                                                child: SvgPicture.asset(
+                                                  'assets/pigma/Polygon.svg',
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Color(0xFFD0D0D0)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Color(0xFFFFFFFF),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                                      child:
+                                      Text(
+                                        '계좌번호를 입력해주세요.',
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 16,
+                                          height: 1,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF767676),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+
+      bottomNavigationBar:Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+            Container(
+              height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.15 : MediaQuery.of(context).size.width * 0.20,
+              child: ElevatedButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     // builder: (context) => HanbatNewPostScreen()),
+                  //       builder: (context) => LoginScreen()),
+                  // );
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Color(0xFF1D4786), // 배경색
+                  onPrimary: Colors.white, // 텍스트 색상
+                  padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
+                  minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
+                    side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
+                  ),
+                ),
+                child: Text(
+                  '확인',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    height: 1,
+                    letterSpacing: -0.5,
+                    color: Colors.white, // 텍스트 색상
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
 
@@ -1142,94 +1838,4 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Lottie.asset(
-                'assets/lottie/login.json',
-                fit: BoxFit.fill,
-              ),
-            ),
-            AppBar(
-              backgroundColor: Colors.transparent,
-              title: Text(
-                "회원가입",
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 25,
-                ),
-              ),
-              centerTitle: true,
-            ),
-          ],
-        ),
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 30),
-                        _buildNicknameField(),
-                        SizedBox(height: 30),
-                        _buildEmailField(),
-                        SizedBox(height: 30),
-                        _buildEmailCheck(),
-                        SizedBox(height: 30),
-                        _buildPasswordField(),
-                        SizedBox(height: 30),
-                        _buildConfirmPasswordField(),
-                        SizedBox(height: 30),
-                        _buildAccountNameField(),
-                        SizedBox(height: 30),
-                        _buildAccountNumberField(),
-
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_congratulation)
-            Positioned.fill(
-              child: Container(
-                color: Colors.grey.withOpacity(0.5),
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/lottie/congratulation.json',
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.contain,
-                      ),
-                      Lottie.asset(
-                        'assets/lottie/clapCute.json',
-                        width: 300,
-                        height: 300,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomAppBar(context),
-    );
-  }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:OnTheWay/Chat/AllUsersScreen.dart';
 import 'package:OnTheWay/login/PasswordFind.dart';
-import 'package:OnTheWay/test/WriteDesignTest.dart';
+import 'package:OnTheWay/test/Design.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // 플러터의 머티리얼 디자인 위젯을 사용하기 위한 임포트입니다.
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베이스를 사용하기 위한 임포트입니다.
@@ -705,7 +705,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               color: Colors.grey.withOpacity(0.5),
               child: Center(
                 child: Lottie.asset(
-                  'assets/lottie/smile.json',
+                  'assets/lottie/check_indigo.json',
                   width: 150,
                   height: 150,
                   fit: BoxFit.contain,
@@ -728,7 +728,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
-                          // builder: (context) => PassWordFind(email: 'dlwlwns52')),
+                          // builder: (context) => Design()),
                       );
                     },
                     child: Icon(Icons.edit),

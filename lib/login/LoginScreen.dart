@@ -11,6 +11,7 @@ import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
 import '../Map/LocationTracker.dart';
+import '../test/Design.dart';
 import 'PasswordFind.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -348,6 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             child: TextFormField(
                                               controller: emailController,
                                               textInputAction: TextInputAction.next,
+                                              cursorColor: Color(0xFF1D4786),
                                               onTap: () {
                                                 HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
                                               },
@@ -448,6 +450,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   controller: passwordController,
                                                   obscureText: _obscureText,
                                                   textInputAction: TextInputAction.done,
+                                                  cursorColor: Color(0xFF1D4786),
                                                   onFieldSubmitted: (value) {
                                                     HapticFeedback.lightImpact(); // 다음 필드로 이동할 때 햅틱 피드백
 
@@ -669,8 +672,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         HapticFeedback.lightImpact();
                                         Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => CreateAccount())
-                                          // CreateAccount
+                                            // MaterialPageRoute(builder: (context) => CreateAccount()),
+                                          MaterialPageRoute(builder: (context) => Design()),
+
                                         );
                                       },
                                     ),

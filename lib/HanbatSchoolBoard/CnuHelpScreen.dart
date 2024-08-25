@@ -691,7 +691,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
 
       _pushHelpButton(true);
-      await Future.delayed(Duration(milliseconds: 1200));
+      await Future.delayed(Duration(seconds: 2));
       _pushHelpButton(false);
 
     } catch (e) {

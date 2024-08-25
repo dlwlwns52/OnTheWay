@@ -121,6 +121,7 @@ flutter:
     - assets/images/FindPassword.png
 
 
+
 #    pigma 디자인 투입
     - assets/pigma/notifications.svg
     - assets/pigma/location.svg
@@ -141,8 +142,8 @@ flutter:
     - assets/pigma/close_eye.svg
     - assets/pigma/open_eye.svg
     - assets/pigma/check_autologin.svg
-
-
+    - assets/pigma/Polygon.svg
+    -
   fonts:
     - family: NanumSquareRound
       fonts:
