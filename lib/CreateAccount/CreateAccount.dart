@@ -672,24 +672,20 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           padding: const EdgeInsets.fromLTRB(1, 1, 10, 25),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.fromLTRB(13.7, 15, 13.7, 15),
               backgroundColor: _buttonColor,
               foregroundColor: _buttonTextColor,
-              minimumSize: Size(110, 55),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 2,
-              shadowColor: Colors.indigo.withOpacity(0.5),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             child: Text(
               _buttonText,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: _buttonTextColor,
-                fontFamily: 'NanumSquareRound',
-                fontWeight: FontWeight.w900,
-                fontSize: 17,
+                fontFamily: 'Pretendard',
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                height: 1,
+                letterSpacing: -0.4,
+                color: Color(0xFFFFFFFF),
               ),
             ),
             onPressed: _checkNicknameAvailabilityAndValidate,

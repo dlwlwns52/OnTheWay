@@ -143,6 +143,8 @@ flutter:
     - assets/pigma/open_eye.svg
     - assets/pigma/check_autologin.svg
     - assets/pigma/Polygon.svg
+    - assets/pigma/x.svg
+    - assets/pigma/Serch.svg
     -
   fonts:
     - family: NanumSquareRound

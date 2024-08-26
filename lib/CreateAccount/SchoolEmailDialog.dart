@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 
 class SchoolEmailDialog extends StatefulWidget {
   final Function(String) onSelected;
@@ -45,93 +46,99 @@ class _SchoolEmailDialogState extends State<SchoolEmailDialog> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: Text(
-        '본인 학교 웹메일을 선택해주세요.',
-        style: TextStyle(
-          color: Colors.indigo,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: Container(
-        width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: Colors.indigo),
-                hintText: '학교 메일을 검색하세요',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(color: Colors.indigo),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(color: Colors.indigo),
-                ),
-              ),
-              onChanged: _filterDomains,
-            ),
-            SizedBox(height: 20),
-            Container(
-              height: 200,
-              child: ListView(
-                shrinkWrap: true,
-                children: _filteredDomains.map((domain) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        domain['name']!,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      subtitle: Text(
-                        domain['domain']!,
-                        style: TextStyle(
-                          color: Colors.black54,
-                        ),
-                      ),
-                      trailing: Icon(
-                        Icons.check,
-                        color: Colors.indigo,
-                        size: 16.0,
-                      ),
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        widget.onSelected(domain['domain']!);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
 
-          ],
+
+    @override
+    Widget build(BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-      ),
-      actions: [
-        TextButton(
-          child: Text('취소', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold, fontSize: 16),),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        title: Text(
+          '본인 학교 웹메일을 선택해주세요.',
+          style: TextStyle(
+            color: Colors.indigo,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ],
-    );
+        content: Container(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search, color: Colors.indigo),
+                  hintText: '학교 메일을 검색하세요',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(color: Colors.indigo),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(color: Colors.indigo),
+                  ),
+                ),
+                onChanged: _filterDomains,
+              ),
+              SizedBox(height: 20),
+              Container(
+                height: 200,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: _filteredDomains.map((domain) {
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 8.0,
+                          horizontal: 8.0),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          domain['name']!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          domain['domain']!,
+                          style: TextStyle(
+                            color: Colors.black54,
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.check,
+                          color: Colors.indigo,
+                          size: 16.0,
+                        ),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          widget.onSelected(domain['domain']!);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: Text('취소', style: TextStyle(color: Colors.indigo,
+                fontWeight: FontWeight.bold,
+                fontSize: 16),),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      );
+    }
+
   }
-}
