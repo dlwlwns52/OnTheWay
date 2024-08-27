@@ -41,10 +41,11 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.example.OnTheWay.background_locator_2.IsolateHolderService"
-            android:permission="android.permission.FOREGROUND_SERVICE"
-            android:exported="true"
-            android:foregroundServiceType = "location"/>
+        <!-- UCropActivity 추가 -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <!-- Flutter 자동 생성 파일을 위한 메타데이터 -->
         <meta-data

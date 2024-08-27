@@ -13,9 +13,7 @@ class HelpScreenArguments {
   final String current_location;
   final String store_location;
   final bool isMyPost;
-
-
-
+  final String profileImageUrl; // 프로필 이미지 URL 추가
 
   HelpScreenArguments({
     required this.doc,
@@ -30,5 +28,7 @@ class HelpScreenArguments {
     required this.current_location,
     required this.store_location,
     required this.isMyPost,
+    required this.profileImageUrl, // 프로필 이미지 URL 추가
   });
 }
+

@@ -53,9 +53,12 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
   //프로필 사진 유저정도
   User? user;
+  Map<String, Future<String?>> _profilePhotoUrls = {};
 
   // 초기 게시글 개수를 0으로 설정
   int postCount = 0;
+
+
 
   @override
   void initState() {
@@ -72,8 +75,16 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     _nickname = getNickname();
 
 
-    //프로필 사진
-    user = _auth.currentUser;
+    // 각 이메일에 대해 프로필 사진 URL을 미리 로드 (학교 바뀌면 컬렉션 변환)
+    FirebaseFirestore.instance.collection('naver_posts').get().then((snapshot) {
+      for (var doc in snapshot.docs) {
+        final email = doc['email'];
+        _profilePhotoUrls[email] = _getProfileImage(email);
+      }
+      setState(() {}); // 상태를 갱신하여 FutureBuilder가 다시 빌드되도록 함
+    });
+
+
 
     // _loadPostCount(); // 위젯 초기화 시 게시글 개수를 로드
   }
@@ -173,6 +184,27 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   // }
 
 
+
+  //프로필 사진 링크 가져오기
+  Future<String?> _getProfileImage(String email) async{
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    QuerySnapshot nicknameSnapshot = await db
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if(nicknameSnapshot.docs.isNotEmpty){
+      DocumentSnapshot document = nicknameSnapshot.docs.first;
+      String? profilePhotoURL = document.get('profilePhotoURL');
+        return profilePhotoURL;
+      }
+
+    else {
+      print("해당 이메일을 가진 사용자가 없습니다.");
+      return null;
+    }
+  }
+
   String formatTimeAgo(Timestamp timestamp) {
     // Timestamp를 DateTime으로 변환
     DateTime dateTime = timestamp.toDate();
@@ -197,6 +229,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     required String cost,
     required String storeName,
     required bool isMyPost,
+    required String profileImageUrl
   }) {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -226,15 +259,15 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                           child: CircleAvatar(
                             radius: 16, // 반지름 설정 (32 / 2)
                             backgroundColor: Colors.grey[200],
-                            child: user?.photoURL != null
+                            child: (profileImageUrl!= null && profileImageUrl.isNotEmpty)
                                 ? null
                                 : Icon(
                               Icons.account_circle,
                               size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
                               color: Colors.indigo,
                             ),
-                            backgroundImage: user?.photoURL != null
-                                ? NetworkImage(user!.photoURL!)
+                            backgroundImage: profileImageUrl!= null && profileImageUrl.isNotEmpty
+                                ? NetworkImage(profileImageUrl)
                                 : null,
                           ),
 
@@ -465,6 +498,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => AlarmUi(),
+                                  //   builder: (context) => Design(),
                                 ),
                               );
                             },
@@ -547,6 +581,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return CircularProgressIndicator();
                     }
+
+
 
                     postCount = snapshot.data?.size ?? 0;
                     return RichText(
@@ -636,18 +672,21 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         return timeB.compareTo(timeA); // 최신 순으로 정렬
                       });
 
+
+
                       return ListView.builder(
                         itemCount: posts.length,
                         itemBuilder: (context, index) {
                           DocumentSnapshot doc = posts[index];
                           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
                           bool isMyPost = data['email'] == myEmail;
-                          bool nextPostIsMine = false;
-                          if (index + 1 < posts.length) {
-                            Map<String, dynamic> nextData = posts[index + 1]
-                                .data() as Map<String, dynamic>;
-                            nextPostIsMine = nextData['email'] == myEmail;
-                          }
+                          // bool nextPostIsMine = false;
+                          // if (index + 1 < posts.length) {
+                          //   Map<String, dynamic> nextData = posts[index + 1]
+                          //       .data() as Map<String, dynamic>;
+                          //   nextPostIsMine = nextData['email'] == myEmail;
+                          // }
+
 
                           return Column(
                             children: <Widget>[
@@ -655,41 +694,61 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                 width: MediaQuery.of(context).size.width * 0.9,
 
                                 child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  // helpManager.helpAndExit(context, doc, _pushHelpButton);
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => HelpScreen(
-                                      HelpScreenArguments(
-                                        doc: doc,
-                                        pushHelpButton: _pushHelpButton,
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => FutureBuilder<String?>(
+                                          // future: _profilePhotoUrls[data['email']],
+                                          future: _getProfileImage(data['email']),
+                                          builder: (context, snapshot) {
+                                            String? profileImageUrl = snapshot.data;
+
+                                            return HelpScreen(
+                                              HelpScreenArguments(
+                                                doc: doc,
+                                                pushHelpButton: _pushHelpButton,
+                                                userName: data['nickname'] ?? '사용자 이름 없음',
+                                                timeAgo: data['date'] != null ? formatTimeAgo(data['date'] as Timestamp) : '시간 정보 없음',
+                                                location: data['my_location'] ?? '위치 정보 없음',
+                                                cost: data['cost'] ?? '비용 정보 없음',
+                                                storeName: data['store'] ?? '가게 이름 없음',
+                                                email: data['email'],
+                                                request: data['Request'],
+                                                current_location: data['current_location'],
+                                                store_location: data['store_location'],
+                                                isMyPost: isMyPost,
+                                                profileImageUrl: profileImageUrl ?? '', // 프로필 이미지 URL 추가
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+
+                                  child: FutureBuilder<String?>(
+                                    future: _profilePhotoUrls[data['email']],
+                                    builder: (context, snapshot) {
+                                      String? profileImageUrl = snapshot.data;
+
+                                      return _buildPostCard(
                                         userName: data['nickname'] ?? '사용자 이름 없음',
                                         timeAgo: data['date'] != null ? formatTimeAgo(data['date'] as Timestamp) : '시간 정보 없음',
                                         location: data['my_location'] ?? '위치 정보 없음',
                                         cost: data['cost'] ?? '비용 정보 없음',
                                         storeName: data['store'] ?? '가게 이름 없음',
-                                        email : data['email'],
-                                        request : data['Request'],
-                                        current_location : data['current_location'],
-                                        store_location : data['store_location'],
                                         isMyPost: isMyPost,
-                                      ),
-                                    ),
-                                  ));
-
-                                },
-                                child: _buildPostCard(
-                                  userName: data['nickname'] ?? '사용자 이름 없음',
-                                  timeAgo: data['date'] != null ? formatTimeAgo(data['date'] as Timestamp) : '시간 정보 없음',
-                                  location: data['my_location'] ?? '위치 정보 없음',
-                                  cost: data['cost'] ?? '비용 정보 없음',
-                                  storeName: data['store'] ?? '가게 이름 없음',
-                                  isMyPost: isMyPost,
-                                ),
+                                        profileImageUrl: profileImageUrl ?? '',
+                                      );
+                                    },
+                                  ),
                               ),
                               ),
                             ],
                           );
+
                         },
                       );
                     } else {
@@ -706,8 +765,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               child: Center(
                 child: Lottie.asset(
                   'assets/lottie/check_indigo.json',
-                  width: 150,
-                  height: 150,
+                  width: 200,
+                  height: 200,
                   fit: BoxFit.contain,
                 ),
               ),

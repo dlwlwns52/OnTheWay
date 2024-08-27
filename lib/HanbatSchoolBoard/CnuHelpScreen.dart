@@ -628,6 +628,7 @@ class _HelpScreenState extends State<HelpScreen> {
         'helper_email_nickname' : helperNickname,
         'owner_email': postOwnerEmail,
         'timestamp': now,
+        'touch' : false,
         'response': null,
       });
 
@@ -866,15 +867,15 @@ class _HelpScreenState extends State<HelpScreen> {
                                 child: CircleAvatar(
                                   radius: 16, // 반지름 설정 (32 / 2)
                                   backgroundColor: Colors.grey[200],
-                                  child: user?.photoURL != null
+                                  child: widget.args.profileImageUrl!= null && widget.args.profileImageUrl.isNotEmpty
                                       ? null
                                       : Icon(
                                     Icons.account_circle,
                                     size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
                                     color: Colors.indigo,
                                   ),
-                                  backgroundImage: user?.photoURL != null
-                                      ? NetworkImage(user!.photoURL!)
+                                  backgroundImage: widget.args.profileImageUrl!= null && widget.args.profileImageUrl.isNotEmpty
+                                      ? NetworkImage(widget.args.profileImageUrl)
                                       : null,
                                 ),
 

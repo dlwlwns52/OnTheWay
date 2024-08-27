@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Chat/AllUsersScreen.dart';
@@ -23,6 +24,8 @@ class _NotificationScreenState extends State<AlarmUi> {
   // 수락시 lottie 파일 조정 변주
   bool _isAccepting =false;
 
+  //프로필 사진 유저정도
+  Map<String, Future<String?>> _profilePhotoUrls = {};
 
   @override
   void initState() {
@@ -52,6 +55,14 @@ class _NotificationScreenState extends State<AlarmUi> {
       );
     });
 
+    FirebaseFirestore.instance.collection('helpActions').get().then((snapshot) {
+      for (var doc in snapshot.docs) {
+        final email = doc['email'];
+        _profilePhotoUrls[email] = _getProfileImage(email);
+      }
+      setState(() {}); // 상태를 갱신하여 FutureBuilder가 다시 빌드되도록 함
+    });
+
   }
 
   @override
@@ -60,7 +71,25 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.dispose();
   }
 
+  //프로필 사진 링크 가져오기
+  Future<String?> _getProfileImage(String email) async{
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    QuerySnapshot nicknameSnapshot = await db
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
 
+    if(nicknameSnapshot.docs.isNotEmpty){
+      DocumentSnapshot document = nicknameSnapshot.docs.first;
+      String? profilePhotoURL = document.get('profilePhotoURL');
+      return profilePhotoURL;
+    }
+
+    else {
+      print("해당 이메일을 가진 사용자가 없습니다.");
+      return null;
+    }
+  }
 
   // 알림 목록을 스트림 형태로 불러오는 함수
   Stream<List<DocumentSnapshot>> getNotifications() {
@@ -93,41 +122,46 @@ class _NotificationScreenState extends State<AlarmUi> {
         },
         child: Scaffold(
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(kToolbarHeight),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Lottie.asset(
-                    'assets/lottie/BoardColor.json',
-                    fit: BoxFit.fill,
-                  ),
+            preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+            child: AppBar(
+              title: Text(
+                '알림',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 19,
+                  height: 1.0,
+                  // letterSpacing: -0.5,
+                  color: Colors.white,
                 ),
-                AppBar(
-                  backgroundColor: Colors.transparent,
-                  title: Text('알림',
-                    style:
-                    TextStyle(
-                      fontFamily: 'NanumSquareRound',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 25,
-                    ),
-                  ),
-                  actions: <Widget>[
-                    IconButton(
-                      icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
-                        });
-                      },
-                    ),
-                  ],
-                  centerTitle: true,
+              ),
+              centerTitle: true,
+              backgroundColor: Color(0xFF1D4786),
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+                color: Colors.white, // 아이콘 색상
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.pop(context); // 뒤로가기 기능
+                },
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    setState(() {
+                      isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
+                    });
+                  },
                 ),
               ],
             ),
           ),
+
+
+
           body: Stack(
             children: [
               Column(
@@ -145,110 +179,356 @@ class _NotificationScreenState extends State<AlarmUi> {
                         }
                         final notifications = snapshot.data!;
 
-                        return ListView.separated(
-                          itemCount: notifications.length,
-                          itemBuilder: (context, index) {
+                        // 알림을 touch 상태에 따라 분리합니다.
+                        final newNotifications = notifications.where((doc) {
+                          final notification = doc.data() as Map<String, dynamic>;
+                          return notification['touch'] == false;
+                        }).toList();
 
-                            //알림 온 시간 측정
-                            final DocumentSnapshot doc = notifications[index];
-                            final notification = doc.data() as Map<String, dynamic>;
-                            final timestamp = notification['timestamp'] as Timestamp;
-                            final DateTime dateTime = timestamp.toDate();
-                            final String timeAgo = getTimeAgo(dateTime);
-                            //닉네임
-                            final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
-                            final Color avatarColor = _getColorFromName(nickname); // 색상 결정
+                        final oldNotifications = notifications.where((doc) {
+                          final notification = doc.data() as Map<String, dynamic>;
+                          return notification['touch'] == true;
+                        }).toList();
 
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: avatarColor, // 여기서 색상 적용
-                                child: Icon(Icons.person, color: Colors.white),
-                              ),
-                              title: Row(
-                                children : [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        notification['helper_email_nickname'] ?? '알 수 없는 사용자',
-                                        style:
-                                        // TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-                                        TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        '도와주기를 요청하였습니다.',
-                                        // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
-                                        style: TextStyle(
-                                            fontFamily: 'NanumSquareRound',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: Colors.grey[600]
-                                        ),
-                                      ),
-                                      SizedBox(height: 6),
-                                      Text(
-                                        '$timeAgo',
-                                        style:
-                                        TextStyle(color: Colors.grey[600], fontSize: 14),
-                                      ),
-                                    ],
+                        return ListView(
+                          children: [
+                            // 새로운 알림 섹션
+                            if (newNotifications.isNotEmpty) ...[
+                              Container(
+                                margin: EdgeInsets.fromLTRB(20, 10, 0, 0),
+                                child: Text(
+                                  '새로운 알림',
+                                  style: TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    height: 1,
+                                    letterSpacing: -0.4,
+                                    color: Color(0xFF1D4786),
                                   ),
-                                  Spacer(),
-                                  Column(
-                                    // crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      FutureBuilder<String>(
-                                        future: getGradeByNickname(notification['helper_email_nickname']),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState == ConnectionState.waiting) {
-                                            return CircularProgressIndicator();
-                                          } else if (snapshot.hasError) {
-                                            return Text('에러가 발생하였습니다.');
-                                          } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
-                                            return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
-                                          } else {
-                                            // double grade = double.parse(snapshot.data!);
-                                            double gradeValue;
-                                            try {
-                                              gradeValue = double.parse(snapshot.data ?? '0'); // 기본 값 0을 설정
-                                            } catch (e) {
-                                              gradeValue = 0.0; // 예외 발생 시 기본 값 설정
-                                            }
+                                ),
+                              ),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: newNotifications.length,
+                                itemBuilder: (context, index) {
+                                  final DocumentSnapshot doc = newNotifications[index];
+                                  final notification = doc.data() as Map<String, dynamic>;
+                                  final timestamp = notification['timestamp'] as Timestamp;
+                                  final DateTime dateTime = timestamp.toDate();
+                                  final String timeAgo = getTimeAgo(dateTime);
 
-                                            Grade grade = Grade(gradeValue);
-                                            return
-                                              isDeleteMode  ? Text('') :  Container(
-                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  // border: Border.all(color: grade.color, width: 2),
-                                                  border: grade.border,
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  // color: Colors.black.withOpacity(0.1),
-                                                  color: grade.color2.withOpacity(0.05),
-                                                ),
-                                                child: Row(
-                                                    children: [
-                                                      Icon(Icons.school_outlined, color: grade.color),
-                                                      SizedBox(width: 8),
-                                                      Text(
-                                                        grade.letter,
-                                                        style:
-                                                        TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          color: grade.color,
-                                                          fontSize: 13,
+                                  final String helper_email = notification['helper_email'] ?? '알 수 없는 사용자';
+
+
+                                  return FutureBuilder<String?>(
+                                    future: _getProfileImage(helper_email),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return CircularProgressIndicator(); // 데이터 로딩 중일 때 표시할 위젯
+                                      }
+                                      if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}'); // 오류 발생 시 표시할 위젯
+                                      }
+                                      if (!snapshot.hasData || snapshot.data == null) {
+                                        return Text('No data available'); // 데이터가 없을 때 표시할 위젯
+                                      }
+
+                                      String? profileImageUrl = snapshot.data;
+
+                                      return Container( // 전체
+                                        margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                        child: Column( // 전체
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                                    child: Container(
+                                                      width: double.infinity,
+                                                      decoration: BoxDecoration(
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                            color: Color(0xFFEEEEEE),
+                                                            width: 1,
+                                                          ),
                                                         ),
-
                                                       ),
-                                                      SizedBox(width: 7),
-                                                      Column(
-                                                          children : [
-                                                            SizedBox(height: 12,),
+                                                      child: Container(
+                                                        padding: EdgeInsets.fromLTRB(0, 16, 0, 15),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Expanded(
+                                                              child: Container(
+                                                                margin: EdgeInsets.fromLTRB(0, 0, 26.9, 0),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    GestureDetector(
+                                                                      onTap : (){
+                                                                        print(1);
+                                                                      },
+                                                                      child:Container(
+                                                                      margin: EdgeInsets.fromLTRB(0, 0, 10, 30),
+                                                                      decoration: BoxDecoration(
+                                                                        borderRadius: BorderRadius.circular(16),
+                                                                      ),
+                                                                      child: CircleAvatar(
+                                                                        radius: 20, // 반지름 설정 (32 / 2)
+                                                                        backgroundColor: Colors.grey[200],
+                                                                        child: (profileImageUrl!= null && profileImageUrl.isNotEmpty)
+                                                                            ? null
+                                                                            : Icon(
+                                                                          Icons.account_circle,
+                                                                          size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                                                                          color: Colors.indigo,
+                                                                        ),
+                                                                        backgroundImage: profileImageUrl!= null && profileImageUrl.isNotEmpty
+                                                                            ? NetworkImage(profileImageUrl)
+                                                                            : null,
+                                                                      ),
+                                                                    ),
+                                                                    ),
+                                                                    Column(
+                                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      children: [
+                                                                        Container(
+                                                                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                                                          child: Align(
+                                                                            alignment: Alignment.topLeft,
+                                                                            child: Text(
+                                                                              '이은지',
+                                                                              style: TextStyle(
+                                                                                fontFamily: 'Pretendard',
+                                                                                fontWeight: FontWeight.w600,
+                                                                                fontSize: 16,
+                                                                                height: 1,
+                                                                                letterSpacing: -0.4,
+                                                                                color: Color(0xFF222222),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        Container(
+                                                                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                                                          child: Text(
+                                                                            '도와주기를 요청하였습니다.',
+                                                                            style: TextStyle(
+                                                                              fontFamily: 'Pretendard',
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 14,
+                                                                              height: 1,
+                                                                              letterSpacing: -0.4,
+                                                                              color: Color(0xFF222222),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        Align(
+                                                                          alignment: Alignment.topLeft,
+                                                                          child: Text(
+                                                                            '1시간 전',
+                                                                            style: TextStyle(
+                                                                              fontFamily: 'Pretendard',
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 12,
+                                                                              height: 1,
+                                                                              letterSpacing: -0.3,
+                                                                              color: Color(0xFFAAAAAA),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                                              decoration: BoxDecoration(
+                                                                border: Border.all(color: Color(0xFF4B7CC5)),
+                                                                borderRadius: BorderRadius.circular(100),
+                                                                color: Color(0xFFFFFFFF),
+                                                              ),
+                                                              child: Container(
+                                                                padding: EdgeInsets.fromLTRB(14.5, 2.5, 19, 2.5),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    Container(
+                                                                      margin: EdgeInsets.fromLTRB(0, 0, 2, 0),
+                                                                      child: SvgPicture.asset(
+                                                                        'assets/pigma/book.svg',
+                                                                        width: 25,
+                                                                        height: 25,
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                      margin: EdgeInsets.fromLTRB(0, 5, 6.3, 5),
+                                                                      child: Text(
+                                                                        'A+',
+                                                                        style: TextStyle(
+                                                                          fontFamily: 'Pretendard',
+                                                                          fontWeight: FontWeight.w700,
+                                                                          fontSize: 14,
+                                                                          height: 1,
+                                                                          letterSpacing: -0.4,
+                                                                          color: Color(0xFF1D4786),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                      margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                                                      child: Text(
+                                                                        '(4.5)',
+                                                                        style: TextStyle(
+                                                                          fontFamily: 'Pretendard',
+                                                                          fontWeight: FontWeight.w500,
+                                                                          fontSize: 14,
+                                                                          height: 1,
+                                                                          letterSpacing: -0.4,
+                                                                          color: Color(0xFF767676),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+
+                                },
+                                separatorBuilder: (context, index) => Divider(),
+                              ),
+                            ],
+
+                            Divider(),
+
+                            // 지난 알림 섹션
+                            if (oldNotifications.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('지난 알림', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: oldNotifications.length,
+                                itemBuilder: (context, index) {
+                                  final DocumentSnapshot doc = oldNotifications[index];
+                                  final notification = doc.data() as Map<String, dynamic>;
+                                  final timestamp = notification['timestamp'] as Timestamp;
+                                  final DateTime dateTime = timestamp.toDate();
+                                  final String timeAgo = getTimeAgo(dateTime);
+
+                                  final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
+                                  final Color avatarColor = _getColorFromName(nickname);
+
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: avatarColor,
+                                      child: Icon(Icons.person, color: Colors.white),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+                                              style: TextStyle(
+                                                fontFamily: 'NanumSquareRound',
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              '도와주기를 요청하였습니다.',
+                                              style: TextStyle(
+                                                fontFamily: 'NanumSquareRound',
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                            SizedBox(height: 6),
+                                            Text(
+                                              '$timeAgo',
+                                              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
+                                        Spacer(),
+                                        Column(
+                                          children: [
+                                            FutureBuilder<String>(
+                                              future: getGradeByNickname(notification['helper_email_nickname']),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                                  return CircularProgressIndicator();
+                                                } else if (snapshot.hasError) {
+                                                  return Text('에러가 발생하였습니다.');
+                                                } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
+                                                  return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
+                                                } else {
+                                                  double gradeValue;
+                                                  try {
+                                                    gradeValue = double.parse(snapshot.data ?? '0');
+                                                  } catch (e) {
+                                                    gradeValue = 0.0;
+                                                  }
+
+                                                  Grade grade = Grade(gradeValue);
+                                                  return isDeleteMode
+                                                      ? Text('')
+                                                      : Container(
+                                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      border: grade.border,
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      color: grade.color2.withOpacity(0.05),
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(Icons.school_outlined, color: grade.color),
+                                                        SizedBox(width: 8),
+                                                        Text(
+                                                          grade.letter,
+                                                          style: TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: grade.color,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                        SizedBox(width: 7),
+                                                        Column(
+                                                          children: [
+                                                            SizedBox(height: 12),
                                                             Text(
                                                               gradeValue.toStringAsFixed(2),
                                                               style: TextStyle(
@@ -257,32 +537,39 @@ class _NotificationScreenState extends State<AlarmUi> {
                                                                 fontSize: 8,
                                                               ),
                                                             ),
-                                                          ]),
-                                                    ]
-                                                ),
-                                              );
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                _showAcceptDeclineDialog(context, nickname, doc.id);
-                              },
-                              trailing: isDeleteMode ? IconButton(
-                                icon: Icon(Icons.close, color: Colors.black),
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  _deleteNotification(doc.id);
-                                  _deleteChatActions(doc.id);
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      // 지난 알림은 이미 touch 상태가 true이므로 업데이트 필요 없음
+                                      _showAcceptDeclineDialog(context, nickname, doc.id);
+                                    },
+                                    trailing: isDeleteMode
+                                        ? IconButton(
+                                      icon: Icon(Icons.close, color: Colors.black),
+                                      onPressed: () {
+                                        HapticFeedback.lightImpact();
+                                        _deleteNotification(doc.id);
+                                        _deleteChatActions(doc.id);
+                                      },
+                                    )
+                                        : null,
+                                  );
                                 },
-                              ) : null,
-                            );
-                          },
-                          separatorBuilder: (context, index) => Divider(),
+                                separatorBuilder: (context, index) => Divider(),
+                              ),
+                            ],
+                          ],
                         );
                       },
                     ),
@@ -316,6 +603,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                 ),
             ],
           ),
+
         ),
       ),
     );

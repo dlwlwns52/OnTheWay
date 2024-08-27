@@ -2,14 +2,18 @@ import 'dart:io';
 
 import 'package:OnTheWay/Profile/DeleteMember.dart';
 import 'package:OnTheWay/login/LoginScreen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import '../Alarm/Grade.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
+import '../Chat/FullScreenImage.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Pay/PaymentScreen.dart';
 import '../Ranking/SchoolRanking.dart';
@@ -32,6 +36,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
+  //프로필 사진 이미지 변환
+  File? _image;
+  final picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+
 
   @override
   void initState() {
@@ -44,6 +55,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     botton_domain = botton_email.split('@').last.toLowerCase();
 
   }
+
 
   // 닉네임 가져옴
   Future<void> _fetchUserNickname(String? email) async {
@@ -417,54 +429,352 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
-    return Center(
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('구글 프로필 사진을 변경하시면 해당 프로필사진이 변경됩니다.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.grey[200],
-              child: user?.photoURL != null
-                  ? null
-                  : Icon(
-                Icons.account_circle,
-                size: 100,
-                color: Colors.indigo,
-              ),
-              backgroundImage: user?.photoURL != null
-                  ? NetworkImage(user!.photoURL!)
-                  : null,
-            ),
+
+  //사진고르기
+  Future<void> _pickImage() async{
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File? croppedFile = await _cropImage(pickedFile.path);
+      if (croppedFile != null) {
+        setState(() {
+          _image = croppedFile;
+          _uploadImage();
+        });
+      }
+    } else {
+      print('No image selected.');
+    }
+  }
+
+
+  Future<File?> _cropImage(String path) async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: path,
+      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+      cropStyle: CropStyle.circle,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: '사진 자르기',
+          toolbarColor: Colors.deepOrange,
+          toolbarWidgetColor: Colors.white,
+          hideBottomControls: true,
+        ),
+        IOSUiSettings(
+          title: '사진 자르기',
+        ),
+      ],
+    );
+    return croppedFile != null ? File(croppedFile.path) : null;
+  }
+
+  //이미지 업로드
+  Future<void> _uploadImage() async {
+    if(_image == null)
+      return;
+
+    try{
+      //파이어베이스 스토리지 업로드
+      final storageRef = _storage.ref().child('profile_images/${nickname}.jpg');
+      await storageRef.putFile(_image!);
+
+      //이미지의 다운로드 url 가져오기
+      final downloadURL = await storageRef.getDownloadURL();
+
+      //파이어스토어에 url 저장
+      await _firestore.collection('users').doc(nickname).update({
+        'profilePhotoURL': downloadURL,
+      });
+
+      // 상태 업데이트
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '프로필 사진이 변경되었습니다.',
+            textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16),
-          Text(
-            nickname ?? '사용자 이름',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            user?.email ?? '이메일 없음',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
+          duration: Duration(seconds: 2),
+        )
+      );
+    } catch (e) {
+      print('Error occurred while uploading the image: $e');
+    }
+  }
+
+
+  void _showProfileEditDeleteDialog(BuildContext context, String? photoURL) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
       ),
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 15, 20, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(1, 0, 0, 43),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE3E3E3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  width: 44,
+                  height: 4,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 37),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // 수정 기능 호출
+                        HapticFeedback.lightImpact();
+                        if(photoURL!.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FullScreenImage(photoUrl: photoURL!),
+                            ),
+                          );
+                        }
+                        else{
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '기본 프로필 사진입니다.',
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '사진 보기',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // 수정 기능 호출
+                        HapticFeedback.lightImpact();
+                        _pickImage();
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '프로필 사진 변경',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.lightImpact();
+                        // Firestore에서 photoURL을 null로 업데이트
+                        await _firestore.collection('users').doc(nickname).update({
+                          'profilePhotoURL': '',
+                        });
+                        Navigator.of(context).pop();
+                        setState(() {});
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '기본 프로필 사진 변경',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color:Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 모달 닫기
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0D000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
+
+
+
+  Widget _buildProfileHeader() {
+    return FutureBuilder<DocumentSnapshot>(
+        future: _firestore.collection('users').doc(nickname).get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return SizedBox.shrink(); // 아무것도 표시하지 않음
+          }
+
+          if (!snapshot.hasData) {
+            return Text('No user data found');
+          }
+
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          var photoURL = userData['profilePhotoURL'] as String?;
+
+          return Center(
+            child: Column(
+              children: [
+                InkWell(
+                  onTap: (){
+                    HapticFeedback.lightImpact();
+                    _showProfileEditDeleteDialog(context, photoURL);
+                    }, //이미지 선택
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[200],
+                    child: photoURL != null  && photoURL.isNotEmpty
+                        ? null
+                        : Icon(Icons.account_circle, size: 100, color: Colors.indigo,),
+                    backgroundImage: photoURL != null  && photoURL.isNotEmpty
+                        ? NetworkImage(photoURL)
+                        : null,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  nickname ?? '사용자 이름',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  user?.email ?? '이메일 없음',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      );
+  }
+
+
 
   Widget _buildProfileInfoCard(String title, String value) {
     return Card(

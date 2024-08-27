@@ -3,8 +3,7 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:OnTheWay/login/LoginScreen.dart';
-import 'package:background_locator_2/callback_dispatcher.dart';
-import 'package:background_locator_2/location_dto.dart';
+
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
