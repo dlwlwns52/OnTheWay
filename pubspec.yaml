@@ -146,7 +146,9 @@ flutter:
     - assets/pigma/Polygon.svg
     - assets/pigma/x.svg
     - assets/pigma/Serch.svg
-    -
+    - assets/pigma/map.svg
+    - assets/pigma/compass.svg
+
   fonts:
     - family: NanumSquareRound
       fonts:

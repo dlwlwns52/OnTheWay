@@ -254,23 +254,42 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container( //           프로필사진
-                          margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                  ? BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 1,
+                                offset: Offset(0, 1), // 그림자 위치 조정
+                              )
+                                  : BoxShadow(),
+                            ],
+                          ),
                           child: CircleAvatar(
                             radius: 16, // 반지름 설정 (32 / 2)
                             backgroundColor: Colors.grey[200],
-                            child: (profileImageUrl!= null && profileImageUrl.isNotEmpty)
+                            child: (profileImageUrl != null && profileImageUrl.isNotEmpty)
                                 ? null
                                 : Icon(
                               Icons.account_circle,
                               size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
-                              color: Colors.indigo,
+                              color: Color(0xFF1D4786),
                             ),
-                            backgroundImage: profileImageUrl!= null && profileImageUrl.isNotEmpty
+                            backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
                                 ? NetworkImage(profileImageUrl)
                                 : null,
                           ),
-
+                        ),
                       ),
                       Container(
                         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
@@ -700,8 +719,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => FutureBuilder<String?>(
-                                          // future: _profilePhotoUrls[data['email']],
-                                          future: _getProfileImage(data['email']),
+                                          future: _profilePhotoUrls[data['email']],
+                                          // future: _getProfileImage(data['email']),
                                           builder: (context, snapshot) {
                                             String? profileImageUrl = snapshot.data;
 
@@ -786,8 +805,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => HanbatNewPostScreen()),
-                          // builder: (context) => Design()),
+                            // builder: (context) => HanbatNewPostScreen()),
+                          builder: (context) => Design()),
                       );
                     },
                     child: Icon(Icons.edit),

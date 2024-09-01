@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
@@ -23,14 +24,14 @@ class ChatScreen extends StatefulWidget {
   final String senderName;
   final String receiverUid;
   final String documentName;  // 채팅방의 문서 이름
-  // final String photoUrl;
+  final String? photoUrl;
 
   ChatScreen({
     required this.receiverName,
     required this.senderName,
     required this.receiverUid,
     required this.documentName,  // 생성자에 documentName 추가
-    // required this.photoUrl,
+    required this.photoUrl,
   });
 
   @override
@@ -47,7 +48,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   late File imageFile; // 이미지 파일
   List<File> imageFiles = [];
   List<String> tmapDirections = [];
-  bool _isImageUploading = false;
+
 
   late TextEditingController _messageController; // 메시지 입력 필드 컨트롤러
 
@@ -71,10 +72,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   // 가져온 닉네임값(길찾기 기능때 다른 아이콘 및 다른 지도로 이동)
   Map<String, String>? nicknames;
 
+  //자동 스크롤 차단
+  bool _shouldAutoScroll = false; // 자동 스크롤을 제어하는 플래그
+  int _previousMessageCount = 0;
+
 
   @override
   void initState() {
     super.initState();
+    _shouldAutoScroll = true;
     _isUserDeleted = false;
     WidgetsBinding.instance.addObserver(this); // 생명주기 이벤트 옵저버 추가
     _messageController = TextEditingController();
@@ -281,7 +287,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
-          title: Text('사진 확인',
+          title: Text(
+            '사진 확인',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black87),
             textAlign: TextAlign.center,),
           content: Container(
@@ -305,7 +312,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               icon: Icon(Icons.send),
               label: Text('보내기'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
+                backgroundColor: Color(0xFF1D4786),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -344,9 +351,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           ),
         );
 
-        setState(() {
-          _isImageUploading = true;
-        });
 
         // 이미지 업로드 비동기 처리
         for (var imageFile in imageFiles) {
@@ -359,9 +363,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           uploadImageUrls.add(downloadUrl);
         }
 
-        setState(() {
-          _isImageUploading = false;
-        });
 
         // 모든 이미지 업로드 후 사용자에게 알림
         ScaffoldMessenger.of(context).showSnackBar(
@@ -564,48 +565,187 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-
-
-  //메시지 삭제 및 수정 바텀 시트
-  Future<void> showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot,
-      bool text, bool isSentMy) async {
+  void showMessageOptionsBottomSheet(BuildContext context, QueryDocumentSnapshot<Map<String, dynamic>> snapshot, bool text, bool isSentMy) async {
     final action = await showModalBottomSheet<String>(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
+      ),
       builder: (BuildContext context) {
-        return Wrap(
-
-            children: <Widget>[
-              if(text)
-              ListTile(
-                leading: Icon(Icons.copy),
-                title: Text('복사'),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.of(context).pop("copy");
-                },
-              ),
-              if(isSentMy)
-              ListTile(
-                leading: Icon(Icons.delete),
-                title: Text('삭제'),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.of(context).pop("delete");
-                },
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 15, 20, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(1, 0, 0, 43),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE3E3E3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  width: 44,
+                  height: 4,
+                ),
               ),
               Container(
-                height: 80,
-                child: ListTile(
-                  leading: Icon(Icons.clear),
-                  title: Text('닫기'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 37),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    //복사
+                    if(text)
+                      GestureDetector(
+                        onTap: (){
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop("copy");
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Color(0xFFFFFFFF),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x0A000000),
+                                offset: Offset(0, 4),
+                                blurRadius: 7.5,
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                          child: Center(
+                            child:
+                            Row(
+                              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
+                              children: [
+                                Icon(
+                                  Icons.copy, // 원하는 아이콘 설정
+                                  color: Color(0xFF222222), // 아이콘 색상
+                                  size: 20, // 아이콘 크기
+                                ),
+                                SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
+                                Text(
+                                  '복사',
+                                  style: TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 17,
+                                    height: 1,
+                                    letterSpacing: -0.4,
+                                    color: Color(0xFF222222),
+                                  ),
+                                ),
+                              ],
+                            )
+
+                          ),
+                        ),
+                      ),
+
+                    //삭제
+                    if(isSentMy)
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop("delete");
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Color(0xFFFFFFFF),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x0A000000),
+                                offset: Offset(0, 4),
+                                blurRadius: 7.5,
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                          child: Center(
+                            child:
+                            Row(
+                              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
+                              children: [
+                                Icon(
+                                  Icons.delete, // 원하는 아이콘 설정
+                                  color: Color(0xFF222222), // 아이콘 색상
+                                  size: 20, // 아이콘 크기
+                                ),
+                                SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
+                                Text(
+                                  '삭제',
+                                  style: TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 17,
+                                    height: 1,
+                                    letterSpacing: -0.4,
+                                    color: Color(0xFF222222),
+                                  ),
+                                ),
+                              ],
+                            )
+
+                          ),
+                        ),
+                      ),
+
+
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 모달 닫기
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0D000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          );
-        // );
+          ),
+        );
       },
     );
 
@@ -616,6 +756,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _deleteMessageImage(snapshot.id);
     }
   }
+
 
   // 현재 사용자 UID 가져오기
   Future<User?> _getUID() async {
@@ -678,13 +819,25 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
                   }
+
+                  List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
+
+
+                  // 새로운 메시지가 추가되었는지 확인
+                  if (messages.length > _previousMessageCount) {
+                    _shouldAutoScroll = true;
+                  } else {
+                    _shouldAutoScroll = false;
+                  }
+                  _previousMessageCount = messages.length;
+
+                  // 자동 스크롤 실행
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
+                    if (_scrollController.hasClients && _shouldAutoScroll) {
                       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
                     }
                   });
 
-                  List<QueryDocumentSnapshot<Map<String, dynamic>>> messages = snapshot.data!.docs;
                   // 날짜 구분을 위한 로직 추가
                   List<Widget> messageWidgets = [];
                   DateTime? lastDate;
@@ -697,23 +850,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         messageWidgets.add(SizedBox(height: 20)); // 메시지 간격 조정용
                       }
                       messageWidgets.add(
-                          Center(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), // 내부 여백 조정
-                              decoration: BoxDecoration(
-                                color: Colors.white, // 배경색
-                                border: Border.all(color: Colors.black, width: 1), // 테두리 색
-                                borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
-                              ),
-                              child: Text(
-                                DateFormat('yyyy년 M월 d일').format(messageDate),
-                                style: TextStyle(
-                                  color: Colors.black, // 텍스트 색상
-                                  fontWeight: FontWeight.bold, // 글자 굵기
-                                ),
+                        Align(
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.35,  // 원하는 너비로 설정
+                            margin: EdgeInsets.fromLTRB(0, 20, 1.2, 0),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade200),
+                              borderRadius: BorderRadius.circular(100),
+                              color: Colors.grey.shade200,
+                            ),
+                            padding: EdgeInsets.fromLTRB(0, 7, 0, 7),
+                            child: Text(
+                              DateFormat('yyyy년 M월 d일').format(messageDate),
+                              textAlign: TextAlign.center,  // 텍스트를 중앙 정렬
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                                height: 1,
+                                letterSpacing: -0.4,
+                                color: Color(0xFF767676),
                               ),
                             ),
-                          )
+                          ),
+                        ),
+
                       );
                       if (i > 0) {
                         messageWidgets.add(SizedBox(height: 10)); // 날짜와 메시지 사이 간격 조정용
@@ -727,35 +888,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     messageWidgets.add(chatMessageItem(message, shouldDisplayAvatar, isRead));
                   }
 
+                  //채팅방 나가는 ui
                   if (_isUserDeleted) {
                     messageWidgets.add(
-                      Center(
+                      Align(
                         child: Container(
-                          padding: EdgeInsets.all(12.0),
-                          margin: EdgeInsets.symmetric(vertical: 20.0),
+                          // width: MediaQuery.of(context).size.width * 0.55,  // 원하는 너비로 설정
+                          margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
                           decoration: BoxDecoration(
-                            color: Colors.indigo[50], // 인디고 색상 적용
-                            borderRadius: BorderRadius.circular(50.0), // 둥근 모서리 적용
-                            border: Border.all(color: Colors.indigo, width: 1), // 인디고 색상 테두리
-
+                            border: Border.all(color: Colors.grey.shade200),
+                            borderRadius: BorderRadius.circular(100),
+                            color: Colors.grey.shade200,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                FontAwesomeIcons.infoCircle, // 아이콘 추가
-                                color: Colors.indigo,
-                              ),
-                              SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
-                              Text(
-                                "${widget.receiverName}님이 채팅방을 나갔습니다.",
-                                style: TextStyle(
-                                  color: Colors.indigo, // 인디고 색상 텍스트
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16.0, // 텍스트 크기 조정
-                                ),
-                              ),
-                            ],
+                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          child:
+                          Text(
+                            "${widget.receiverName}님이 채팅방을 나갔습니다.",
+                            textAlign: TextAlign.center,  // 텍스트를 중앙 정렬
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF767676),
+                            ),
                           ),
                         ),
                       ),
@@ -825,8 +982,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           ),
 
           IconButton(
-            icon: Icon(Icons.send,  color: isFilled ? Colors.indigo[500] :Colors.grey[600], size: 35,), // 아이콘 색상 조정
+            icon: Icon(Icons.send,  color: isFilled ? Color(0xFF1D4786) :Colors.grey[600], size: 35,), // 아이콘 색상 조정
             onPressed: () {
+              HapticFeedback.lightImpact();
               _sendMessage(); // 메시지 전송
             },
           ),
@@ -846,198 +1004,723 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       children: <Widget>[
 
 
-        if (isSentByMe && !isMessageRead)
-          Text('1', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
 
-        if (!isSentByMe)
-          // Stack(
-          //   children:[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/ava.png'),
-            backgroundColor: Colors.transparent,
-            radius: 18.0,
-          ),
-
-          // CircleAvatar(
-          //   child: Lottie.asset(
-          //     'assets/lottie/walk.json',
-          //     fit: BoxFit.contain,
-          //
-          //   ),
-          //   // backgroundColor: Colors.grey,
-          //   //   radius: 18.0
-          // )
-          //     ],
-          // ),
-
-
-        SizedBox(width: 10.0),
         Column(
           crossAxisAlignment: isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start, // Alignment 조정
           children: <Widget>[
-            //사진 전송
+
             SizedBox(height: 10),
 
-              // 이미지 전송, 사용자가 삭제 안했을때
-              if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
-                GestureDetector(
-                  onTap: () {
-                    // 이미지 클릭 시 FullScreenImage 보여주기
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            FullScreenImage(photoUrl: snapshot['photoUrl']),
-                      ),
-                    );
-                  },
 
-                  onLongPress: () {
-                    HapticFeedback.lightImpact();
-                    if (isSentByMe) {
-                      showMessageOptionsBottomSheet(context, snapshot, false, true);
-                    }
-                    else if(!isSentByMe){
-                      showMessageOptionsBottomSheet(context, snapshot, false, false);
-                    }
-                  },
-
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.network(
-                      snapshot['photoUrl'],
-                      width: 200.0,
-                      height: 200.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Column(
-                  children: [
-                    SizedBox(height: 7),
-                    Text(
-                      _formatTimestamp(snapshot['timestamp']),
-                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
-                    ),
-                  ],
-                )
-              },
-
-              // 이미지 전송, 사용자가 삭제 했을때
-              if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
-                Container(
-                  // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-                  margin: EdgeInsets.only(top: 10),
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                        Icon(
-                          Icons.error, color: Colors.white
-                        ),
-                        SizedBox(width: 10,),
-                        Text(
-                          '삭제된 메시지입니다.',
-                          style: TextStyle(
-                              color: isSentByMe ? Colors.black54 : Colors.grey),
-                        )
-                    ],
-                  ),
-                ),
-                Column(
-                  children: [
-                    SizedBox(height: 7),
-                    Text(
-                      _formatTimestamp(snapshot['timestamp']),
-                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
-                    ),
-                  ],
-                )
-              },
-
-
-            //텍스트 전송
+            //텍스트 전송 삭제 x
             if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == false) ...{
               GestureDetector(
                 onLongPress: () {
                   HapticFeedback.lightImpact();
+                  setState(() {
+                    _shouldAutoScroll = false; // 롱프레스 시 자동 스크롤을 비활성화
+                  });
                   if (isSentByMe) {
                     showMessageOptionsBottomSheet(context, snapshot, true, true);
-                  }
-                  else if(!isSentByMe){
+                  } else if (!isSentByMe) {
                     showMessageOptionsBottomSheet(context, snapshot, true, false);
                   }
                 },
-                child: Container(
-                  // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-                  margin: EdgeInsets.only(top: 10),
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
-                  ),
-                  // constraints: BoxConstraints(
-                  //   maxWidth: MediaQuery.of(context).size.width * 0.7,
-                  // ),
-                  child: Column(
-                    children: <Widget>[
-                      if (snapshot['type'] == 'text')
-                        Text(
-                          snapshot['message'],
-                          style: TextStyle(
-                              color: isSentByMe ? Colors.black : Colors.black),
-                        )
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 7),
-              Text(
-                _formatTimestamp(snapshot['timestamp']),
-                style: TextStyle(fontSize: 12.0, color: Colors.black87),
-              ),
-            },
 
-            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == true) ...{
-              Container(
-                // alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-                margin: EdgeInsets.only(top: 10),
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSentByMe ? Colors.indigo[100] : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(15), // 둥근 모서리 설정
-                ),
-                child: Column(
+                child: isSentByMe
+                // 본인이 보냄
+                    ?
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
                   children: <Widget>[
                     Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.error, color: Colors.white
-                         ),
-                        SizedBox(width: 10,),
-                        Text(
-                          '삭제된 메시지입니다.',
-                          style: TextStyle(
-                              color: isSentByMe ? Colors.black54 : Colors.grey),
+                      crossAxisAlignment: CrossAxisAlignment.end, // Row의 모든 자식을 하단 정렬
+                      children: [
+                        if (isSentByMe && !isMessageRead) ...[
+                          Text(
+                            '1',
+                            style: TextStyle(
+                              color: Color(0xFF1D4786),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                        SizedBox(width: 5),
+                        Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1D4786),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                              ),
+                            ),
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.6,
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(16, 14, 12.2, 14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  if (snapshot['type'] == 'text')
+                                    Text(
+                                      snapshot['message'],
+                                      style: TextStyle(
+                                        fontFamily: 'Pretendard',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        height: 1.2,
+                                        letterSpacing: -0.4,
+                                        color: Color(0xFFFFFFFF),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
+                    SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.bottomRight, // 우측 하단 정렬
+                      child: Text(
+                        _formatTimestamp(snapshot['timestamp']),
+                        style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                )
 
+                // 상대방이 보냄
+                    :
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _shouldAutoScroll = false; // 롱프레스 시 자동 스크롤을 비활성화
+                        });
+                        if (widget.photoUrl!.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FullScreenImage(photoUrl: widget.photoUrl!),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '기본 프로필 사진입니다.',
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                                  ? BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 1,
+                                offset: Offset(0, 1), // 그림자 위치 조정
+                              )
+                                  : BoxShadow(),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 20, // 반지름 설정 (32 / 2)
+                            backgroundColor: Colors.grey[200],
+                            child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                                ? null
+                                : Icon(
+                              Icons.account_circle,
+                              size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                              color: Color(0xFF1D4786),
+                            ),
+                            backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                                ? NetworkImage(widget.photoUrl!)
+                                : null,
+                          ),
+                        ),
+                    ),
+                    SizedBox(width: 10.0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                      children: <Widget>[
+                        Text(
+                          '${widget.receiverName}',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            height: 1,
+                            letterSpacing: -0.4,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                        SizedBox(height: 10,),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 8),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Color(0xFFE8EFF8),
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                  bottomLeft: Radius.circular(12),
+                                ),
+                              ),
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width * 0.6,
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.fromLTRB(16, 14, 11.9, 14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    if (snapshot['type'] == 'text')
+                                      Text(
+                                        snapshot['message'],
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 15,
+                                          height: 1.2,
+                                          letterSpacing: -0.4,
+                                          color: Color(0xFF222222),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight, // 우측 하단 정렬
+                          child: Text(
+                            _formatTimestamp(snapshot['timestamp']),
+                            style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                          ),
+                        ),
+                        SizedBox(height: 10,),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  SizedBox(height: 7),
-                  Text(
-                    _formatTimestamp(snapshot['timestamp']),
-                    style: TextStyle(fontSize: 12.0, color: Colors.black87),
+            },
+
+
+
+
+              // 이미지 전송, 사용자가 삭제 안했을때
+            if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  // 이미지 클릭 시 FullScreenImage 보여주기
+                  setState(() {
+                    _shouldAutoScroll = false; // 롱프레스 시 자동 스크롤을 비활성화
+                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FullScreenImage(photoUrl: snapshot['photoUrl']),
+                    ),
+                  );
+                },
+                onLongPress: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    _shouldAutoScroll = false; // 롱프레스 시 자동 스크롤을 비활성화
+                  });
+                  if (isSentByMe) {
+                    showMessageOptionsBottomSheet(context, snapshot, false, true);
+                  } else if (!isSentByMe) {
+                    showMessageOptionsBottomSheet(context, snapshot, false, false);
+                  }
+                },
+                child: isSentByMe
+                // 본인이 보냄
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end, // Row의 모든 자식을 하단 정렬
+                      children: [
+                        if (isSentByMe && !isMessageRead) ...[
+                          Text(
+                            '1',
+                            style: TextStyle(
+                              color: Colors.indigo,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                        SizedBox(width: 5),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.network(
+                            snapshot['photoUrl'],
+                            width: 200.0,
+                            height: 200.0,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 7),
+                    Text(
+                      _formatTimestamp(snapshot['timestamp']),
+                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                    ),
+                  ],
+                )
+                // 상대방이 보냄
+                    : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                              ? BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 1,
+                            offset: Offset(0, 1), // 그림자 위치 조정
+                          )
+                              : BoxShadow(),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 20, // 반지름 설정 (32 / 2)
+                        backgroundColor: Colors.grey[200],
+                        child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                            ? null
+                            : Icon(
+                          Icons.account_circle,
+                          size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                          color: Color(0xFF1D4786),
+                        ),
+                        backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                            ? NetworkImage(widget.photoUrl!)
+                            : null,
+                      ),
+                    ),
+                    SizedBox(width: 10.0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                      children: <Widget>[
+                        Text(
+                          '${widget.receiverName}',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            height: 1,
+                            letterSpacing: -0.4,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.network(
+                            snapshot['photoUrl'],
+                            width: 200.0,
+                            height: 200.0,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight, // 우측 하단 정렬
+                          child: Text(
+                            _formatTimestamp(snapshot['timestamp']),
+                            style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            },
+
+
+
+
+
+              // 이미지 전송 삭제!
+            if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
+              isSentByMe
+                  ? Column(
+                crossAxisAlignment: CrossAxisAlignment.end, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end, // Row의 모든 자식을 하단 정렬
+                    children: [
+                      if (isSentByMe && !isMessageRead) ...[
+                        Text(
+                          '1',
+                          style: TextStyle(
+                            color: Color(0xFF1D4786),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                      SizedBox(width: 5),
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xFF1D4786),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                              bottomLeft: Radius.circular(12),
+                            ),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.fromLTRB(16, 14, 12.2, 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.error,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      '삭제된 메시지입니다.',
+                                      style: TextStyle(color: Color(0xFFFFFFFF)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.bottomRight, // 우측 하단 정렬
+                    child: Text(
+                      _formatTimestamp(snapshot['timestamp']),
+                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                    ),
                   ),
                 ],
               )
+              // 상대방이 보냄
+                  : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                            ? BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          offset: Offset(0, 1), // 그림자 위치 조정
+                        )
+                            : BoxShadow(),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 20, // 반지름 설정 (32 / 2)
+                      backgroundColor: Colors.grey[200],
+                      child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                          ? null
+                          : Icon(
+                        Icons.account_circle,
+                        size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                        color: Color(0xFF1D4786),
+                      ),
+                      backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                          ? NetworkImage(widget.photoUrl!)
+                          : null,
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                    children: <Widget>[
+                      Text(
+                        '${widget.receiverName}',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          height: 1,
+                          letterSpacing: -0.4,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 8),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color(0xFFE8EFF8),
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(16, 14, 12.2, 14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.error,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        '삭제된 메시지입니다.',
+                                        style: TextStyle(color: Color(0xFF222222)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight, // 우측 하단 정렬
+                        child: Text(
+                          _formatTimestamp(snapshot['timestamp']),
+                          style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ],
+              ),
+            },
+
+
+
+
+
+
+            if (snapshot['type'] == 'text' && snapshot['message'].toString().isNotEmpty && snapshot['isDeleted'] == true) ...{
+              isSentByMe
+                  ? Column(
+                crossAxisAlignment: CrossAxisAlignment.end, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end, // Row의 모든 자식을 하단 정렬
+                    children: [
+                      if (isSentByMe && !isMessageRead) ...[
+                        Text(
+                          '1',
+                          style: TextStyle(
+                            color: Color(0xFF1D4786),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                      SizedBox(width: 5),
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xFF1D4786),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                              bottomLeft: Radius.circular(12),
+                            ),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.fromLTRB(16, 14, 12.2, 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.error,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      '삭제된 메시지입니다.',
+                                      style: TextStyle(color: Color(0xFFFFFFFF)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.bottomRight, // 우측 하단 정렬
+                    child: Text(
+                      _formatTimestamp(snapshot['timestamp']),
+                      style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                    ),
+                  ),
+                ],
+              )
+              // 상대방이 보냄
+                  : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                            ? BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          offset: Offset(0, 1), // 그림자 위치 조정
+                        )
+                            : BoxShadow(),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 20, // 반지름 설정 (32 / 2)
+                      backgroundColor: Colors.grey[200],
+                      child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                          ? null
+                          : Icon(
+                        Icons.account_circle,
+                        size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                        color: Color(0xFF1D4786),
+                      ),
+                      backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                          ? NetworkImage(widget.photoUrl!)
+                          : null,
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // 메시지와 프로필 사진이 수직으로 정렬되도록 설정
+                    children: <Widget>[
+                      Text(
+                        '${widget.receiverName}',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          height: 1,
+                          letterSpacing: -0.4,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 8),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color(0xFFE8EFF8),
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(16, 14, 12.2, 14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.error,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        '삭제된 메시지입니다.',
+                                        style: TextStyle(color: Color(0xFF222222)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight, // 우측 하단 정렬
+                        child: Text(
+                          _formatTimestamp(snapshot['timestamp']),
+                          style: TextStyle(fontSize: 12.0, color: Colors.black87),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ],
+              ),
+
             }
           ],
         ),
@@ -1057,94 +1740,102 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       child: GestureDetector(
         onHorizontalDragEnd: (details){
           if (details.primaryVelocity! >  0){
+            HapticFeedback.lightImpact();
             Navigator.pop(context);
           }
         },
       child: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.receiverName,
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22,
-                  color: Colors.black
-                ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+          child: AppBar(
+            title: Text(
+              '${widget.receiverName}',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontWeight: FontWeight.w600,
+                fontSize: 19,
+                height: 1.0,
+                // letterSpacing: -0.5,
+                color: Colors.white,
               ),
-            // 채팅방 이름 표시
-            // backgroundColor: Color(0XFF98ABEE),
-            backgroundColor: Colors.white,
-            elevation: 0,
-            iconTheme: IconThemeData(
-              color: Colors.black, // 여기에서 원하는 색상을 설정합니다.
             ),
             centerTitle: true,
+            backgroundColor: Color(0xFF1D4786),
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+              color: Colors.white, // 아이콘 색상
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context); // 뒤로가기 기능
+              },
+            ),
+            actions: [
 
-            actions: <Widget>[
-              Container(
-                width: 40,
-                height: 40,
-                margin: EdgeInsets.only(right: 8),
-                decoration: BoxDecoration(
-                  color: Colors.indigo[400],
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 6,
-                      offset: Offset(0, 1),
+                    IconButton(
+                      icon:  nicknames != null && widget.senderName == nicknames!['ownerNickname']
+                     ? Container(
+                        margin: EdgeInsets.only(bottom: 5),
+                         child: SvgPicture.asset(
+                              'assets/pigma/map.svg',
+                              width: 27,
+                              height: 27,
+                            ),
+                          )
+                      :Container(
+                        margin: EdgeInsets.only(bottom: 5),
+                        child: SvgPicture.asset(
+                        'assets/pigma/compass.svg',
+                            width: 27,
+                            height: 27,
+                          ),
+                        ),
+
+
+                      onPressed: () async {
+                        HapticFeedback.lightImpact();
+                        await _tmapDirections(); // 위치 데이터를 가져옵니다.
+
+                        if (nicknames!['helperNickname'] == widget.senderName) {
+                          if (tmapDirections.length >= 2) {
+                            // tmapDirections 리스트에서 위치 정보 사용
+                            String currentLocation = tmapDirections[0];
+                            String storeLocation = tmapDirections[1];
+                            // Navigator를 사용하여 새 페이지로 이동
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  HelperTMapView(
+                                    currentLocation: currentLocation,
+                                    storeLocation: storeLocation,
+                                  ),
+                            ));
+                          }
+                        }
+
+                        else if (nicknames!['ownerNickname'] == widget.senderName) {
+                          if (tmapDirections.length >= 2) {
+                            // tmapDirections 리스트에서 위치 정보 사용
+                            String currentLocation = tmapDirections[0];
+                            String storeLocation = tmapDirections[1];
+                            // 여기에 헬퍼 위치 보이게 하기
+                            String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  OwnerTMapView(
+                                    currentLocation: currentLocation,
+                                    storeLocation: storeLocation,
+                                    helperId: helperNickname,
+                                    documentName: widget.documentName,
+                                  ),
+                            ));
+                          }
+                        }
+                      },
                     ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    nicknames != null && widget.senderName == nicknames!['ownerNickname']
-                        ? Icons.map
-                        : Icons.navigation_rounded,
-                    color: Colors.white,
-                  ),
-                  onPressed: () async {
-                    HapticFeedback.lightImpact();
-                    await _tmapDirections(); // 위치 데이터를 가져옵니다.
 
-                    if (nicknames!['helperNickname'] == widget.senderName) {
-                      if (tmapDirections.length >= 2) {
-                        // tmapDirections 리스트에서 위치 정보 사용
-                        String currentLocation = tmapDirections[0];
-                        String storeLocation = tmapDirections[1];
-                        // Navigator를 사용하여 새 페이지로 이동
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              HelperTMapView(
-                                currentLocation: currentLocation,
-                                storeLocation: storeLocation,
-                              ),
-                        ));
-                      }
-                    }
-
-                    else if (nicknames!['ownerNickname'] == widget.senderName) {
-                      if (tmapDirections.length >= 2) {
-                        // tmapDirections 리스트에서 위치 정보 사용
-                        String currentLocation = tmapDirections[0];
-                        String storeLocation = tmapDirections[1];
-                        // 여기에 헬퍼 위치 보이게 하기
-                        String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              OwnerTMapView(
-                                currentLocation: currentLocation,
-                                storeLocation: storeLocation,
-                                helperId: helperNickname,
-                                documentName: widget.documentName,
-                              ),
-                        ));
-                      }
-                    }
-                  },
-                ),
-              ),
             ],
           ),
+        ),
           body: Stack(
             children:[
               Column(
@@ -1171,18 +1862,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
               ],
             ),
-              if (_isImageUploading)
-                Container(
-                  color: Colors.grey.withOpacity(0.5),
-                  child: Center(
-                    child: Lottie.asset(
-                      'assets/lottie/imageSending.json',
-                      width: 300,
-                      height: 300,
-                      fit: BoxFit.contain
-                    ),
-                  ),
-                ),
+
            ],
           ),
         ),

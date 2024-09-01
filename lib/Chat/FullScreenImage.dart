@@ -2,6 +2,7 @@
 //이 위젯은 전체 화면에 이미지를 표시하고 이미지를 닫기 위한 아이콘 버튼을 포함한 상단 앱 바도 표시합니다.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 
 class FullScreenImage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _FullScreenImageState extends State<FullScreenImage> {
       child: GestureDetector(
         onHorizontalDragEnd: (details){
           if (details.primaryVelocity! >  0){
+            HapticFeedback.lightImpact();
             Navigator.pop(context);
           }
         },
@@ -61,7 +63,11 @@ class _FullScreenImageState extends State<FullScreenImage> {
                           margin: EdgeInsets.all(8), // Container의 바깥쪽 여백 설정
                           child: IconButton(
                             icon: Icon(Icons.close, color: Colors.black), // 이미지 닫기 버튼
-                            onPressed: () => Navigator.pop(context), // 이미지 화면 닫기
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context);
+
+                            },// 이미지 화면 닫기
                           ),
                         ),
                       )

@@ -1,612 +1,621 @@
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:OnTheWay/Alarm/Grade.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// import 'package:intl/intl.dart';
+// import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 // import 'package:lottie/lottie.dart';
-// import '../login/LoginScreen.dart';
-// import '../login/NavigateToBoard.dart';
 //
+// import '../Chat/AllUsersScreen.dart';
+// import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
 //
-// class CreateAccount extends StatefulWidget {
+// class AlarmUi extends StatefulWidget {
 //
 //   @override
-//   _CreateAccountState createState() => _CreateAccountState();
-//
+//   _NotificationScreenState createState() => _NotificationScreenState();
 // }
 //
-// class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserver{
-//   final _formKey = GlobalKey<FormState>();
-//   TextEditingController _nicknameController = TextEditingController();
-//   TextEditingController _passwordController = TextEditingController();  // 비밀번호 컨트롤러 추가
-//   TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인 컨트롤러 추가
-//   TextEditingController _emailUserController = TextEditingController();
-//   final FocusNode _buttonFocusNode = FocusNode();// 게시하기 버튼을 위한 FocusNode 추가
+// class _NotificationScreenState extends State<AlarmUi> {
+//   late final Alarm alarm;  // NaverAlarm 클래스의 인스턴스를 선언합니다.
+//   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
+//   bool isDeleteMode = false; // 삭제 모드 활성화 변수
 //
-//   bool _isNicknameAvailable = false; // 입력 필드 활성화 여부 설정
-//   String _buttonText = '중복확인';
-//   Color _buttonColor = Colors.white70;
-//   String? _usernicknameErrorText; // 닉네임 제한 ( 영문 대소문자 알파벳, 한글 음절, 일반적인 하이픈 기호, 그리고 숫자를 모두 허용)
-//   String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
-//   String? _confirmPasswordErrorText; // password 와 동일한가 확인
-//   String? _userEmailErrorText; // 이메일 에러 텍스트 확인
-//   final FocusNode _passwordFocusNode = FocusNode(); // 엔터눌렀을때 아이디 -> 비밀번호
-//   final FocusNode _confirmPasswordFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호 -> 비밀번호확인
-//   final FocusNode _emailFocusNode = FocusNode(); // 엔터눌렀을때 비밀번호확인 -> 이메일
-//   final FirebaseAuth _auth = FirebaseAuth.instance;
-//   String? _dropdownValue = '학교 메일 선택';
-//   bool isEmailVerified = false;
+//   // 수락시 lottie 파일 조정 변주
+//   bool _isAccepting =false;
+//
 //
 //   @override
 //   void initState() {
 //     super.initState();
-//     _nicknameController.addListener(_onNicknameChanged);
-//     _passwordController.addListener(_onpasswordChanged);
-//     _confirmPasswordController.addListener(_confirmPasswordChanged);
-//     _emailUserController.addListener(_onEmaildChanged);
+//     // 현재 사용자의 이메일을 가져와서 NaverAlarm 클래스를 초기화합니다.
+//     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+//
+//     alarm = Alarm(currentUserEmail, () {
+//       if (mounted) {
+//         setState(() {});}
+//     }, context);
+//
+//     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
+//     // context가 초기화된 후에 SnackBar를 표시합니다.\
+//
+//
+//
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text(
+//             "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
+//             textAlign: TextAlign.center,
+//           ),
+//           duration: Duration(seconds: 1),
+//         ),
+//       );
+//     });
 //
 //   }
 //
-//
 //   @override
 //   void dispose() {
-//     _nicknameController.dispose();
-//     _passwordController.dispose();
-//     _confirmPasswordController.dispose();
+//     // 여기에서 스트림 구독 취소 및 기타 정리 작업을 수행합니다.
 //     super.dispose();
+//   }
+//
+//
+//
+//   // 알림 목록을 스트림 형태로 불러오는 함수
+//   Stream<List<DocumentSnapshot>> getNotifications() {
+//     return FirebaseFirestore.instance
+//         .collection('helpActions') // Firestore에서 'helpActions' 컬렉션을 사용합니다.
+//         .where('owner_email', isEqualTo: alarm.currentUserEmail) // ownerEmail 필드가 현재 사용자 이메일과 일치하는 문서만 가져옵니다.
+//         .snapshots() // 문서 변경사항을 실시간으로 스트림으로 받아옵니다.
+//         .map((snapshot) {
+//       var docs = snapshot.docs.toList();
+//       // 시간을 기준으로 목록을 역순 정렬
+//       final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+//       docs.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+//
+//       return docs;
+//     });
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // appBar: AppBar(
-//       //   backgroundColor:  Color(0xFFFF8B13),
-//       //   title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
-//       // ),
-//       appBar: PreferredSize(
-//         preferredSize: Size.fromHeight(kToolbarHeight),
-//         child: Stack(
-//           children: [
-//             Positioned.fill(
-//               child: Lottie.asset(
-//                 'assets/lottie/login.json',
-//                 fit: BoxFit.fill,
-//               ),
-//             ),
-//             AppBar(
-//               backgroundColor:  Colors.transparent,
-//               title: Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold),),
-//             ),
-//           ],
-//         ),
+//     return WillPopScope(
+//       onWillPop: () async{
 //
-//       ),
-//       body: SingleChildScrollView(
-//         child : Form(
-//           key: _formKey,
-//           child: Column(
-//             children: <Widget>[
-//               SizedBox(height: 30),
-//               Row(
+//         return true;
+//       },
+//       child: GestureDetector(
+//         onHorizontalDragEnd: (details){
+//           if (details.primaryVelocity! >  0){
+//             Navigator.pop(context);
+//           }
+//         },
+//         child: Scaffold(
+//           appBar: PreferredSize(
+//             preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+//             child: AppBar(
+//               title: Text(
+//                 '알림',
+//                 style: TextStyle(
+//                   fontFamily: 'Pretendard',
+//                   fontWeight: FontWeight.w600,
+//                   fontSize: 19,
+//                   height: 1.0,
+//                   // letterSpacing: -0.5,
+//                   color: Colors.white,
+//                 ),
+//               ),
+//               centerTitle: true,
+//               backgroundColor: Color(0xFF1D4786),
+//               elevation: 0,
+//               leading: IconButton(
+//                 icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+//                 color: Colors.white, // 아이콘 색상
+//                 onPressed: () {
+//                   HapticFeedback.lightImpact();
+//                   Navigator.pop(context); // 뒤로가기 기능
+//                 },
+//               ),
+//               actions: [
+//                 IconButton(
+//                   icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
+//                   onPressed: () {
+//                     HapticFeedback.lightImpact();
+//                     setState(() {
+//                       isDeleteMode = !isDeleteMode; // 삭제 모드 상태 토글
+//                     });
+//                   },
+//                 ),
+//               ],
+//             ),
+//           ),
+//
+//
+//
+//           body: Stack(
+//             children: [
+//               Column(
 //                 children: [
+//                   SizedBox(height: 10),
 //                   Expanded(
-//                     child: Padding(
-//                       padding: const EdgeInsets.fromLTRB(15, 0, 10, 1),
-//                       child: Container(
-//                         height: 80, // 이 값을 조절하여 더 많은 공간을 확보하거나 줄일 수 있습니다.
-//                         child: TextFormField(
-//                           controller: _nicknameController,
-//                           style: TextStyle(
-//                             color: Colors.black,
-//                           ),
-//                           cursorColor: Colors.indigo,
-//                           cursorWidth: 3,
-//                           showCursor: true,
-//                           decoration: InputDecoration(
-//                             labelText: '닉네임',
-//                             labelStyle: TextStyle(color: Colors.black54),
-//                             border: OutlineInputBorder(),
-//                             focusedBorder: OutlineInputBorder(
-//                               borderSide: BorderSide(
-//                                 color: Colors.indigo,
+//                     child: StreamBuilder<List<DocumentSnapshot>>(
+//                       stream: notificationsStream,
+//                       builder: (context, snapshot) {
+//                         if (snapshot.hasError) {
+//                           return Center(child: Text('오류가 발생했습니다.'));
+//                         }
+//                         if (!snapshot.hasData) {
+//                           return Center(child: CircularProgressIndicator());
+//                         }
+//                         final notifications = snapshot.data!;
+//
+//                         return ListView.separated(
+//                           itemCount: notifications.length,
+//                           itemBuilder: (context, index) {
+//
+//                             //알림 온 시간 측정
+//                             final DocumentSnapshot doc = notifications[index];
+//                             final notification = doc.data() as Map<String, dynamic>;
+//                             final timestamp = notification['timestamp'] as Timestamp;
+//                             final DateTime dateTime = timestamp.toDate();
+//                             final String timeAgo = getTimeAgo(dateTime);
+//
+//                             //닉네임
+//                             final String nickname = notification['helper_email_nickname'] ?? '알 수 없는 사용자';
+//                             final Color avatarColor = _getColorFromName(nickname); // 색상 결정
+//
+//                             return ListTile(
+//                               leading: CircleAvatar(
+//                                 backgroundColor: avatarColor, // 여기서 색상 적용
+//                                 child: Icon(Icons.person, color: Colors.white),
 //                               ),
-//                             ),
-//                             errorText: _usernicknameErrorText,
-//                           ),
-//                           validator: (value) {
-//                             String pattern = r'[a-zA-Zㄱ-ㅎ가-힣-0-9]';
-//                             RegExp regex = new RegExp(pattern);
-//                             if (value == null || value.trim().isEmpty) {
-//                               return '닉네임을 입력해주세요.';
-//                             }
-//                             return null;
+//                               title: Row(
+//                                 children : [
+//                                   Column(
+//                                     crossAxisAlignment: CrossAxisAlignment.start,
+//                                     children: [
+//                                       Text(
+//                                         notification['helper_email_nickname'] ?? '알 수 없는 사용자',
+//                                         style:
+//                                         // TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+//                                         TextStyle(
+//                                           fontFamily: 'NanumSquareRound',
+//                                           fontWeight: FontWeight.w900,
+//                                           fontSize: 16,
+//                                         ),
+//                                       ),
+//                                       SizedBox(height: 8),
+//                                       Text(
+//                                         '도와주기를 요청하였습니다.',
+//                                         // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 14),
+//                                         style: TextStyle(
+//                                             fontFamily: 'NanumSquareRound',
+//                                             fontWeight: FontWeight.w600,
+//                                             fontSize: 14,
+//                                             color: Colors.grey[600]
+//                                         ),
+//                                       ),
+//                                       SizedBox(height: 6),
+//                                       Text(
+//                                         '$timeAgo',
+//                                         style:
+//                                         TextStyle(color: Colors.grey[600], fontSize: 14),
+//                                       ),
+//                                     ],
+//                                   ),
+//                                   Spacer(),
+//                                   Column(
+//                                     // crossAxisAlignment: CrossAxisAlignment.end,
+//                                     children: [
+//                                       FutureBuilder<String>(
+//                                         future: getGradeByNickname(notification['helper_email_nickname']),
+//                                         builder: (context, snapshot) {
+//                                           if (snapshot.connectionState == ConnectionState.waiting) {
+//                                             return CircularProgressIndicator();
+//                                           } else if (snapshot.hasError) {
+//                                             return Text('에러가 발생하였습니다.');
+//                                           } else if (!snapshot.hasData || snapshot.data == '정보 없음') {
+//                                             return Text('정보 없음', style: TextStyle(color: Colors.grey, fontSize: 5));
+//                                           } else {
+//                                             // double grade = double.parse(snapshot.data!);
+//                                             double gradeValue;
+//                                             try {
+//                                               gradeValue = double.parse(snapshot.data ?? '0'); // 기본 값 0을 설정
+//                                             } catch (e) {
+//                                               gradeValue = 0.0; // 예외 발생 시 기본 값 설정
+//                                             }
+//
+//                                             Grade grade = Grade(gradeValue);
+//                                             return
+//                                               isDeleteMode  ? Text('') :  Container(
+//                                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+//                                                 decoration: BoxDecoration(
+//                                                   // border: Border.all(color: grade.color, width: 2),
+//                                                   border: grade.border,
+//                                                   borderRadius: BorderRadius.circular(8),
+//                                                   // color: Colors.black.withOpacity(0.1),
+//                                                   color: grade.color2.withOpacity(0.05),
+//                                                 ),
+//                                                 child: Row(
+//                                                     children: [
+//                                                       Icon(Icons.school_outlined, color: grade.color),
+//                                                       SizedBox(width: 8),
+//                                                       Text(
+//                                                         grade.letter,
+//                                                         style:
+//                                                         TextStyle(
+//                                                           fontWeight: FontWeight.bold,
+//                                                           color: grade.color,
+//                                                           fontSize: 13,
+//                                                         ),
+//
+//                                                       ),
+//                                                       SizedBox(width: 7),
+//                                                       Column(
+//                                                           children : [
+//                                                             SizedBox(height: 12,),
+//                                                             Text(
+//                                                               gradeValue.toStringAsFixed(2),
+//                                                               style: TextStyle(
+//                                                                 fontWeight: FontWeight.bold,
+//                                                                 color: grade.color,
+//                                                                 fontSize: 8,
+//                                                               ),
+//                                                             ),
+//                                                           ]),
+//                                                     ]
+//                                                 ),
+//                                               );
+//                                           }
+//                                         },
+//                                       ),
+//                                     ],
+//                                   )
+//                                 ],
+//                               ),
+//                               onTap: () {
+//                                 HapticFeedback.lightImpact();
+//                                 _showAcceptDeclineDialog(context, nickname, doc.id);
+//                               },
+//                               trailing: isDeleteMode ? IconButton(
+//                                 icon: Icon(Icons.close, color: Colors.black),
+//                                 onPressed: () {
+//                                   HapticFeedback.lightImpact();
+//                                   _deleteNotification(doc.id);
+//                                   _deleteChatActions(doc.id);
+//                                 },
+//                               ) : null,
+//                             );
 //                           },
-//                           onChanged: (value){
-//                             setState(() {
-//                               _isNicknameAvailable = false;
-//                               _buttonText = '중복확인';
-//                               _buttonColor = Colors.white70;
-//                             });
-//                           },
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   Container(
-//                     padding: const EdgeInsets.fromLTRB(1, 1, 10, 25), // 다른 에뮬레이터(기기)에 사용했을때 위치 변하면 수정 필요
-//                     child: ElevatedButton(
-//                       style: ButtonStyle(
-//                         alignment: Alignment.center,
-//                         backgroundColor: MaterialStateProperty.all(_buttonColor),
-//                       ),
-//                       child: Text(
-//                         _buttonText,
-//                         textAlign: TextAlign.center,
-//                         style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-//                       ),
-//                       onPressed: _checkNicknameAvailabilityAndValidate,
+//                           separatorBuilder: (context, index) => Divider(),
+//                         );
+//                       },
 //                     ),
 //                   ),
 //                 ],
 //               ),
-//
-//
-//
-//               SizedBox(height: 30),
-//
-//               Container(
-//                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-//                 child: Row(
-//                   children: <Widget>[
-//                     Expanded(
-//                       child: TextFormField(
-//                         focusNode: _emailFocusNode,
-//                         decoration: InputDecoration(
-//                           labelText: '이메일',
-//                           border: OutlineInputBorder(),
-//                           enabled: _isNicknameAvailable,
-//                           focusedBorder: OutlineInputBorder(
-//                             borderSide: BorderSide(
-//                               color: Colors.indigo,
-//                             ),
-//                           ),
-//                           errorText: _userEmailErrorText,
-//                         ),
-//                         controller: _emailUserController,
-//                       ),
-//                     ),
-//
-//                     SizedBox(width: 10),
-//                     Text('@'),
-//                     SizedBox(width: 10),
-//
-//                     GestureDetector(
-//                       onTap: () async {
-//                         String? newValue = await showDialog<String>(
-//                           context: context,
-//                           builder: (BuildContext context) {
-//                             return SimpleDialog(
-//                               title: Text('본인 학교 웹메일을 선택해주세요.'),
-//                               children: <String>[
-//                                 //학교 웹메일 넣기
-//                                 '학교 메일 선택',
-//                                 'naver.com',
-//                                 'edu.hanbat.ac.kr',
-//                                 'yahoo.com',
-//                                 'aaa.com',
-//                                 // Add more domains here
-//                               ]
-//                                   .map((String domain) => SimpleDialogOption(
-//                                 child: Text(domain),
-//                                 onPressed: () {
-//                                   Navigator.pop(context, domain);
-//                                 },
-//                               ))
-//                                   .toList(),
-//                             );
-//                           },
-//                         );
-//
-//                         if (newValue != null) {
-//                           setState(() {
-//                             _dropdownValue = newValue;
-//                           });
-//                         }
-//                       },
-//
-//                       child: Container(
-//                         padding: EdgeInsets.symmetric(horizontal: 40, vertical: 19),
-//                         decoration: BoxDecoration(
-//                           border: Border.all(color: Colors.grey),
-//                           borderRadius: BorderRadius.circular(5),
-//                         ),
-//                         child: Text(_dropdownValue ??'학교 메일 선택'),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//
-//               SizedBox(height: 30),
-//
-//               Container(
-//                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-//                 child: TextFormField(
-//                   // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
-//                   controller: _passwordController,
-//                   focusNode: _passwordFocusNode,
-//                   style: TextStyle(
-//                     color: Colors.black,
-//                   ),
-//                   cursorColor: Colors.indigo,
-//                   cursorWidth: 3,
-//                   showCursor: true,
-//                   enabled: _isNicknameAvailable,
-//                   decoration: InputDecoration(
-//                     labelText: '비밀번호',
-//                     labelStyle: TextStyle(color: Colors.black54),
-//                     border: OutlineInputBorder(),
-//                     focusedBorder: OutlineInputBorder(
-//                       borderSide: BorderSide(
-//                         color: Colors.indigo,
-//                       ),
-//                     ),
-//                     errorText: _userpasswordErrorText,
-//                   ),
-//
-//                   validator: (value) {
-//                     String pattern = r'^[[A-Za-z\d@$!%*#?&_-]{8,16}$`';
-//                     RegExp regex = new RegExp(pattern);
-//                     if (value == null || value.trim().isEmpty) {
-//                       return '비밀번호를 입력해주세요.';
-//                     } else if (!regex.hasMatch(value)) {
-//                       return '비밀번호는 5~18자의 영문 소문자, 숫자, 특수기호(_)만 사용 가능합니다.';
-//                     }
-//                     return null;
-//                   },
-//                   textInputAction: TextInputAction.next, // 'next' 버튼을 표시
-//                   onFieldSubmitted: (value) { // 'next' 버튼이 클릭되면
-//                     FocusScope.of(context).requestFocus(_confirmPasswordFocusNode); // 비밀번호 확인 필드로 포커스 이동
-//                   },
-//                 ),
-//               ),
-//
-//               SizedBox(height: 30),
-//
-//               Container(
-//                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 1),
-//                 child: TextFormField(
-//                   // obscureText: true, 비밀번호 별표표시 - 현재는 테스트로 비활성화
-//                     controller: _confirmPasswordController,
-//                     focusNode: _confirmPasswordFocusNode,
-//                     style: TextStyle(
-//                       color: Colors.black,
-//                     ),
-//                     cursorColor: Colors.indigo,
-//                     cursorWidth: 3,
-//                     showCursor: true,
-//                     enabled: _isNicknameAvailable,
-//                     decoration: InputDecoration(
-//                       labelText: '비밀번호 확인',
-//                       labelStyle: TextStyle(color: Colors.black54),
-//                       border: OutlineInputBorder(),
-//                       focusedBorder: OutlineInputBorder(
-//                         borderSide: BorderSide(
-//                           color: Colors.indigo,
-//                         ),
-//                       ),
-//                       errorText: _confirmPasswordErrorText,
-//                     ),
-//
-//                     validator: (value) {
-//                       if (value == null || value.trim().isEmpty) {
-//                         return '비밀번호를 다시 확인해주세요.';
-//                       } else if (value != _passwordController.text) {
-//                         return '비밀번호가 일치하지 않습니다.';
-//                       }
-//                       return '비밀번호가 일치합니다.';
-//                     },
-//                     textInputAction: TextInputAction.next, // 'next' 버튼을 표시
-//                     onFieldSubmitted: (value){
-//                       FocusScope.of(context).requestFocus(_buttonFocusNode);
-//                     }
-//                 ),
-//
-//               ),
-//
-//               SizedBox(height: 30),
-//
-//             ],
-//           ),
-//         ),
-//       ),
-//       bottomNavigationBar: BottomAppBar(
-//         child: Container(
-//           margin: EdgeInsets.all(16.0),
-//           decoration: BoxDecoration(
-//             color: Colors.indigo[300],
-//             borderRadius: BorderRadius.circular(10.0),
-//           ),
-//           child: ElevatedButton(
-//             onPressed: () async {
-//               if (_validateFields()) {
-//                 bool emailAvailable = await _checkEmailAvailability();
-//                 if (!emailAvailable) return;
-//
-//                 final rootContext = context;
-//                 showDialog(
-//                   context: context,
-//                   builder: (context) => AlertDialog(
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(20),
-//                     ), // 모서리를 둥글게 처리
-//                     title: Text(
-//                       '회원가입 완료',
-//                       textAlign: TextAlign.center,
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: Colors.indigo,
-//                       ),
-//                     ),
-//                     content: Text(
-//                       '회원가입을 완료 하시겠습니까?',
-//                       textAlign: TextAlign.center,
-//                       style: TextStyle(
-//                         fontSize: 16,
-//                         color: Colors.black87,
-//                       ),
-//                     ),
-//                     actions: [
-//                       Column(
-//                         children:[
-//                           Center(
-//                             child: Lottie.asset(
-//                               'assets/lottie/Animation.json',
-//                               fit: BoxFit.contain,
-//                               width: 200,
-//                               height: 200,
-//                             ),
-//                           ),],),
-//                       Row(
-//                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//               if (_isAccepting)
+//                 Positioned.fill(
+//                   child: Container(
+//                     color: Colors.grey.withOpacity(0.5),
+//                     child: Center(
+//                       child: Stack(
+//                         alignment: Alignment.center,
 //                         children: [
-//                           ElevatedButton(
-//                             child: Text('확인', style: TextStyle(fontWeight: FontWeight.bold),),
-//                             style: ElevatedButton.styleFrom(
-//                               primary: Colors.indigo[300], // 버튼 색상 설정
-//                               onPrimary: Colors.white, // 텍스트 색상 설정
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(10),
-//                               ),
-//                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-//                             ),
-//                             onPressed: () async {
-//                               Navigator.of(context).pop(); // 다이어로그 닫기
-//
-//                               String nickname = _nicknameController.text;
-//                               String password = _passwordController.text;
-//                               String email = _emailUserController.text + "@" + _dropdownValue!;
-//                               try {
-//                                 await FirebaseAuth.instance.createUserWithEmailAndPassword(
-//                                   email: email,
-//                                   password: password,
-//                                 );
-//                                 DateTime now = DateTime.now();
-//                                 String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-//
-//                                 User? currentUser = FirebaseAuth.instance.currentUser;
-//                                 String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기
-//
-//                                 final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-//                                 await usersCollection.doc(nickname).set({
-//                                   'uid': userUid,
-//                                   'nickname': nickname,
-//                                   'email': email,
-//                                   'joined_date': formattedDate,
-//                                 });
-//                                 // await getTokenAndSave();
-//
-//                                 // 스낵바로 알림
-//                                 ScaffoldMessenger.of(rootContext).showSnackBar(
-//                                   SnackBar(
-//                                     content: Text(
-//                                       '회원가입이 완료되었습니다.',
-//                                       textAlign: TextAlign.center,
-//                                     ),
-//                                   ),
-//                                 );
-//
-//                                 // BoardPage로 이동
-//                                 Navigator.pushReplacement(
-//                                   rootContext,
-//                                   MaterialPageRoute(builder: (context) => LoginScreen()),
-//                                 );
-//                               } catch (e) {
-//                                 print("회원가입 실패: $e");
-//                               }
-//                             },
+//                           Lottie.asset(
+//                             'assets/lottie/congratulation.json',
+//                             width: double.infinity,
+//                             height: double.infinity,
+//                             fit: BoxFit.contain,
 //                           ),
-//                           ElevatedButton(
-//                             child: Text('취소', style: TextStyle(fontWeight: FontWeight.bold),),
-//                             style: ElevatedButton.styleFrom(
-//                               primary: Colors.grey, // 버튼 색상 설정
-//                               onPrimary: Colors.white, // 텍스트 색상 설정
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(10),
-//                               ),
-//                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-//                             ),
-//                             onPressed: () {
-//                               Navigator.of(context).pop();
-//                             },
+//                           Lottie.asset(
+//                             'assets/lottie/clapCute.json',
+//                             width: 300,
+//                             height: 300,
+//                             fit: BoxFit.contain,
 //                           ),
 //                         ],
 //                       ),
-//                     ],
+//                     ),
 //                   ),
-//                 );
-//
-//               }
-//             },
-//
-//             child: Text(
-//               '회원가입',
-//               style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-//             ),
-//             style: ElevatedButton.styleFrom(
-//               primary: Colors.transparent,
-//               shadowColor: Colors.transparent,
-//             ),
+//                 ),
+//             ],
 //           ),
 //         ),
 //       ),
 //     );
 //   }
 //
-//   //위치 변경 조정
-//   // 회원가입 로직을 처리하는 메서드 내에서 이메일 검증 후 navigateToBoard를 호출
-//   void createAccountAndNavigate() {
-//     String email = '${_emailUserController.text}@$_dropdownValue';
-//     // 회원가입 로직...
-//     // 성공적으로 회원가입이 되면, NavigateToBoard의 navigate 메소드를 호출
-//     NavigateToBoard(context).navigate(email);
-//   }
-//
-//
-//   void _checkNicknameAvailability() async {
-//     final nickname = _nicknameController.text.trim();
-//
-//     try {
-//       // Firestore에서 같은 닉네임이 있는지 확인
-//       final snapshot = await FirebaseFirestore.instance
-//           .collection('users')
-//           .doc(nickname)
-//           .get();
-//
-//       // 중복된 이름
-//       if (snapshot.exists && snapshot.data()?['nickname'] == nickname) {
-//         setState(() {
-//           _buttonText = '중복확인';
-//           _buttonColor = Colors.red;
-//           _isNicknameAvailable = false;
-//         });
-//         showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return AlertDialog(
-//               shape: RoundedRectangleBorder(
-//                 borderRadius: BorderRadius.circular(20.0),
-//               ),
-//               title: Center(
-//                 child: Row(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     Icon(Icons.notification_important, color: Colors.indigo),
-//                     SizedBox(width: 8),
-//                     Text(
-//                       '알림',
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: Colors.indigo,
-//                       ),
-//                     ),
-//                     SizedBox(width: 8),
-//                   ],
-//                 ),
-//               ),
-//               content: Text(
-//                 "'" + nickname + "' " +'은 다른 사용자가 사용하고 있는 이름입니다. \n\n 다른 닉네임을 사용해 주시길 바랍니다.',
-//                 style: TextStyle(
-//                   fontSize: 16,
-//                   color: Colors.black87,
-//                 ),
-//               ),
-//               actions: [
-//                 ElevatedButton(
-//                     onPressed: () {
-//                       _nicknameController.clear();
-//                       Navigator.of(context).pop();
-//                     },
-//                     child: Text('취소'),
-//                     style: ElevatedButton.styleFrom(
-//                       backgroundColor: Colors.indigo[300],
-//                     )
-//                 ),
-//               ],
-//             );
-//           },
-//         );
-//
-//       } else {
-//         // 사용 가능한 이름
-//         setState(() {
-//           _buttonText = '사용가능';
-//           _buttonColor = Colors.indigo[200] ?? Colors.indigoAccent;
-//           _isNicknameAvailable = true;
-//         });
-//
-//         showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return AlertDialog(
-//               shape: RoundedRectangleBorder(
-//                 borderRadius: BorderRadius.circular(20.0),
-//               ),
-//               title: Center(
-//                 child: Row(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     Icon(Icons.notification_important, color: Colors.indigo),
-//                     SizedBox(width: 8),
-//                     Text(
-//                       '알림',
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: Colors.indigo,
-//                       ),
-//                     ),
-//                     SizedBox(width: 8),
-//                   ],
-//                 ),
-//               ),
-//               content: Text(
-//                 "'" + nickname + "' 은 사용 가능한 이름입니다.\n\n 이 닉네임을 사용하시겠습니까?",
-//                 style: TextStyle(
-//                   fontSize: 16,
-//                   color: Colors.black87,
-//                 ),
-//               ),
-//               actions: [
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     // 사용자가 입력한 닉네임을 TextFormField에 넣어주기
-//                     _nicknameController.text = nickname;
-//                     Navigator.of(context).pop();
-//                   },
-//                   child: Text('확인'),
-//                   style: TextButton.styleFrom(
-//                     backgroundColor: Colors.indigo[300],
-//                     primary: Colors.white,
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(10.0),
-//                     ),
-//                     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-//                   ),
-//                 ),
-//               ],
-//             );
-//           },
-//         );
-//
-//       }
-//     } catch (e) {
-//       print('닉네임 확인 오류: $e');
+//   // 시간을 '분 전' 형식으로 변환하는 함수
+//   String getTimeAgo(DateTime dateTime) {
+//     final Duration difference = DateTime.now().difference(dateTime);
+//     if (difference.inMinutes <= 1){
+//       return '방금 전';
+//     }
+//     if ( 1 < difference.inMinutes  && difference.inMinutes < 60) {
+//       return '${difference.inMinutes}분 전';
+//     } else if (difference.inHours < 24) {
+//       return '${difference.inHours}시간 전';
+//     } else {
+//       return '${difference.inDays}일 전';
 //     }
 //   }
 //
 //
+//   // 수락시 게시글 삭제
+//   Future<void> _deletePost(String docId) async{
+//     DocumentSnapshot postId = await FirebaseFirestore.instance
+//         .collection('helpActions')
+//         .doc(docId)
+//         .get();
+//
+//     String deletePostId = postId.get('post_id');
+//
+//     FirebaseFirestore.instance
+//         .collection('naver_posts')
+//         .doc(deletePostId)
+//         .delete()
+//         .then((_) => print("Document successfully deleted"))
+//         .catchError((error) => print("Failed to delete document: $error"));
+//   }
+//
+//   // 알림을 삭제하는 함수
+//   void _deleteNotification(String docId) {
+//     FirebaseFirestore.instance
+//         .collection('helpActions')
+//         .doc(docId)
+//         .delete()
+//         .then((_) => print("Document successfully deleted"))
+//         .catchError((error) => print("Failed to delete document: $error"));
+//
+//   }
 //
 //
+//   //채팅 정보 삭제
+//   void _deleteChatActions(String docId) {
+//     FirebaseFirestore.instance
+//         .collection('ChatActions')
+//         .doc(docId)
+//         .delete()
+//         .then((_) => print("Document successfully deleted"))
+//         .catchError((error) => print("Failed to delete document: $error"));
+//   }
+//
+//   void _deletePayments(String docId) {
+//     FirebaseFirestore.instance
+//         .collection('Payments')
+//         .doc(docId)
+//         .delete()
+//         .then((_) => print("Document successfully deleted"))
+//         .catchError((error) => print("Failed to delete document: $error"));
+//   }
+//
+//
+//   Color _getColorFromName(String name) {
+//     final int nameLength = name.length;
+//     final List<Color> colors = [
+//       Color(0xFF80B3FF),    // 보라색
+//       // Color(0xFF9EDDFF),
+//       Color(0xFF687EFF),    // 파란색
+//       Color(0xFFFF8B13),    // 오렌지색
+//     ];
+//
+//     return colors[(nameLength ) % colors.length];
+//   }
+//
+//   //수락 또는 거절 버튼 구현
+//   void _showAcceptDeclineDialog(BuildContext context, String nickname, String documentId) {
+//     final rootContext = context;
+//     showDialog(
+//       context: context,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           shape: RoundedRectangleBorder( // 대화 상자의 모서리를 둥글게 합니다.
+//             borderRadius: BorderRadius.circular(15.0),
+//           ),
+//           title: Text(
+//             '알림',
+//             textAlign: TextAlign.center,
+//             style:
+//             TextStyle(
+//               fontFamily: 'NanumSquareRound',
+//               fontWeight: FontWeight.w800,
+//               fontSize: 25,
+//             ),
+//           ),
+//           content: Text(
+//             '\'$nickname\' 님의 도와주기 요청을 수락하시겠습니까?',
+//             style:
+//             TextStyle(
+//               fontFamily: 'NanumSquareRound',
+//               fontWeight: FontWeight.w600,
+//               fontSize: 16,
+//             ),
+//           ),
+//           actions: <Widget>[
+//             ElevatedButton(
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.indigo[400],
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
+//                 ),
+//               ),
+//               child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+//               onPressed: () async {
+//                 DateTime now = DateTime.now();
+//
+//                 HapticFeedback.lightImpact();
+//                 await _HelperCount(documentId);
+//                 await _updateTime(documentId, now);
+//                 await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
+//
+//                 // await _deletePost(documentId); // 수락시 게시글 삭제
+//                 _deleteNotification(documentId); // 수락시 알림 내용 삭제
+//
+//
+//                 Navigator.of(context).pop();
+//
+//
+//                 Future.delayed(Duration(milliseconds: 100), () async {
+//                   //congratulation 애니메이션
+//                   setState(() {
+//                     _isAccepting = true;
+//                   });
+//
+//                   await Future.delayed(Duration(milliseconds: 1800), () {
+//                     setState(() {
+//                       _isAccepting = false;
+//                     });
+//                   });
+//
+//                   // ScaffoldMessenger 호출을 여기서 안전하게 실행
+//                   WidgetsBinding.instance?.addPostFrameCallback((_) {
+//                     if (mounted) {
+//                       ScaffoldMessenger.of(rootContext).showSnackBar(
+//                         SnackBar(
+//                           content: Text(
+//                             '해당 요청이 수락되었습니다.',
+//                             textAlign: TextAlign.center,
+//                           ),
+//                           duration: Duration(seconds: 1),
+//                         ),
+//                       );
+//                     }
+//                   });
+//
+//                   Navigator.pushReplacement(
+//                     rootContext,
+//                     MaterialPageRoute(builder: (context) => AllUsersScreen()), // 로그인 화면으로 이동
+//                   );
+//                 });
+//
+//               },
+//             ),
+//             ElevatedButton(
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.grey,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
+//                 ),
+//               ),
+//               child: Text('거절',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+//               onPressed: () {
+//                 HapticFeedback.lightImpact();
+//                 Navigator.of(context).pop(); // 대화 상자 닫기
+//                 _deleteNotification(documentId); // 거절시 알림 내용 삭제
+//                 _deleteChatActions(documentId); // 거절시 채팅 정보 삭제
+//                 _deletePayments(documentId); //거절시 페이 정보 삭제
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(
+//                     content: Text(
+//                       "해당 요청이 거절되었습니다.", textAlign: TextAlign.center,),
+//                     duration: Duration(seconds: 1),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+//
+//   // 수락시 상대방 및 본인 도와주기 횟수 카운트!
+//   Future<void> _HelperCount(String docId) async{
+//     try {
+//       DocumentSnapshot postId = await FirebaseFirestore.instance
+//           .collection('helpActions')
+//           .doc(docId)
+//           .get();
+//
+//       if (!postId.exists) {
+//         print("Document does not exist.");
+//         return;
+//       }
+//
+//       String helper_email = postId.get('helper_email');
+//       String owner_email = postId.get('owner_email');
+//
+//       String helper_nickname = postId.get('helper_email_nickname');
+//       String owner_nickname = postId.get('owner_email_nickname');
+//
+//       String helperDomain = _extractDomain(helper_email);
+//       String ownerDomain = _extractDomain(owner_email);
+//
+//
+//       // // // 도메인별로 점수 증가
+//       await _updateIndividualCount(helper_nickname, helperDomain);
+//
+//       await _updateIndividualCount(owner_nickname, ownerDomain);
+//
+//
+//
+//     } catch (e) {
+//       print("Error in _HelperCount: $e");
+//     }
+//   }
+//
+//   // 도메인 추출
+//   String _extractDomain(String email)  {
+//     return email.split('@').last;
+//   }
+//
+//   // 도메인 별로 카운트
+//   Future<void> _updateIndividualCount(String nickname, String domain) async {
+//     try {
+//       DocumentReference schoolRef = FirebaseFirestore.instance
+//           .collection('schoolScores')
+//           .doc(domain);
+//
+//       DocumentSnapshot schoolSnapshot = await schoolRef.get();
+//
+//       if (!schoolSnapshot.exists) {
+//         // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
+//         await schoolRef.set({nickname: 1});
+//       } else {
+//         // 문서가 존재하면 해당 이메일의 값을 업데이트
+//         int currentCount = (schoolSnapshot.data() as Map<String, dynamic>)[nickname] ?? 0;
+//         await schoolRef.update({nickname: currentCount + 1});
+//       }
+//     } catch (e) {
+//       print("Error in _updateIndividualCount: $e");
+//     }
+//   }
+//
+//
+//   //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
+//   Future<String> getGradeByNickname(String helperEmailNickname) async{
+//     final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+//
+//     DocumentSnapshot documentSnapshot = await usersCollection.doc(helperEmailNickname).get();
+//
+//     if(documentSnapshot.exists){
+//       Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+//       return data['grade'].toString();
+//     }
+//     else {
+//       return '정보 없음';
+//     }
+//   }
+//
+//   //채팅방 생성 수락시
+//   Future<void> _updateTime(String documentId, DateTime newtime) async {
+//     await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+//         .update({'timestamp': newtime});
+//   }
+//
+//
+// // response에 업데이트 추가
+//   Future<void> _respondToActions(String documentId, String response) async {
+//     await Future.wait([
+//       FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+//           .update({'response': response}),
+//       FirebaseFirestore.instance.collection('helpActions').doc(documentId)
+//           .update({'response': response}),
+//       FirebaseFirestore.instance.collection('Payments').doc(documentId)
+//           .update({'response': response}),
+//     ]);
+//   }
 //
 // }

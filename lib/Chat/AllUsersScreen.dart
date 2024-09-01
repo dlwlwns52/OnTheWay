@@ -1,7 +1,4 @@
 
-//이 코드는 Flutter 애플리케이션에서 모든 사용자 목록을 표시하고 해당 사용자를 선택하여
-//채팅 화면으로 이동할 수 있는 화면을 구현한 것입니다.
-
 import 'dart:async';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,6 +10,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
@@ -20,6 +18,7 @@ import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/SchoolRanking.dart';
 import 'ChatScreen.dart';
+import 'FullScreenImage.dart';
 
 
 class AllUsersScreen extends StatefulWidget {
@@ -43,6 +42,11 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
 
 
+  //닉네임 가져오기
+  late Future<String?> _nickname;
+
+
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +55,10 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
+
+    //닉네임 가져옴
+    _nickname = getNickname();
+
   }
 
 
@@ -61,6 +69,36 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     super.dispose();
   }
 
+
+  //앱바 알림기능
+  //userStatus에서 본인 nickname 찾기
+  Future<String?> getNickname() async {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: botton_email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty){
+      return querySnapshot.docs.first['nickname'];
+    }
+    return null;
+  }
+
+  // Firestore에서 messageCount 값을 실시간으로 가져오는 메서드
+  Stream<DocumentSnapshot> getMessageCountStream(String nickname) {
+    return FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(nickname)
+        .snapshots();
+  }
+
+  //userStatus messageCount 값 초기화
+  Future<void> resetMessageCount(String nickname) async {
+    DocumentReference docRef = FirebaseFirestore.instance.collection('userStatus').doc(nickname);
+
+    await docRef.set({'messageCount': 0}, SetOptions(merge: true));
+
+  }
 
   // 이 함수는 현재 로그인한 사용자의 채팅방 목록을 가져오고, 각 채팅방의 최신 메시지 시간에 따라 목록을 정렬합니다.
   Future<void> _fetchChatActions() async {
@@ -126,6 +164,27 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
       },
     );
   }
+
+  //포르필 사진 기능
+  Future<String?> _getProfileImage(String email) async{
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    QuerySnapshot nicknameSnapshot = await db
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if(nicknameSnapshot.docs.isNotEmpty){
+      DocumentSnapshot document = nicknameSnapshot.docs.first;
+      String? profilePhotoURL = document.get('profilePhotoURL');
+      return profilePhotoURL;
+    }
+
+    else {
+      print("해당 이메일을 가진 사용자가 없습니다.");
+      return null;
+    }
+  }
+
 
 
   //마지막 메시지 보낸 시간 확인
@@ -375,6 +434,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
   }
 
 
+
 // owner 채팅방 나가기 dialog
   void ownerShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
     showDialog(
@@ -423,7 +483,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                 HapticFeedback.lightImpact();
                 ownerDeleteChatRoom(documentId, ownerNickname);
                 deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
-                Navigator.of(context).pop();
+              Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -456,7 +516,127 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     );
   }
 
+  void showNicknameConfirmationDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname, bool isHelper) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 35),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '채팅방 나가기',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Color(0xFF1D1D1D),
+                      ),
 
+                    ),
+                    SizedBox(height: 13),
+                    Text(
+                      '⚠️ 대화내용 및 채팅 목록이 모두 삭제됩니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 14,
+                        height: 1.5,
+                        letterSpacing: -0.2,
+                        color: Color(0xFF555555),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 30),
+              Divider(color: Colors.grey, height: 1),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF636666),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 0.5, // 구분선의 두께
+                    height: 60, // 구분선의 높이
+                    color: Colors.grey, // 구분선의 색상
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: ()  {
+                        // '나가기' 버튼을 눌렀을 때의 로직 구현
+                        HapticFeedback.lightImpact();
+                        if (isHelper) {
+                          helperDeleteChatRoom(documentId, helperNickname);
+                        } else {
+                          ownerDeleteChatRoom(documentId, ownerNickname);
+                        }
+                        deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "채팅방이 삭제되었습니다.",
+                              textAlign: TextAlign.center,
+                            ),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '나가기',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF1D4786),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
   //바텀바 구조
   Widget _buildBottomNavItem({
     required String iconPath,
@@ -492,42 +672,141 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     );
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            appBar: PreferredSize(
-              preferredSize: Size.fromHeight(kToolbarHeight),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+        child: AppBar(
+          title: Text(
+            '채팅',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontWeight: FontWeight.w600,
+              fontSize: 19,
+              height: 1.0,
+              // letterSpacing: -0.5,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Color(0xFF1D4786),
+          elevation: 0,
+          leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+          actions: [
+            Container(
+              margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
               child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Lottie.asset(
-                      'assets/lottie/blue2.json',
-                      fit: BoxFit.fill,
-                    ),
+                alignment: Alignment.topRight,
+                children: <Widget>[
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                        return IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/pigma/notification_white.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                  textAlign: TextAlign.center,
+                                ),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                        );
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/pigma/notification_white.svg',
+                          width: 25,
+                          height: 25,
+                        ),
+                        onPressed: () async {
+                          HapticFeedback.lightImpact();
+                          await resetMessageCount(ownerNickname);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AlarmUi(),
+                              //   builder: (context) => Design(),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
-                  AppBar(
-                    automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
-                    backgroundColor: Colors.transparent,
-                    elevation: 4,
-                    shadowColor: Colors.black.withOpacity(0.5),
-                    title: Text("채팅",
-                      style:
-                      TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 28,
-                      ),
-                    ),
-                    actions: <Widget>[
-                    ],
-                    centerTitle: true,
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                        return Container();
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return StreamBuilder<DocumentSnapshot>(
+                        stream: getMessageCountStream(ownerNickname),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return Container();
+                          }
+                          var data = snapshot.data!.data() as Map<String, dynamic>;
+                          int messageCount = data['messageCount'] ?? 0;
+
+                          return Positioned(
+                            right: 9,
+                            top: 9,
+                            child: messageCount > 0
+                                ? Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 14,
+                                minHeight: 14,
+                              ),
+                              child: Text(
+                                '$messageCount',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                                : Container(),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
 
             body: acceptedChatActions != null
                 ? Container(
+              padding: EdgeInsets.only(top: 10.0),
               child: ListView.builder(
                 itemCount: acceptedChatActions.length,
                 itemBuilder: ((context, index) {
@@ -583,149 +862,270 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                   }
 
                   return Column(
-                    children: [
-                      if (userData['helper_email'] == currentUserEmail) // 조건부로 위젯 생성
-                        Dismissible(
-                            key: Key(doc.id),
-                            confirmDismiss: (direction) async {
-                              // 스와이프 후 삭제 확인 대화상자 표시
-                              helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                            },
-                            background: Container(
-                              color: Colors.red,
-                              child: Align(
-                                alignment: Alignment.center, // 왼쪽 정렬
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
-                                  children: <Widget>[
-                                    Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
-                                    Text(
-                                      ' 삭제', // 텍스트
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            child: InkWell(
-                              onLongPress: () {
-                                HapticFeedback.heavyImpact();
-                                helperShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                              },
-                          onTap: (() {
-                            HapticFeedback.lightImpact();
-                            String helper_receiver = userData['helper_email_nickname'];
-                            FirebaseFirestore.instance
-                                .collection('ChatActions')
-                                .doc(doc.id)
-                                .update({'messageCount_$helper_receiver': 0});
+                   children: [
 
-                            Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
-                                      senderName: userData['helper_email_nickname'],
-                                      receiverName : userData['owner_email_nickname'],
-                                      receiverUid: userData['ownerUid'],
-                                      documentName : doc.id,
-                                    )));
-                          }),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: <Widget>[
-                                ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    backgroundImage: userData['photoUrl'] is String
-                                        ? NetworkImage(userData['photoUrl'])
-                                        : AssetImage('assets/ava.png') as ImageProvider<Object>,
-                                    radius: 30,
-                                  ),
-                                  title: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        userData['owner_email_nickname'],
-                                        style: TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        "$lastMessage",
-                                        style: TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 10,
-                                  child: Text(
-                                    '$timeAgo',
-                                    style: TextStyle(
-                                      color: Colors.grey[800],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                                // 메시지 카운트를 표시하는 배지 추가
-                                if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
-                                  Positioned(
-                                    top: 25,
-                                    right: 20,
-                                    child: Container(
-                                      padding: EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.redAccent, // 배지의 배경 색상
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        messageCount.toString(),
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        )
-                      )
-                      else if (userData['owner_email'] == currentUserEmail)
+                     if (userData['helper_email'] == currentUserEmail) ...[
+                       Dismissible(
+                         key: Key(doc.id),
+                         confirmDismiss: (direction) async {
+                           // 스와이프 후 삭제 확인 대화상자 표시
+                           showNicknameConfirmationDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname'], true);
+                         },
+                         background: Container(
+                           color: Colors.red,
+                           child: Align(
+                             alignment: Alignment.center, // 왼쪽 정렬
+                             child: Row(
+                               mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 Row 크기 조절
+                               children: <Widget>[
+                                 Icon(Icons.delete, color: Colors.white, size: 50), // 아이콘
+                                 Text(
+                                   ' 삭제', // 텍스트
+                                   style: TextStyle(
+                                     color: Colors.white,
+                                     fontWeight: FontWeight.bold,
+                                     fontSize: 20,
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ),
+                         ),
+                         child: FutureBuilder<String?>(
+                           future:  _getProfileImage(userData['owner_email']),
+                           builder: (context, snapshot) {
+                             if (snapshot.connectionState == ConnectionState.waiting) {
+                               return SizedBox.shrink(); // 아무것도 표시하지 않음
+                             }
+                             if (snapshot.hasError) {
+                               return Text('Error: ${snapshot.error}'); // 오류 발생 시 표시할 위젯
+                             }
+                             if (!snapshot.hasData || snapshot.data == null) {
+                               return Text('No data available'); // 데이터가 없을 때 표시할 위젯
+                             }
+
+                             String? profileImageUrl = snapshot.data;
+
+                             return GestureDetector(
+                               onTap: () {
+                                 HapticFeedback.lightImpact();
+                                 String helper_receiver = userData['helper_email_nickname'];
+                                 FirebaseFirestore.instance
+                                     .collection('ChatActions')
+                                     .doc(doc.id)
+                                     .update({'messageCount_$helper_receiver': 0});
+
+                                 Navigator.push(
+                                     context,
+                                     new MaterialPageRoute(
+                                         builder: (context) => ChatScreen(
+                                           senderName: userData['helper_email_nickname'],
+                                           receiverName : userData['owner_email_nickname'],
+                                           receiverUid: userData['ownerUid'],
+                                           documentName : doc.id,
+                                           photoUrl : profileImageUrl,
+                                         ))
+                                 );
+                               },
+                               onLongPress: (){
+                                 HapticFeedback.heavyImpact();
+                                 showNicknameConfirmationDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname'], true);
+                               },
+                               child:
+                               Container(
+                                 margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                                 child: Column(
+                                   mainAxisAlignment: MainAxisAlignment.start,
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: [
+                                     Container(
+                                       padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                       decoration: BoxDecoration(
+                                         border: Border(
+                                           bottom: BorderSide(
+                                             color: Color(0xFFE3E3E3),
+                                             width: 1,
+                                           ),
+                                         ),
+                                       ),
+                                       child: Row(
+                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           Row(
+                                             mainAxisAlignment: MainAxisAlignment.start,
+                                             crossAxisAlignment: CrossAxisAlignment.start,
+                                             children: [
+                                               GestureDetector(
+                                                 onTap: () {
+                                                   HapticFeedback.lightImpact();
+                                                   if (profileImageUrl!.isNotEmpty) {
+                                                     Navigator.push(
+                                                       context,
+                                                       MaterialPageRoute(
+                                                         builder: (context) => FullScreenImage(photoUrl: profileImageUrl),
+                                                       ),
+                                                     );
+                                                   } else {
+                                                     ScaffoldMessenger.of(context).showSnackBar(
+                                                       SnackBar(
+                                                         content: Text(
+                                                           '기본 프로필 사진입니다.',
+                                                           textAlign: TextAlign.center,
+                                                         ),
+                                                         duration: Duration(seconds: 2),
+                                                       ),
+                                                     );
+                                                   }
+                                                 },
+                                                 child: Container(
+                                                   margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                                   child: Container(
+                                                     decoration: BoxDecoration(
+                                                       shape: BoxShape.circle,
+                                                       gradient: LinearGradient(
+                                                         colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                                                         begin: Alignment.topLeft,
+                                                         end: Alignment.bottomRight,
+                                                       ),
+                                                       boxShadow: [
+                                                         (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                                             ? BoxShadow(
+                                                           color: Colors.black.withOpacity(0.1),
+                                                           spreadRadius: 1,
+                                                           blurRadius: 1,
+                                                           offset: Offset(0, 1), // 그림자 위치 조정
+                                                         )
+                                                             : BoxShadow(),
+                                                       ],
+                                                     ),
+                                                     child: CircleAvatar(
+                                                       radius: 25,
+                                                       backgroundColor: Colors.grey[200],
+                                                       child: (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                                           ? null
+                                                           : Icon(
+                                                         Icons.account_circle,
+                                                         size: 50, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                                                         color: Color(0xFF1D4786),
+                                                       ),
+                                                       backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
+                                                           ? NetworkImage(profileImageUrl)
+                                                           : null,
+                                                     ),
+                                                   ),
+                                                 ),
+                                               ),
+                                               Container(
+                                                 margin: EdgeInsets.fromLTRB(4, 10, 0, 10),
+                                                 child: Column(
+                                                   mainAxisAlignment: MainAxisAlignment.start,
+                                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                                   children: [
+                                                     Text(
+                                                       userData['owner_email_nickname'],
+                                                       style: TextStyle(
+                                                         fontFamily: 'Pretendard',
+                                                         fontWeight: FontWeight.w600,
+                                                         fontSize: 17,
+                                                         height: 1,
+                                                         letterSpacing: -0.4,
+                                                         color: Color(0xFF222222),
+                                                       ),
+                                                     ),
+                                                     SizedBox(height: 10),
+                                                     Container(
+                                                       width: MediaQuery.of(context).size.width * 0.5,
+                                                       child: Text(
+                                                         "$lastMessage",
+                                                         style: TextStyle(
+                                                           fontFamily: 'Pretendard',
+                                                           fontWeight: FontWeight.w400,
+                                                           fontSize: 14,
+                                                           height: 1,
+                                                           letterSpacing: -0.4,
+                                                           color: Color(0xFF767676),
+                                                         ),
+                                                         overflow: TextOverflow.ellipsis,
+                                                         maxLines: 1,
+                                                       ),
+                                                     ),
+                                                   ],
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                           Container(
+                                             margin: EdgeInsets.fromLTRB(0, 10, 0, 2.5),
+                                             child: Column(
+                                               mainAxisAlignment: MainAxisAlignment.end,
+                                               crossAxisAlignment: CrossAxisAlignment.end,
+                                               children: [
+                                                 Container(
+                                                   margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                                                   child: Text(
+                                                     '$timeAgo',
+                                                     style: TextStyle(
+                                                       fontFamily: 'Pretendard',
+                                                       fontWeight: FontWeight.w400,
+                                                       fontSize: 13,
+                                                       height: 1,
+                                                       letterSpacing: -0.3,
+                                                       color: Color(0xFF767676),
+                                                     ),
+                                                   ),
+                                                 ),
+                                                 if (messageCount == 0) ...[
+                                                   Container(
+                                                   ),
+                                                 ]
+                                                 else ...[
+                                                   Container(
+                                                     padding: EdgeInsets.all(8.0),  // 원형 크기 조절
+                                                     decoration: BoxDecoration(
+                                                       color: Color(0xFF1D4786),  // 원형 배경 색상
+                                                       shape: BoxShape.circle,    // 원형 모양
+                                                     ),
+                                                     child: Text(
+                                                       messageCount > 99 ? '99+' :'${messageCount}',
+                                                       style: TextStyle(
+                                                         fontFamily: 'Pretendard',
+                                                         fontWeight: FontWeight.w500,
+                                                         fontSize: 12,
+                                                         height: 1,
+                                                         letterSpacing: -0.3,
+                                                         color: Color(0xFFFFFFFF),  // 텍스트 색상
+                                                       ),
+                                                     ),
+                                                   ),
+                                                 ]
+                                               ],
+                                             ),
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                     // 나머지 Container와 Row 등에도 동일하게 적용해주면 됩니다.
+                                   ],
+                                 ),
+                               ),
+
+                             );
+                           },
+                         ),
+
+                       ),
+                     ],
+
+
+
+
+                      if (userData['owner_email'] == currentUserEmail) ...[
                         Dismissible(
                           key: Key(doc.id),
                           confirmDismiss: (direction) async {
                             // 스와이프 후 삭제 확인 대화상자 표시
-                            ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
+                            showNicknameConfirmationDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname'], false);
                           },
                           background: Container(
                             color: Colors.red,
@@ -747,120 +1147,231 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                               ),
                             ),
                           ),
-                        child: InkWell(
-                          onLongPress: () {
-                            // print(doc.data());
-                            HapticFeedback.heavyImpact();
-                            ownerShowExitChatRoomDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname']);
-                          },
-                          onTap: (() {
-                            HapticFeedback.lightImpact();
-                            String owner_receiver = userData['owner_email_nickname'];
-                            FirebaseFirestore.instance
-                                .collection('ChatActions')
-                                .doc(doc.id)
-                                .update({'messageCount_$owner_receiver': 0});
+                          child: FutureBuilder<String?>(
+                            future:  _getProfileImage(userData['helper_email']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return SizedBox.shrink(); // 아무것도 표시하지 않음
+                              }
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}'); // 오류 발생 시 표시할 위젯
+                              }
+                              if (!snapshot.hasData || snapshot.data == null) {
+                                return Text('No data available'); // 데이터가 없을 때 표시할 위젯
+                              }
 
-                            Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
-                                      senderName: userData['owner_email_nickname'],
-                                      receiverName : userData['helper_email_nickname'],
-                                      receiverUid: userData['helperUid'],
-                                      documentName : doc.id,
-                                    )));
-                          }),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: <Widget>[
-                                ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    backgroundImage: userData['photoUrl'] is String
-                                        ? NetworkImage(userData['photoUrl'])
-                                        : AssetImage('assets/ava.png') as ImageProvider<Object>,
-                                    radius: 30,
-                                  ),
-                                  title: Column(
+                              String? profileImageUrl = snapshot.data;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  String owner_receiver = userData['owner_email_nickname'];
+                                  FirebaseFirestore.instance
+                                      .collection('ChatActions')
+                                      .doc(doc.id)
+                                      .update({'messageCount_$owner_receiver': 0});
+
+                                  Navigator.push(
+                                      context,
+                                      new MaterialPageRoute(
+                                          builder: (context) => ChatScreen(
+                                            senderName: userData['owner_email_nickname'],
+                                            receiverName : userData['helper_email_nickname'],
+                                            receiverUid: userData['helperUid'],
+                                            documentName : doc.id,
+                                            photoUrl : profileImageUrl,
+                                          )));
+                                },
+                                onLongPress: (){
+                                  HapticFeedback.heavyImpact();
+                                  showNicknameConfirmationDialog(context, doc.id, userData['owner_email_nickname'], userData['helper_email_nickname'], false);
+                                },
+                                child:
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        userData['helper_email_nickname'],
-                                        style: TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 18,
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: Color(0xFFE3E3E3),
+                                              width: 1,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    HapticFeedback.lightImpact();
+                                                    if (profileImageUrl!.isNotEmpty) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) => FullScreenImage(photoUrl: profileImageUrl),
+                                                        ),
+                                                      );
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                            '기본 프로필 사진입니다.',
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                          duration: Duration(seconds: 2),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        gradient: LinearGradient(
+                                                          colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                                                          begin: Alignment.topLeft,
+                                                          end: Alignment.bottomRight,
+                                                        ),
+                                                        boxShadow: [
+                                                          (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                                              ? BoxShadow(
+                                                            color: Colors.black.withOpacity(0.1),
+                                                            spreadRadius: 1,
+                                                            blurRadius: 1,
+                                                            offset: Offset(0, 1), // 그림자 위치 조정
+                                                          )
+                                                              : BoxShadow(),
+                                                        ],
+                                                      ),
+                                                      child: CircleAvatar(
+                                                        radius: 25, // 반지름 설정 (32 / 2)
+                                                        backgroundColor: Colors.grey[200],
+                                                        child: (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                                            ? null
+                                                            : Icon(
+                                                          Icons.account_circle,
+                                                          size: 50, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                                                          color: Color(0xFF1D4786),
+                                                        ),
+                                                        backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
+                                                            ? NetworkImage(profileImageUrl)
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Container(
+                                                  margin: EdgeInsets.fromLTRB(4, 10, 0, 10),
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        userData['helper_email_nickname'],
+                                                        style: TextStyle(
+                                                          fontFamily: 'Pretendard',
+                                                          fontWeight: FontWeight.w600,
+                                                          fontSize: 17,
+                                                          height: 1,
+                                                          letterSpacing: -0.4,
+                                                          color: Color(0xFF222222),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 10),
+                                                      Container(
+                                                        width: MediaQuery.of(context).size.width * 0.5,
+                                                        child: Text(
+                                                          "$lastMessage",
+                                                          style: TextStyle(
+                                                            fontFamily: 'Pretendard',
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 14,
+                                                            height: 1,
+                                                            letterSpacing: -0.4,
+                                                            color: Color(0xFF767676),
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.fromLTRB(0, 10, 0, 2.5),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  Container(
+                                                    margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                                                    child: Text(
+                                                      '$timeAgo',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Pretendard',
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 13,
+                                                        height: 1,
+                                                        letterSpacing: -0.3,
+                                                        color: Color(0xFF767676),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (messageCount == 0) ...[
+                                                    Container(
+                                                    ),
+                                                  ]
+                                                  else ...[
+                                                    Container(
+                                                      padding: EdgeInsets.all(8.0),  // 원형 크기 조절
+                                                      decoration: BoxDecoration(
+                                                        color: Color(0xFF1D4786),  // 원형 배경 색상
+                                                        shape: BoxShape.circle,    // 원형 모양
+                                                      ),
+                                                      child: Text(
+                                                        messageCount > 99 ? '99+' :'${messageCount}',
+                                                        style: TextStyle(
+                                                          fontFamily: 'Pretendard',
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 12,
+                                                          height: 1,
+                                                          letterSpacing: -0.3,
+                                                          color: Color(0xFFFFFFFF),  // 텍스트 색상
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ]
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        "$lastMessage",
-                                        // style: TextStyle(
-                                        //   color: Colors.grey[800],
-                                        //   fontSize: 16,
-                                        // ),
-                                        style: TextStyle(
-                                          fontFamily: 'NanumSquareRound',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
+                                      // 나머지 Container와 Row 등에도 동일하게 적용해주면 됩니다.
                                     ],
                                   ),
                                 ),
-                                Positioned(
-                                  right: 10,
-                                    child: Text(
-                                      '$timeAgo',
-                                      style: TextStyle(
-                                        color: Colors.grey[800],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                // 메시지 카운트를 표시하는 배지 추가
-                                if (messageCount > 0) // messageCount는 현재 채팅방의 안 읽은 메시지 수
-                                  Positioned(
-                                    top: 25,
-                                    right: 20,
-                                    child: Container(
-                                      padding: EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.redAccent, // 배지의 배경 색상
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        messageCount.toString(),
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+
+                              );
+                            },
                           ),
-                        ),
+
                       ),
+                      ],
                       // Divider(thickness: 1),
                     ],
                   );
@@ -870,6 +1381,15 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                 : Center(
               child: CircularProgressIndicator(), // 로딩 중 표시
             ),
+
+
+
+
+
+
+
+
+
 
       bottomNavigationBar: Padding(
         padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 8, top: 8): const EdgeInsets.only(bottom: 30, top: 10),

@@ -658,7 +658,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
                         child: Center(
                           child: Text(
-                            '기본 프로필 사진 변경',
+                            '프로필 사진 삭제',
                             style: TextStyle(
                               fontFamily: 'Pretendard',
                               fontWeight: FontWeight.w600,

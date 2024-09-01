@@ -630,6 +630,9 @@ class _HelpScreenState extends State<HelpScreen> {
         'timestamp': now,
         'touch' : false,
         'response': null,
+        'orderer_location' : ownerLocation,
+        'cost' : cost,
+        'request' : widget.args.request,
       });
 
 
@@ -668,7 +671,6 @@ class _HelpScreenState extends State<HelpScreen> {
         'storeLocation': doc['store_location'],
         'response': null,
       });
-
 
       // 'Payments' 컬렉션에 결제 관련 정보를 저장합니다.
       await FirebaseFirestore.instance.collection('Payments').doc(documentName).set({
@@ -862,24 +864,44 @@ class _HelpScreenState extends State<HelpScreen> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container( //           프로필사진
+                              Container(
                                 margin: EdgeInsets.fromLTRB(0, 0, 7, 0),
-                                child: CircleAvatar(
-                                  radius: 16, // 반지름 설정 (32 / 2)
-                                  backgroundColor: Colors.grey[200],
-                                  child: widget.args.profileImageUrl!= null && widget.args.profileImageUrl.isNotEmpty
-                                      ? null
-                                      : Icon(
-                                    Icons.account_circle,
-                                    size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
-                                    color: Colors.indigo,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      (widget.args.profileImageUrl != null && widget.args.profileImageUrl.isNotEmpty)
+                                          ? BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: Offset(0, 1), // 그림자 위치 조정
+                                      )
+                                          : BoxShadow(),
+                                    ],
                                   ),
-                                  backgroundImage: widget.args.profileImageUrl!= null && widget.args.profileImageUrl.isNotEmpty
-                                      ? NetworkImage(widget.args.profileImageUrl)
-                                      : null,
+                                  child: CircleAvatar(
+                                    radius: 16, // 반지름 설정 (32 / 2)
+                                    backgroundColor: Colors.grey[200],
+                                    child: (widget.args.profileImageUrl != null && widget.args.profileImageUrl.isNotEmpty)
+                                        ? null
+                                        : Icon(
+                                      Icons.account_circle,
+                                      size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                                      color: Color(0xFF1D4786),
+                                    ),
+                                    backgroundImage: widget.args.profileImageUrl != null && widget.args.profileImageUrl.isNotEmpty
+                                        ? NetworkImage(widget.args.profileImageUrl)
+                                        : null,
+                                  ),
                                 ),
-
                               ),
+
                               Container(
                                 margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
                                 child: Text(
