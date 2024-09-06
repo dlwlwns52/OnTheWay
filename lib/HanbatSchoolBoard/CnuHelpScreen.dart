@@ -384,6 +384,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
                       },
                       style: TextButton.styleFrom(
@@ -410,6 +411,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         helpPost(context, widget.args.doc, widget.args.pushHelpButton);
                       },
                       style: TextButton.styleFrom(
@@ -789,6 +791,7 @@ class _HelpScreenState extends State<HelpScreen> {
         child: GestureDetector(
             onHorizontalDragEnd: (details){
               if (details.primaryVelocity! >  0){
+                HapticFeedback.lightImpact();
                 Navigator.pop(context);
               }
             },
@@ -1278,7 +1281,8 @@ class _HelpScreenState extends State<HelpScreen> {
               ),
 
 
-              bottomNavigationBar:Column(
+              bottomNavigationBar:
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if(!widget.args.isMyPost)

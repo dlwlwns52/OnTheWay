@@ -1,59 +1,46 @@
-
-import 'dart:async';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-
 import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
-
 import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
-import '../Ranking/DepartmentRanking.dart';
+import 'IndividualRankingPage.dart';
 
-
-
-class Design extends StatefulWidget {
+class DepartmentRankingScreen extends StatefulWidget {
   @override
-  _DesignState createState() => _DesignState();
+  _DepartmentRankingScreenState createState() => _DepartmentRankingScreenState();
 }
 
-class _DesignState extends State<Design> {
-  int _selectedIndex = 3;
+class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
 
+  // 바텀 네비게이션 인덱스
+  int _selectedIndex = 3; // 기본 선택된 항목을 '게시판'으로 설정
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
-
 
   //닉네임 가져오기
   late Future<String?> _nickname;
 
-
-
   @override
   void initState() {
     super.initState();
+    // updateSchoolLogos(); // 초기 로고 업데이트 호출
 
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
 
+
     //닉네임 가져옴
     _nickname = getNickname();
-
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
 
@@ -85,6 +72,91 @@ class _DesignState extends State<Design> {
 
     await docRef.set({'messageCount': 0}, SetOptions(merge: true));
 
+  }
+
+
+
+  // 학과 점수 반환
+  Future<List<Map<String, dynamic>>> _getDepartmentsTotals() async {
+    try {
+      // Firestore에서 'naver.com' 문서를 가져옴
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+          .collection('schoolScores')
+          .doc(botton_domain)
+          .get();
+
+      // 문서의 data를 Map으로 변환
+      Map<String, dynamic>? data = snapshot.data();
+
+
+
+      if (data != null && data.containsKey('departments')) {
+        // departments 필드를 가져와서 Map<String, dynamic>으로 변환
+        Map<String, dynamic> departments = Map<String, dynamic>.from(data['departments']);
+
+
+        // 각 학과별 점수를 포함한 데이터를 리스트로 변환 후 정렬
+        List<Map<String, dynamic>> sortedDepartments = departments.entries
+            .map((entry) => {
+          'department': entry.key?.toString() ?? 'Unknown',  // key가 null일 경우 'Unknown'
+          'score': entry.value is int ? entry.value : 0   // value가 null일 경우 0으로 설정
+        })
+            .toList()
+          ..sort((a, b) => b['score'].compareTo(a['score']));  // 점수를 기준으로 내림차순 정렬
+
+        return sortedDepartments;
+      } else {
+        print("Error: departments 필드를 찾을 수 없습니다.");
+        return [];
+      }
+    } catch (e) {
+      print("Error in _getDepartmentsTotals: $e");
+      return [];
+    }
+  }
+
+
+
+  // total 색상
+  Color _getColor(int index) {
+    switch (index) {
+      case 0:
+        return Color(0xffe8bd50);
+      case 1:
+        return Colors.grey;
+      case 2:
+        return Colors.brown.shade300;
+      default:
+        return  Color(0xFF1D4786);
+    }
+  }
+
+  // 등수 대로 랭킹 순위 크기 차별화
+  double _getSizeForRank(int index) {
+    switch (index) {
+      case 0:
+        return 25; // 1등
+      case 1:
+        return 23; // 2등
+      case 2:
+        return 21; // 3등
+      default:
+        return 20; // 4등부터
+    }
+  }
+
+// 등수 대로 학과 이름 크기 차별화
+  double _getSizeForDepartment(int index) {
+    switch (index) {
+      case 0:
+        return 19; // 1등
+      case 1:
+        return 18; // 2등
+      case 2:
+        return 17; // 3등
+      default:
+        return 16; // 4등부터
+    }
   }
 
   //바텀바 구조
@@ -123,19 +195,8 @@ class _DesignState extends State<Design> {
   }
 
 
-
-
-
-
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
-    // 화면의 크기를 기준으로 비율을 계산하는 변수
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -192,7 +253,7 @@ class _DesignState extends State<Design> {
                       String ownerNickname = snapshot.data!;
                       return IconButton(
                         icon: SvgPicture.asset(
-                          'assets/pigma/notifications.svg',
+                          'assets/pigma/notification_white.svg',
                           width: 25,
                           height: 25,
                         ),
@@ -267,144 +328,160 @@ class _DesignState extends State<Design> {
 
 
 
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _getDepartmentsTotals(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                '오류가 발생했습니다: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Text('No data available'),
+            );
+          }
 
-
-
-
-
-
-
-      body: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-        ),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(screenWidth * 0.05, screenHeight * 0.02, screenWidth * 0.05, 0),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFFEEEEEE),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(0, screenHeight * 0.01, 0, screenHeight * 0.02),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          List<Map<String, dynamic>> getDepartments = snapshot.data!;
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+            ),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(screenWidth * 0.05, screenHeight * 0.01, screenWidth * 0.05, 0),
+              child: ListView.builder(
+                itemCount: getDepartments.length,
+                itemBuilder: (context, index) {
+                  var Department = getDepartments[index];
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, screenWidth * 0.03, screenHeight * 0.006),
-                                  child: Text(
-                                    '4위',
-                                    style: TextStyle(
-                                      fontFamily: 'Pretendard',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: screenWidth * 0.05,
-                                      height: 1,
-                                      letterSpacing: -0.5,
-                                      color: Color(0xFF1D4786),
+                            GestureDetector(
+                              onTap: (){
+                                HapticFeedback.lightImpact();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color(0xFFEEEEEE),
+                                      width: 1,
                                     ),
                                   ),
                                 ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.03, 0),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(64),
-                                          color: Color(0xFFF6F7F8),
-                                        ),
-                                        child: Container(
-                                          child: SvgPicture.asset(
-                                            'assets/pigma/cnuLogo.svg',
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(0, screenHeight * 0.025, 0, screenHeight * 0.025),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, screenWidth * 0.03, screenHeight * 0.006),
+                                            child: Text(
+                                              '${index + 1}위',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: _getSizeForRank(index),
+                                                height: 1,
+                                                letterSpacing: -0.5,
+                                                  color: _getColor(index)
+                                                // color: Color(0xFF1D4786),
+                                              ),
+                                            ),
                                           ),
-                                          width: screenWidth * 0.08, // 아이콘 크기 조정
-                                          height: screenWidth * 0.08,
+                                          Row(
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.03, 0),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(64),
+                                                  color: Color(0xFFF6F7F8),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(32),
+                                                  child: Container(
+                                                    child: SvgPicture.asset(
+                                                      'assets/pigma/cnuLogo.svg',
+                                                    ),
+                                                    width: screenWidth * 0.08, // 아이콘 크기 조정
+                                                    height: screenWidth * 0.08,
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.fromLTRB(0, screenHeight * 0.01, 0, screenHeight * 0.01),
+                                                child: Text(
+                                                  Department['department'],
+                                                  style: TextStyle(
+                                                    fontFamily: 'Pretendard',
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: _getSizeForDepartment(index),
+                                                    height: 1,
+                                                    letterSpacing: -0.4,
+                                                    color: Color(0xFF222222),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, 0, screenHeight * 0.006),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              margin: EdgeInsets.fromLTRB(0, screenHeight * 0.002, screenWidth * 0.015, screenHeight * 0.002),
+                                              child: Text(
+                                                '${Department['score']}회',
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: _getSizeForDepartment(index),
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFF6294E0),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(0, screenHeight * 0.01, 0, screenHeight * 0.01),
-                                      child: Text(
-                                        '수원대학교',
-                                        style: TextStyle(
-                                          fontFamily: 'Pretendard',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: screenWidth * 0.04,
-                                          height: 1,
-                                          letterSpacing: -0.4,
-                                          color: Color(0xFF222222),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, 0, screenHeight * 0.006),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.fromLTRB(0, screenHeight * 0.002, screenWidth * 0.015, screenHeight * 0.002),
-                                    child: Text(
-                                      '250회',
-                                      style: TextStyle(
-                                        fontFamily: 'Pretendard',
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: screenWidth * 0.04,
-                                        height: 1,
-                                        letterSpacing: -0.4,
-                                        color: Color(0xFF6294E0),
-                                      ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
-
-
-
-
-
-
-
-
-
-
 
 
       bottomNavigationBar: Padding(
@@ -479,7 +556,7 @@ class _DesignState extends State<Design> {
                 ),
                 _buildBottomNavItem(
                   iconPath: 'assets/pigma/school.svg',
-                  label: '학교랭킹',
+                  label: '학과랭킹',
                   isActive: _selectedIndex == 3,
                   onTap: () {
                     if (_selectedIndex != 3) {
@@ -516,6 +593,7 @@ class _DesignState extends State<Design> {
           ],
         ),
       ),
+
     );
   }
 }

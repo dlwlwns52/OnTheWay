@@ -6,12 +6,14 @@ class Grade {
   final Color color;
   final Color color2;
   final Border border;
+  final String letterProfile;
 
   Grade(this.value)
       : letter = _convertGradeToLetter(value),
         color = _getColor(value),
         color2 = _getColor2(value),
-        border = _getBorder(value);
+        border = _getBorder(value),
+        letterProfile = _convertGradeToLetterProfile(value);
 
   static String _convertGradeToLetter(double grade) {
     if (grade >= 4.2) return 'A+';
@@ -23,6 +25,19 @@ class Grade {
     if (grade >= 1.5) return 'D+';
     if (grade >= 1.0) return 'D   ';
     if (grade >= 0.0) return 'F   ';
+    return 'F   ';
+  }
+
+  static String _convertGradeToLetterProfile(double grade) {
+    if (grade >= 4.2) return 'A+';
+    if (grade >= 4.0) return 'A';
+    if (grade >= 3.5) return 'B+';
+    if (grade >= 3.0) return 'B';
+    if (grade >= 2.5) return 'C+';
+    if (grade >= 2.0) return 'C';
+    if (grade >= 1.5) return 'D+';
+    if (grade >= 1.0) return 'D';
+    if (grade >= 0.0) return 'F';
     return 'F   ';
   }
 
@@ -40,10 +55,10 @@ class Grade {
   }
 
   static Color _getColor2(double grade) {
-    if (grade >= 4.2) return Color(0xffe8bd50); // Gold
-    if (grade >= 4.0) return Color(0xffe8ca72); // Silver
-    if (grade >= 3.5) return Colors.indigo; // Indigo
-    if (grade >= 3.0) return Colors.indigo.shade300; // Indigo Accent
+    if (grade >= 4.2) return Color(0xffe0b531); // Gold
+    if (grade >= 4.0) return Color(0xffe8bd50); // Silver
+    if (grade >= 3.5) return Color(0xFF1D4786); // Indigo
+    if (grade >= 3.0) return Colors.indigo; // Indigo Accent
     if (grade >= 2.5) return Colors.purple.shade300; // Purple
     if (grade >= 2.0) return Colors.purple.shade200; // Light Purple
     if (grade >= 1.5) return Colors.red.shade400; // Dark Red
@@ -58,7 +73,7 @@ class Grade {
     // Color(0xffe8ca72)
     if (grade >= 4.2) return Border.all(color: Color(0xffe8bd50), width: 3); // Gold
     if (grade >= 4.0) return Border.all(color: Color(0xffe8ca72), width: 3); // Silver
-    if (grade >= 3.5) return Border.all(color: Colors.indigo, width: 3); // Indigo
+    if (grade >= 3.5) return Border.all(color: Color(0xFF1D4786), width: 3); // Indigo
     if (grade >= 3.0) return Border.all(color: Colors.indigo.shade300, width: 3); // Indigo Accent
     if (grade >= 2.5) return Border.all(color: Colors.purple.shade300, width: 2); // Purple
     if (grade >= 2.0) return Border.all(color: Colors.purple.shade200, width: 2); // Light Purple

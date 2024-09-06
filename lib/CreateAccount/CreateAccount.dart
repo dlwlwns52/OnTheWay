@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import '../login/LoginScreen.dart';
 import '../CreateAccount/SchoolEmailDialog.dart';
+import 'DepartmentList.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -23,70 +24,63 @@ class CreateAccount extends StatefulWidget {
 
 class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserver{
 
-
+// TextEditingControllers (입력 컨트롤러)
   TextEditingController _nicknameController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();  // 비밀번호 컨트롤러 추가
-  TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인 컨트롤러 추가
-  TextEditingController _emailUserController = TextEditingController();
-  TextEditingController _accountNameController = TextEditingController(); // 계좌명 컨트롤러 추가
-  TextEditingController _accountNumberController = TextEditingController(); // 계좌번호 컨트롤러 추가
+  TextEditingController _passwordController = TextEditingController();  // 비밀번호 입력
+  TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인
+  TextEditingController _emailUserController = TextEditingController();  // 이메일 입력
+  TextEditingController _accountNameController = TextEditingController();  // 계좌명 입력
+  TextEditingController _accountNumberController = TextEditingController();  // 계좌번호 입력
+  TextEditingController _searchController = TextEditingController();  // 검색 입력
+  TextEditingController _departmentSearchController = TextEditingController();  // 학과 검색 입력
+
+// 상태 및 플래그 변수
+  bool _isNicknameAvailable = false;  // 닉네임 중복 확인 상태
+  bool _snackBarShown = false;  // 스낵바 표시 여부
+  bool _emailHasText = false;  // 이메일 입력 여부
+  bool _nicknameHasText = false;  // 닉네임 입력 여부
+  bool _passwordHasText = false;  // 비밀번호 입력 여부
+  bool _confirmPasswordHasText = false;  // 비밀번호 확인 입력 여부
+  bool _accountNumberHasText = false;  // 계좌번호 입력 여부
+  bool _obscureText1 = true;  // 비밀번호 가리기 (별표 처리)
+  bool _obscureText2 = true;  // 비밀번호 확인 가리기 (별표 처리)
+  bool isEmailVerified = false;  // 이메일 인증 여부
 
 
+// 버튼 관련 상태
+  String _buttonText = '중복확인';  // 버튼 텍스트
 
 
-  bool _isNicknameAvailable = false;
+// 에러 메시지 상태
+  String? _usernicknameErrorText;  // 닉네임 에러 메시지
+  String? _userpasswordErrorText;  // 비밀번호 에러 메시지
+  String? _confirmPasswordErrorText;  // 비밀번호 확인 에러 메시지
+  String? _userEmailErrorText;  // 이메일 에러 메시지
+  String? _accountNameErrorText;  // 계좌명 에러 메시지
+  String? _accountNumberErrorText;  // 계좌번호 에러 메시지
 
+// Firebase 및 OAuth 관련
+  final FirebaseAuth _auth = FirebaseAuth.instance;  // Firebase Auth 인스턴스
+  final GoogleSignIn _googleSignIn = GoogleSignIn();  // Google Sign-In 인스턴스
 
-  String _buttonText = '중복확인';
-  Color _buttonColor = Colors.white70;
-  Color _buttonTextColor = Colors.black87;
-  //스낵바가 이미 표시되었는지를 추적하는 플래그
-  bool _snackBarShown = false;
+// Dropdown 및 선택 관련 상태
+  String? _dropdownValue = null;  // 드롭다운 선택값
+  String? _bankName = null;  // 은행 이름
+  String? _selectedDepartment;  // 선택된 학과
 
-  String? _usernicknameErrorText; // 닉네임 제한 ( 영문 대소문자 알파벳, 한글 음절, 일반적인 하이픈 기호, 그리고 숫자를 모두 허용)
-  String? _userpasswordErrorText; // password 제한 (비밀번호는 8~16자의 영문 대/소문자, 숫자, 특수문자를 사용 가능)
-  String? _confirmPasswordErrorText; // password 와 동일한가 확인
-  String? _userEmailErrorText; // 이메일 에러 텍스트 확인
-  String? _accountNameErrorText; // 계좌명 에러 텍스트
-  String? _accountNumberErrorText; // 계좌번호 에러 텍스트
-
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  String? _dropdownValue = null;
-  String? _bankName = null;
-
-  bool isEmailVerified = false;
-  bool _congratulation = false;
-
-  //이메일인증
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  // 보더 색상 관리 변수
-  bool _emailHasText = false;
-  bool _nicknameHasText = false;
-  bool _passwordHasText = false;
-  bool _confirmPasswordHasText = false;
-  bool _accountNumberHasText = false;
-
-  //비밀번호 별표
-  bool _obscureText1 = true;
-  bool _obscureText2 = true;
-
-
-  TextEditingController _searchController = TextEditingController();
-
+// 도메인 데이터
   List<Map<String, String>> _domains = [
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
     {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
     {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
     {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
-    {'name': '테스트', 'domain': 'gmail.com'}
-
-    // 도메인 추가
+    {'name': '테스트', 'domain': 'gmail.com'},
+    {'name': '테스트1', 'domain' : 'naver.com'},
   ];
 
-  List<Map<String, String>> _filteredDomains = [];
+  List<Map<String, String>> _filteredDomains = [];  // 필터링된 도메인 목록
+
+
 
   @override
   void initState() {
@@ -98,6 +92,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _emailUserController.addListener(_onEmaildChanged);
     _accountNameController.addListener(_onAccountNameChanged);
     _accountNumberController.addListener(_onAccountNumberChanged);
+
 
 
     _emailUserController.addListener(() {
@@ -143,7 +138,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
 
-//스낵바 형식
+//스낵바 형식능
   void buildCustomHelpDialog() async {
     final nickname = _nicknameController.text.trim();
     final snapshot = await FirebaseFirestore.instance
@@ -211,6 +206,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     child: TextButton(
                       onPressed: () {
                         HapticFeedback.lightImpact();
+                        _isNicknameAvailable ? _nicknameController.text = nickname : _nicknameController.clear();
                         Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
                       },
                       style: TextButton.styleFrom(
@@ -238,7 +234,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     child: TextButton(
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        _isNicknameAvailable ? _nicknameController.text = nickname : _nicknameController.clear();
+                        if(!_isNicknameAvailable) {
+                          _nicknameController.clear();
+                        }
                         Navigator.of(context).pop();
                       },
                       style: TextButton.styleFrom(
@@ -266,9 +264,17 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     );
   }
 
+
   void _onDomainSelected(String domain) {
     setState(() {
       _dropdownValue = domain;
+    });
+  }
+
+
+  void _onDepartmentSelected(String domain) {
+    setState(() {
+      _selectedDepartment = domain;
     });
   }
 
@@ -294,7 +300,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     });
   }
 
-  // 이메일 선택 바텀시트
+  //이메일 선택 다이어로그
   void showCustomBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -398,12 +404,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                 ),
                                                 enabledBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: _emailHasText ? Colors.indigo : Color(0xFFD0D0D0),
+                                                    color: _emailHasText ? Color(0xFF1D4786) : Color(0xFFD0D0D0),
                                                   ),
                                                   borderRadius: BorderRadius.circular(8),
                                                 ),
                                                 focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(color: Colors.indigo),
+                                                  borderSide: BorderSide(color: Color(0xFF1D4786)),
                                                   borderRadius: BorderRadius.circular(8),
                                                 ),
                                                 counterText: '', // 하단의 '0/10' 텍스트를 숨김
@@ -547,6 +553,227 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     );
   }
 
+
+  // 이메일 선택 바텀시트
+  void DepartmentSelectionBottomSheet(BuildContext context, String domain) {
+    List<String> departments = DepartmentList.getDepartmentsByDomain(domain);
+    List<String> filteredDepartments = departments;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      backgroundColor: Colors.transparent, // 투명 배경을 설정하여 모서리 둥근 부분을 표시
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+
+            void _filterDepartments(String query) {
+              setState(() {
+                if (query.isEmpty) {
+                  filteredDepartments = departments;
+                } else {
+                  filteredDepartments = departments
+                      .where((department) => department
+                      .toLowerCase()
+                      .contains(query.trim().toLowerCase())) // 대소문자 구분 없이, 공백 제거
+                      .toList();
+                }
+              });
+            }
+
+            return GestureDetector(
+              onTap: () {
+                // 화면의 다른 부분을 터치했을 때 포커스 해제
+
+                FocusScope.of(context).unfocus();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFFFFF),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // 내용물에 따라 높이가 조절되도록 설정
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // 모달 상단의 드래그 표시
+                        Container(
+                          margin: EdgeInsets.fromLTRB(1, 0, 0, 40),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFE3E3E3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          width: 44,
+                          height: 4,
+                        ),
+                        // 검색 필드
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 20),
+                          child: TextFormField(
+                            cursorColor: Color(0xFF1D4786),
+                            controller: _departmentSearchController,
+                            onTap: () {
+                              HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.all(15),
+                              hintText: '학과를 검색하세요.',
+                              hintStyle: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: Color(0xFF767676),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFFD0D0D0),
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Color(0xFF1D4786)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Icon(Icons.search, color: Color(0xFF1D4786)),
+                              ),
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  _departmentSearchController.clear();
+                                  _filterDepartments('');
+                                  FocusScope.of(context).unfocus(); // 포커스 해제
+                                },
+                                child: Icon(Icons.clear, color: Color(0xFF1D4786)),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              print(value);
+                              _filterDepartments(value);
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          width:  MediaQuery.of(context).size.width * 0.95,
+                          child: ListView(
+                            children: filteredDepartments.map((domain) {
+                              return GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _onDepartmentSelected(domain);
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Color(0xFFD0D0D0)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Color(0xFFFFFFFF),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.fromLTRB(15, 17, 17, 17),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.fromLTRB(0, 2, 8, 2),
+                                          child: Text(
+                                            '${domain}',
+                                            style: TextStyle(
+                                              fontFamily: 'Pretendard',
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 16,
+                                              height: 1,
+                                              letterSpacing: -0.4,
+                                              color: Color(0xFF222222),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        // 취소 버튼
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // 취소 버튼이 탭되었을 때의 동작 추가
+                                      HapticFeedback.lightImpact();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Color(0xFFF6F7F8)),
+                                        color: Color(0xFFF6F7F8),
+                                      ),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: EdgeInsets.fromLTRB(0, 20, 1, 25), // 버튼 높이 조정
+                                        child: Text(
+                                          '취소',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 18,
+                                            height: 1,
+                                            letterSpacing: -0.5,
+                                            color: Color(0xFF222222),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+
 // 은행 명 바텀시트
   void showBankSelectionSheet(BuildContext context) {
     String _bankName = ''; // 상태를 여기에 저장
@@ -557,6 +784,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           top: Radius.circular(20),
         ),
       ),
+      isScrollControlled: true, // 키보드가 올라올 때 전체 화면을 차지하도록 설정
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
@@ -566,20 +794,23 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               });
             }
 
-            return SingleChildScrollView(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFFFFFFF),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom, // 키보드에 의해 가려지는 부분을 고려한 패딩
+              ),
+              child: SingleChildScrollView(
                 child: Container(
-                  width: double.infinity,
-                  child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFFFFFF),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Padding(
                     padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -590,10 +821,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               color: Color(0xFFE3E3E3),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Container(
-                              width: 44,
-                              height: 4,
-                            ),
+                            width: 44,
+                            height: 4,
                           ),
                         ),
                         Container(
@@ -650,91 +879,103 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                     _bankName,
                                     _onBankSelected,
                                   ),
+                                  SizedBox(height: 20),
                                   Text(
-                                    '\n\n⚠️이용 중인 은행이 없거나 변경되더라도, 언제든지 프로필에서 \n   손쉽게 수정하실 수 있으니 편안하게 설정해 주세요.',
+                                    '⚠️해당하는 은행이 위에 없을 경우 아래에 직접 입력해주세요!',
                                     style: TextStyle(
                                       fontFamily: 'Pretendard',
-                                      fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
-                                      fontSize: 12, // 작은 글씨 크기 설정
-                                      color: Colors.grey, // 회색으로 설정
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 12,
+                                      color: Colors.grey,
                                     ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _bankName = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: '여기에 입력해주세요.',
+                                      contentPadding: EdgeInsets.symmetric(
+                                        vertical: 10,
+                                        horizontal: 12,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      focusColor: Colors.black,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      HapticFeedback.lightImpact();
-                                      Navigator.pop(context);
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Color(0xFFF6F7F8)),
-                                        color: Color(0xFFF6F7F8),
-                                      ),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: EdgeInsets.fromLTRB(0, 14, 1, 32),
-                                        child: Text(
-                                          '취소',
-                                          style: TextStyle(
-                                            fontFamily: 'Pretendard',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 18,
-                                            height: 1,
-                                            letterSpacing: -0.5,
-                                            color: Color(0xFF222222),
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Color(0xFFF6F7F8)),
+                                    color: Color(0xFFF6F7F8),
+                                  ),
+                                  padding: EdgeInsets.fromLTRB(0, 14, 1, 32),
+                                  child: Text(
+                                    '취소',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      height: 1,
+                                      letterSpacing: -0.5,
+                                      color: Color(0xFF222222),
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      // 확인 버튼 로직
-                                      _onBankNameSelected(_bankName);
-                                      HapticFeedback.lightImpact();
-                                      Navigator.pop(context);
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Color(0xFF1D4786)),
-                                        color: Color(0xFF1D4786),
-                                      ),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: EdgeInsets.fromLTRB(0, 14, 0, 32),
-                                        child: Text(
-                                          '확인',
-                                          style: TextStyle(
-                                            fontFamily: 'Pretendard',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 18,
-                                            height: 1,
-                                            letterSpacing: -0.5,
-                                            color: Color(0xFFFFFFFF),
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  _onBankNameSelected(_bankName);
+                                  HapticFeedback.lightImpact();
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Color(0xFF1D4786)),
+                                    color: Color(0xFF1D4786),
+                                  ),
+                                  padding: EdgeInsets.fromLTRB(0, 14, 0, 32),
+                                  child: Text(
+                                    '확인',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      height: 1,
+                                      letterSpacing: -0.5,
+                                      color: Color(0xFFFFFFFF),
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
@@ -749,6 +990,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       },
     );
   }
+
+
 // 은행명 구조
   Widget _buildBankRow(
       BuildContext context,
@@ -870,12 +1113,32 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                           String nickname = _nicknameController.text;
                           String email = _emailUserController.text + "@" + _dropdownValue!;
                           String accountNumber = _accountNumberController.text;
+                          String password = _passwordController.text;
                           try {
+
+                            User? currentUser = FirebaseAuth.instance.currentUser;
+
+                            // 비밀번호 추가하기
+                            if (currentUser != null) {
+
+                              await currentUser.updatePassword(password);
+                            } else {
+                              // Firebase Authentication에 이메일과 비밀번호로 새 사용자 생성
+
+                              UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                email: email,
+                                password: password,  // 비밀번호 추가
+                              );
+                              currentUser = userCredential.user;
+                            }
+
+                            String userUid = currentUser?.uid ?? '';
+
+
                             DateTime now = DateTime.now();
                             String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-                            User? currentUser = FirebaseAuth.instance.currentUser;
-                            String userUid = currentUser?.uid ?? '';
+
 
                             final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
                             await usersCollection.doc(nickname).set({
@@ -885,25 +1148,16 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               'joined_date': formattedDate,
                               'grade': 3.0,
                               'bank' : _bankName,
+                              'department' : _selectedDepartment,
                               'accountNumber' : accountNumber,
                             });
 
                             // 다이어로그를 닫음
                             Navigator.pop(context);
 
-                            //congratulation 애니메이션
-                            // 100ms 지연 후 애니메이션과 나머지 작업 처리
-                            Future.delayed(Duration(milliseconds: 100), () async {
-                              //congratulation 애니메이션
-                              setState(() {
-                                _congratulation = true;
-                              });
 
-                              await Future.delayed(Duration(milliseconds: 1800), () {
-                                setState(() {
-                                  _congratulation = false;
-                                });
-                              });
+                            Future.delayed(Duration(milliseconds: 0), () async {
+
 
                               // ScaffoldMessenger 호출을 여기서 안전하게 실행
                               WidgetsBinding.instance?.addPostFrameCallback((_) {
@@ -980,6 +1234,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _usernicknameErrorText = '자음, 모음, 숫자 만으로는 \n구성될 수 없습니다.';
       }else {
         _usernicknameErrorText = null;
+        _isNicknameAvailable = false;
+        _buttonText = '중복확인';
       }
     });
   }
@@ -1029,6 +1285,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       isEmailVerified = false; // 이메일 필드가 변경되면 인증 상태를 false로 설정
     });
   }
+
 
   _onAccountNameChanged() {
     String value = _accountNameController.text;
@@ -1137,7 +1394,15 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
   bool _validateFields() {
-    if (_nicknameController.text.trim().isEmpty) {
+      if(_isNicknameAvailable == false){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('중복확인을 진행해주세요.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
+        );
+        return false;
+      }
+
       if (_emailUserController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
@@ -1146,7 +1411,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         );
         return false;
       }
-      //
+
+
       if(isEmailVerified == false){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 인증을 완료해주세요.', textAlign: TextAlign.center,),
@@ -1156,6 +1422,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         return false;
       }
 
+
+      if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
@@ -1197,6 +1465,15 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     if (_dropdownValue == '학교 메일 선택') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('학교 메일을 선택해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if (_selectedDepartment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('학과명을 입력해주세요. \n학과별 랭킹을 위해 사용됩니다.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );
@@ -1261,7 +1538,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
       if (user != null && user.email == fullEmail) {
         // 성공적으로 로그인
-        await _auth.signOut();
+        // await _auth.signOut(); // 이걸왜썼지
+
         setState(() {
           isEmailVerified = true;
           _userEmailErrorText = null; // 이메일 인증 성공 시 오류 메시지 제거
@@ -1414,12 +1692,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                         ),
                                                         enabledBorder: OutlineInputBorder(
                                                           borderSide: BorderSide(
-                                                            color: _emailHasText ? Colors.indigo : Color(0xFFD0D0D0),
+                                                            color: _emailHasText ? Color(0xFF1D4786) : Color(0xFFD0D0D0),
                                                           ), // 텍스트가 있으면 인디고, 없으면 회색
                                                           borderRadius: BorderRadius.circular(8),
                                                         ),
                                                         focusedBorder: OutlineInputBorder(
-                                                          borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                                          borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
                                                           borderRadius: BorderRadius.circular(8),
                                                         ),
                                                         counterText: '', // 하단의 '0/10' 텍스트를 숨김
@@ -1446,12 +1724,21 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                 child: GestureDetector(
                                                   onTap: () {
                                                     HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
-
-                                                    showCustomBottomSheet(context);
+                                                    isEmailVerified
+                                                        ?  ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          '이메일 인증이 완료된 도메인입니다.',
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                        duration: Duration(seconds: 1),
+                                                      ),
+                                                    )
+                                                        : showCustomBottomSheet(context);
                                                   },
                                                   child: Container(
                                                     decoration: BoxDecoration(
-                                                      border: Border.all(color: _dropdownValue != null ? Colors.indigo : Color(0xFFD0D0D0)),
+                                                      border: Border.all(color: _dropdownValue != null ? Color(0xFF1D4786) : Color(0xFFD0D0D0)),
                                                       borderRadius: BorderRadius.circular(8),
                                                       color: Color(0xFFFFFFFF),
                                                     ),
@@ -1486,7 +1773,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                                 height: 8,
                                                                 child: SvgPicture.asset(
                                                                     'assets/pigma/Polygon.svg',
-                                                                    color: _dropdownValue != null ? Colors.indigo : Color(0xFF424242)
+                                                                    color: _dropdownValue != null ? Color(0xFF1D4786) : Color(0xFF424242)
                                                                 ),
                                                               ),
                                                             ),
@@ -1601,12 +1888,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                   ),
                                                   enabledBorder: OutlineInputBorder(
                                                     borderSide: BorderSide(
-                                                      color: _nicknameHasText ? Colors.indigo : Color(0xFFD0D0D0),
+                                                      color: _nicknameHasText ? Color(0xFF1D4786) : Color(0xFFD0D0D0),
                                                     ), // 텍스트가 있으면 인디고, 없으면 회색
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                                    borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   counterText: '', // 하단의 '0/10' 텍스트를 숨김
@@ -1624,7 +1911,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                   setState(() {
                                                     _checkMaxLength(_nicknameController, 7);
                                                     _buttonText = '중복확인';
-                                                    _buttonColor = Colors.white70;
+
                                                   });
                                                 },
                                               ),
@@ -1722,12 +2009,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                               ),
                                               enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
-                                                  color: _passwordHasText ?  Colors.indigo: Color(0xFFD0D0D0),
+                                                  color: _passwordHasText ?  Color(0xFF1D4786): Color(0xFFD0D0D0),
                                                 ), // 텍스트가 있으면 인디고, 없으면 회색
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                                borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               errorText: _userpasswordErrorText,
@@ -1802,12 +2089,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                               ),
                                               enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
-                                                  color: _confirmPasswordHasText ?  Colors.indigo: Color(0xFFD0D0D0),
+                                                  color: _confirmPasswordHasText ?  Color(0xFF1D4786): Color(0xFFD0D0D0),
                                                 ), // 텍스트가 있으면 인디고, 없으면 회색
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                                borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               errorText: _confirmPasswordErrorText,
@@ -1844,6 +2131,95 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   ],
                                 ),
                               ),
+
+
+                              // 학과
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 0, 2, 10),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                      child: Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          '학과',
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            height: 1,
+                                            letterSpacing: -0.4,
+                                            color: Color(0xFF424242),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+
+
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
+                                        DepartmentSelectionBottomSheet(context, '$_dropdownValue');
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: _selectedDepartment != null ? Color(0xFF1D4786) : Color(0xFFD0D0D0)),
+                                          borderRadius: BorderRadius.circular(8),
+                                          color: Color(0xFFFFFFFF),
+                                        ),
+                                        child: Container(
+                                          padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                child:
+                                                Text(
+                                                  _selectedDepartment ?? '학과명',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Pretendard',
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 16,
+                                                    height: 1,
+                                                    letterSpacing: -0.4,
+                                                    color: _selectedDepartment != null ? Color(0xFF222222): Color(0xFF767676),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(1),
+                                                  child: SizedBox(
+                                                    width: 12,
+                                                    height: 8,
+                                                    child: SvgPicture.asset(
+                                                        'assets/pigma/Polygon.svg',
+                                                        color: _selectedDepartment != null ? Color(0xFF1D4786) : Color(0xFF424242)
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+                              ),
+
+
+                              //은행
                               Container(
                                 margin: EdgeInsets.fromLTRB(0, 0, 2, 0),
                                 child: Column(
@@ -1880,7 +2256,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                       child: Container(
                                         margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: _bankName != null ? Colors.indigo : Color(0xFFD0D0D0)),
+                                          border: Border.all(color: _bankName != null ? Color(0xFF1D4786) : Color(0xFFD0D0D0)),
                                           borderRadius: BorderRadius.circular(8),
                                           color: Color(0xFFFFFFFF),
                                         ),
@@ -1913,7 +2289,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                     height: 8,
                                                     child: SvgPicture.asset(
                                                         'assets/pigma/Polygon.svg',
-                                                        color: _bankName != null ? Colors.indigo : Color(0xFF424242)
+                                                        color: _bankName != null ? Color(0xFF1D4786) : Color(0xFF424242)
                                                     ),
                                                   ),
                                                 ),
@@ -1962,12 +2338,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                color: _accountNumberHasText ?  Colors.indigo: Color(0xFFD0D0D0),
+                                                color: _accountNumberHasText ?  Color(0xFF1D4786): Color(0xFFD0D0D0),
                                               ), // 텍스트가 있으면 인디고, 없으면 회색
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
+                                              borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             errorText: _accountNumberErrorText,

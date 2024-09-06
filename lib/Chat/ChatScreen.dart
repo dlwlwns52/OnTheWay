@@ -17,7 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 import '../Map/Navigation/HelperTMapView.dart';
-import '../Ranking/SchoolRanking.dart';
+import '../Ranking/DepartmentRanking.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverName;

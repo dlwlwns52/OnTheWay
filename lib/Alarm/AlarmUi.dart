@@ -62,6 +62,7 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.dispose();
   }
 
+
   //프로필 사진 링크 가져오기
   Future<String?> _getProfileImage(String email) async{
     FirebaseFirestore db = FirebaseFirestore.instance;
@@ -97,6 +98,205 @@ class _NotificationScreenState extends State<AlarmUi> {
       return docs;
     });
   }
+
+
+
+  // 시간을 '분 전' 형식으로 변환하는 함수
+  String getTimeAgo(DateTime dateTime) {
+    final Duration difference = DateTime.now().difference(dateTime);
+    if (difference.inMinutes <= 1){
+      return '방금 전';
+    }
+    if ( 1 < difference.inMinutes  && difference.inMinutes < 60) {
+      return '${difference.inMinutes}분 전';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}시간 전';
+    } else {
+      return '${difference.inDays}일 전';
+    }
+  }
+
+
+  // 수락시 게시글 삭제
+  Future<void> _deletePost(String docId) async{
+    DocumentSnapshot postId = await FirebaseFirestore.instance
+        .collection('helpActions')
+        .doc(docId)
+        .get();
+
+    String deletePostId = postId.get('post_id');
+
+    FirebaseFirestore.instance
+        .collection('naver_posts')
+        .doc(deletePostId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+  }
+
+  // 알림을 삭제하는 함수
+  void _deleteNotification(String docId) {
+    FirebaseFirestore.instance
+        .collection('helpActions')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+
+  }
+
+
+  //채팅 정보 삭제
+  void _deleteChatActions(String docId) {
+    FirebaseFirestore.instance
+        .collection('ChatActions')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+  }
+
+  void _deletePayments(String docId) {
+    FirebaseFirestore.instance
+        .collection('Payments')
+        .doc(docId)
+        .delete()
+        .then((_) => print("Document successfully deleted"))
+        .catchError((error) => print("Failed to delete document: $error"));
+  }
+
+
+
+
+  //
+  Future<void> _HelperCount(String docId) async{
+    try {
+      DocumentSnapshot postId = await FirebaseFirestore.instance
+          .collection('helpActions')
+          .doc(docId)
+          .get();
+
+      if (!postId.exists) {
+        print("Document does not exist.");
+        return;
+      }
+
+      String helper_email = postId.get('helper_email');
+      String owner_email = postId.get('owner_email');
+
+      String? helperDepartment =  await _getDepartmentUser(helper_email);
+      String? ownerDepartment =  await _getDepartmentUser(owner_email);
+
+      String helperDomain = _extractDomain(helper_email);
+      String ownerDomain = _extractDomain(owner_email);
+
+
+      // // // 도메인별로 점수 증가
+      await _updateIndividualCount(helperDepartment!, helperDomain);
+      await _updateIndividualCount(ownerDepartment!, ownerDomain);
+
+
+    } catch (e) {
+      print("Error in _HelperCount: $e");
+    }
+  }
+
+
+  //개인 학과 가져오기
+  Future<String?> _getDepartmentUser(String email) async{
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    QuerySnapshot nicknameSnapshot = await db
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if(nicknameSnapshot.docs.isNotEmpty){
+      DocumentSnapshot document = nicknameSnapshot.docs.first;
+      String? department = document.get('department');
+      return department;
+    }
+
+    else {
+      print("해당 이메일을 가진 사용자가 없습니다.");
+      return null;
+    }
+  }
+
+
+
+  // 도메인 추출
+  String _extractDomain(String email)  {
+    return email.split('@').last;
+  }
+
+  // 도메인 별로 카운트
+  Future<void> _updateIndividualCount(String userDepartment, String domain) async {
+    try {
+      DocumentReference schoolRef = FirebaseFirestore.instance
+          .collection('schoolScores')
+          .doc(domain);
+
+      DocumentSnapshot schoolSnapshot = await schoolRef.get();
+
+      if (!schoolSnapshot.exists) {
+        // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
+        await schoolRef.set({
+          'departments': {userDepartment: 1}
+        });
+      } else {
+        // 문서가 존재하면 departments 객체에서 학과별 카운트를 업데이트
+        Map<String, dynamic> schoolData = schoolSnapshot.data() as Map<String, dynamic> ?? {};
+        Map<String, dynamic> departments = schoolData['departments'] ?? {};
+
+
+        int currentCount = departments[userDepartment] ?? 0;
+        departments[userDepartment] = currentCount + 1;
+
+        
+        await schoolRef.update({'departments': departments});
+      }
+    } catch (e) {
+      print("Error in _updateIndividualCount: $e");
+    }
+  }
+
+
+  //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
+  Future<String> getGradeByNickname(String helperEmailNickname) async{
+    final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+
+    DocumentSnapshot documentSnapshot = await usersCollection.doc(helperEmailNickname).get();
+
+    if(documentSnapshot.exists){
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+      return data['grade'].toString();
+    }
+    else {
+      return '정보 없음';
+    }
+  }
+
+  //채팅방 생성 수락시
+  Future<void> _updateTime(String documentId, DateTime newtime) async {
+    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+        .update({'timestamp': newtime});
+  }
+
+
+// response에 업데이트 추가
+  Future<void> _respondToActions(String documentId, String response) async {
+    await Future.wait([
+      FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
+          .update({'response': response}),
+      FirebaseFirestore.instance.collection('helpActions').doc(documentId)
+          .update({'response': response}),
+      FirebaseFirestore.instance.collection('Payments').doc(documentId)
+          .update({'response': response}),
+    ]);
+  }
+
+
+
 
 
   // 수락  거절 물어보는 바텀시트 1단계
@@ -996,7 +1196,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                                           // });
                                           HapticFeedback.lightImpact();
                                           showCustomBottomSheet(context, doc, profileImageUrl);
-                                          // _showAcceptDeclineDialog(context, nickname, doc.id);
+
                                         },
                                         child: Container( // 전체
                                           margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -1283,298 +1483,6 @@ class _NotificationScreenState extends State<AlarmUi> {
         ),
       ),
     );
-  }
-
-  // 시간을 '분 전' 형식으로 변환하는 함수
-  String getTimeAgo(DateTime dateTime) {
-    final Duration difference = DateTime.now().difference(dateTime);
-    if (difference.inMinutes <= 1){
-      return '방금 전';
-    }
-    if ( 1 < difference.inMinutes  && difference.inMinutes < 60) {
-      return '${difference.inMinutes}분 전';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}시간 전';
-    } else {
-      return '${difference.inDays}일 전';
-    }
-  }
-
-
-  // 수락시 게시글 삭제
-  Future<void> _deletePost(String docId) async{
-    DocumentSnapshot postId = await FirebaseFirestore.instance
-        .collection('helpActions')
-        .doc(docId)
-        .get();
-
-    String deletePostId = postId.get('post_id');
-
-    FirebaseFirestore.instance
-        .collection('naver_posts')
-        .doc(deletePostId)
-        .delete()
-        .then((_) => print("Document successfully deleted"))
-        .catchError((error) => print("Failed to delete document: $error"));
-  }
-
-  // 알림을 삭제하는 함수
-  void _deleteNotification(String docId) {
-    FirebaseFirestore.instance
-        .collection('helpActions')
-        .doc(docId)
-        .delete()
-        .then((_) => print("Document successfully deleted"))
-        .catchError((error) => print("Failed to delete document: $error"));
-
-  }
-
-  //수락 또는 거절 버튼 구현
-  void _showAcceptDeclineDialog(BuildContext context, String nickname, String documentId) {
-    final rootContext = context;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder( // 대화 상자의 모서리를 둥글게 합니다.
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          title: Text(
-            '알림',
-            textAlign: TextAlign.center,
-            style:
-            TextStyle(
-              fontFamily: 'NanumSquareRound',
-              fontWeight: FontWeight.w800,
-              fontSize: 25,
-            ),
-          ),
-          content: Text(
-            '\'$nickname\' 님의 도와주기 요청을 수락하시겠습니까?',
-            style:
-            TextStyle(
-              fontFamily: 'NanumSquareRound',
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo[400],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
-                ),
-              ),
-              child: Text('수락',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-              onPressed: () async {
-                DateTime now = DateTime.now();
-
-                HapticFeedback.lightImpact();
-                await _HelperCount(documentId);
-                await _updateTime(documentId, now);
-                await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
-
-                // await _deletePost(documentId); // 수락시 게시글 삭제
-                _deleteNotification(documentId); // 수락시 알림 내용 삭제
-
-
-                Navigator.of(context).pop();
-
-
-                Future.delayed(Duration(milliseconds: 100), () async {
-                  //congratulation 애니메이션
-                  setState(() {
-                    _isAccepting = true;
-                  });
-
-                  await Future.delayed(Duration(milliseconds: 1800), () {
-                    setState(() {
-                      _isAccepting = false;
-                    });
-                  });
-
-                  // ScaffoldMessenger 호출을 여기서 안전하게 실행
-                  WidgetsBinding.instance?.addPostFrameCallback((_) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(rootContext).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '해당 요청이 수락되었습니다.',
-                            textAlign: TextAlign.center,
-                          ),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    }
-                  });
-
-                  Navigator.pushReplacement(
-                    rootContext,
-                    MaterialPageRoute(builder: (context) => AllUsersScreen()), // 로그인 화면으로 이동
-                  );
-                });
-
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
-                ),
-              ),
-              child: Text('거절',style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.of(context).pop(); // 대화 상자 닫기
-                _deleteNotification(documentId); // 거절시 알림 내용 삭제
-                _deleteChatActions(documentId); // 거절시 채팅 정보 삭제
-                _deletePayments(documentId); //거절시 페이 정보 삭제
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "해당 요청이 거절되었습니다.", textAlign: TextAlign.center,),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-  //채팅 정보 삭제
-  void _deleteChatActions(String docId) {
-    FirebaseFirestore.instance
-        .collection('ChatActions')
-        .doc(docId)
-        .delete()
-        .then((_) => print("Document successfully deleted"))
-        .catchError((error) => print("Failed to delete document: $error"));
-  }
-
-  void _deletePayments(String docId) {
-    FirebaseFirestore.instance
-        .collection('Payments')
-        .doc(docId)
-        .delete()
-        .then((_) => print("Document successfully deleted"))
-        .catchError((error) => print("Failed to delete document: $error"));
-  }
-
-
-  Color _getColorFromName(String name) {
-    final int nameLength = name.length;
-    final List<Color> colors = [
-      Color(0xFF80B3FF),    // 보라색
-      // Color(0xFF9EDDFF),
-      Color(0xFF687EFF),    // 파란색
-      Color(0xFFFF8B13),    // 오렌지색
-    ];
-
-    return colors[(nameLength ) % colors.length];
-  }
-
-
-  // 수락시 상대방 및 본인 도와주기 횟수 카운트!
-  Future<void> _HelperCount(String docId) async{
-    try {
-      DocumentSnapshot postId = await FirebaseFirestore.instance
-          .collection('helpActions')
-          .doc(docId)
-          .get();
-
-      if (!postId.exists) {
-        print("Document does not exist.");
-        return;
-      }
-
-      String helper_email = postId.get('helper_email');
-      String owner_email = postId.get('owner_email');
-
-      String helper_nickname = postId.get('helper_email_nickname');
-      String owner_nickname = postId.get('owner_email_nickname');
-
-      String helperDomain = _extractDomain(helper_email);
-      String ownerDomain = _extractDomain(owner_email);
-
-
-      // // // 도메인별로 점수 증가
-      await _updateIndividualCount(helper_nickname, helperDomain);
-
-      await _updateIndividualCount(owner_nickname, ownerDomain);
-
-
-
-    } catch (e) {
-      print("Error in _HelperCount: $e");
-    }
-  }
-
-  // 도메인 추출
-  String _extractDomain(String email)  {
-    return email.split('@').last;
-  }
-
-  // 도메인 별로 카운트
-  Future<void> _updateIndividualCount(String nickname, String domain) async {
-    try {
-      DocumentReference schoolRef = FirebaseFirestore.instance
-          .collection('schoolScores')
-          .doc(domain);
-
-      DocumentSnapshot schoolSnapshot = await schoolRef.get();
-
-      if (!schoolSnapshot.exists) {
-        // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
-        await schoolRef.set({nickname: 1});
-      } else {
-        // 문서가 존재하면 해당 이메일의 값을 업데이트
-        int currentCount = (schoolSnapshot.data() as Map<String, dynamic>)[nickname] ?? 0;
-        await schoolRef.update({nickname: currentCount + 1});
-      }
-    } catch (e) {
-      print("Error in _updateIndividualCount: $e");
-    }
-  }
-
-
-  //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
-  Future<String> getGradeByNickname(String helperEmailNickname) async{
-    final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
-
-    DocumentSnapshot documentSnapshot = await usersCollection.doc(helperEmailNickname).get();
-
-    if(documentSnapshot.exists){
-      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-      return data['grade'].toString();
-    }
-    else {
-      return '정보 없음';
-    }
-  }
-
-  //채팅방 생성 수락시
-  Future<void> _updateTime(String documentId, DateTime newtime) async {
-    await FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
-        .update({'timestamp': newtime});
-  }
-
-
-// response에 업데이트 추가
-  Future<void> _respondToActions(String documentId, String response) async {
-    await Future.wait([
-      FirebaseFirestore.instance.collection('ChatActions').doc(documentId)
-          .update({'response': response}),
-      FirebaseFirestore.instance.collection('helpActions').doc(documentId)
-          .update({'response': response}),
-      FirebaseFirestore.instance.collection('Payments').doc(documentId)
-          .update({'response': response}),
-    ]);
   }
 
 }

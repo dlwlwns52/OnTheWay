@@ -148,6 +148,24 @@ flutter:
     - assets/pigma/Serch.svg
     - assets/pigma/map.svg
     - assets/pigma/compass.svg
+    - assets/pigma/notifications_indigo.svg
+    - assets/pigma/chatbubbles_indigo.svg
+    - assets/pigma/person_indigo.svg
+    - assets/pigma/trash-bin_indigo.svg
+    - assets/pigma/exit_indigo.svg
+    - assets/pigma/bank.svg
+    - assets/pigma/trash-bin_white.svg
+    - assets/pigma/exit_white.svg
+    - assets/pigma/account_circle.svg
+#    - assets/pigma/RankingRectangle1.svg
+#    - assets/pigma/RankingRectangle2.svg
+#    - assets/pigma/RankingRectangle3.svg
+#    - assets/pigma/Rectangle1.svg
+#    - assets/pigma/Rectangle2.svg
+#    - assets/pigma/Rectangle3.svg
+    - assets/pigma/cnuLogo.svg
+    - assets/pigma/school_indigo.svg
+
 
   fonts:
     - family: NanumSquareRound

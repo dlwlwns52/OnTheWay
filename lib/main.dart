@@ -143,8 +143,8 @@ class LoadingScreen extends StatelessWidget {
           children: <Widget>[
             Image.asset(
               'assets/images/LoginLogo.png',
-              width: 200, // 이미지 너비를 설정합니다.
-              height: 200, // 이미지 높이를 설정합니다.
+              width: 170, // 이미지 너비를 설정합니다.
+              height: 170, // 이미지 높이를 설정합니다.
             ),
             // Image.asset(
             //   'assets/images/LoginLogo2.png',

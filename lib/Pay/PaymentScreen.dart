@@ -19,7 +19,7 @@ import '../Chat/ChatScreen.dart';
 import '../Chat/Message.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Profile/Profile.dart';
-import '../Ranking/SchoolRanking.dart';
+import '../Ranking/DepartmentRanking.dart';
 
 class PaymentStatusScreen extends StatefulWidget {
   @override
@@ -1090,7 +1090,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                 ),
                 _buildBottomNavItem(
                   iconPath: 'assets/pigma/school.svg',
-                  label: '학교랭킹',
+                  label: '학과랭킹',
                   isActive: _selectedIndex == 3,
                   onTap: () {
                     if (_selectedIndex != 3) {
@@ -1100,7 +1100,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                       HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                        MaterialPageRoute(builder: (context) => DepartmentRankingScreen()),
                       );
                     }
                   },

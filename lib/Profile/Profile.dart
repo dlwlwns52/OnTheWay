@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:OnTheWay/Profile/AccountInfoScreen.dart';
 import 'package:OnTheWay/Profile/DeleteMember.dart';
+import 'package:OnTheWay/Profile/DepartmentManager.dart';
 import 'package:OnTheWay/login/LoginScreen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +12,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '../Alarm/AlarmUi.dart';
 import '../Alarm/Grade.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/FullScreenImage.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../Pay/PaymentScreen.dart';
-import '../Ranking/SchoolRanking.dart';
+import '../Ranking/DepartmentRanking.dart';
+import 'SuggestionToAdminScreen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   @override
@@ -28,6 +32,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   User? user;
   String? nickname;
   double? grade;
+  String? department;
   String? bank;
   String? accountNumber;
   int feedbackCount = 0;
@@ -42,6 +47,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  late Future<String?> _nickname;
 
 
   @override
@@ -54,8 +60,95 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
 
+    //닉네임 가져옴
+    _nickname = getNickname();
   }
 
+
+  //앱바 알림기능
+  //userStatus에서 본인 nickname 찾기
+  Future<String?> getNickname() async {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: botton_email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty){
+      return querySnapshot.docs.first['nickname'];
+    }
+    return null;
+  }
+
+  // Firestore에서 messageCount 값을 실시간으로 가져오는 메서드
+  Stream<DocumentSnapshot> getMessageCountStream(String nickname) {
+    return FirebaseFirestore.instance
+        .collection('userStatus')
+        .doc(nickname)
+        .snapshots();
+  }
+
+  //userStatus messageCount 값 초기화
+  Future<void> resetMessageCount(String nickname) async {
+    DocumentReference docRef = FirebaseFirestore.instance.collection('userStatus').doc(nickname);
+
+    await docRef.set({'messageCount': 0}, SetOptions(merge: true));
+
+  }
+
+
+  Widget _buildMenuItem(BuildContext context, String title, String leadingIcon, {String? trailingIcon, bool isFirstItem = false}) {
+    return Container(
+      margin: isFirstItem
+          ? EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.025)
+          : EdgeInsets.fromLTRB(
+        0,
+        MediaQuery.of(context).size.height * 0.023,
+        0,
+        MediaQuery.of(context).size.height * 0.023,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.02),
+                width: 20,
+                height: 20,
+                child: SvgPicture.asset(leadingIcon),
+              ),
+              Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w500,
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                  height: 1,
+                  letterSpacing: -0.4,
+                  color: Color(0xFF222222),
+                ),
+              ),
+            ],
+          ),
+          if (trailingIcon != null)
+            Container(
+              width: 20,
+              height: 20,
+              child: SvgPicture.asset(trailingIcon),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider(BuildContext context) {
+    return Divider(
+      color: Colors.grey, // 구분선 색상 설정
+      // thickness: MediaQuery.of(context).size.height * 0.001, // 구분선 두께를 화면 높이에 비례하게 설정
+      height: MediaQuery.of(context).size.height * 0.01, // 구분선과 항목 사이의 간격
+    );
+  }
 
   // 닉네임 가져옴
   Future<void> _fetchUserNickname(String? email) async {
@@ -75,12 +168,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           bank = data['bank'];
           accountNumber = data['accountNumber'];
           grade = (data['grade'] as num).toDouble();
+          department =  data['department'] ?? '';
         });
       }
     } catch (e) {
       print("Error fetching user data: $e");
     }
   }
+
+
 
 
   //로그아웃시 로그인창으로 이동
@@ -91,31 +187,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null)  // 사용자가 로그인되어 있지 않으면 함수 종료
         {
-          final String? email = currentUser.email;
+      final String? email = currentUser.email;
 
-          final FirebaseFirestore firestore = FirebaseFirestore.instance;
-          QuerySnapshot querySnapshot = await firestore.collection('users')
-              .where('email', isEqualTo: email)
-              .get();
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      QuerySnapshot querySnapshot = await firestore.collection('users')
+          .where('email', isEqualTo: email)
+          .get();
 
-          if (querySnapshot.docs.isNotEmpty) {
-            // 해당 이메일을 가진 사용자 문서가 존재하는 경우
-            DocumentSnapshot userDoc = querySnapshot.docs.first;
-            // 해당 이메일을 가진 사용자 문서가 존재하는 경우
-            String userId = userDoc.id;
+      if (querySnapshot.docs.isNotEmpty) {
+        // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        // 해당 이메일을 가진 사용자 문서가 존재하는 경우
+        String userId = userDoc.id;
 
-            // // 해당 사용자 문서에 토큰을 저장합니다.
-            await firestore.collection('users').doc(userId).set({
-              'isAutoLogin': false,
-              'token': FieldValue.delete(),
-            }, SetOptions(merge: true));
-          }
-          else {
-            print('No user found with email: $email');
-          }
+        // // 해당 사용자 문서에 토큰을 저장합니다.
+        await firestore.collection('users').doc(userId).set({
+          'isAutoLogin': false,
+          'token': FieldValue.delete(),
+        }, SetOptions(merge: true));
+      }
+      else {
+        print('No user found with email: $email');
+      }
 
-          // FirebaseAuth에서 로그아웃
-          await FirebaseAuth.instance.signOut();
+      // FirebaseAuth에서 로그아웃
+      await FirebaseAuth.instance.signOut();
     }
 
     Navigator.pushAndRemoveUntil(
@@ -125,169 +221,129 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-
-
-  // 개발자에게 건의사항 전송
-  Future<void> _submitFeedback(String feedback) async {
-    if (user != null) {
-      final userRef = FirebaseFirestore.instance.collection('users').doc(nickname);
-      final userData = await userRef.get();
-
-      int feedbackCount = userData.exists && userData.data()?.containsKey('feedbackCount') == true
-          ? userData['feedbackCount']
-          : 0;
-      DateTime? lastFeedbackTime = userData.exists && userData.data()?.containsKey('lastFeedbackTime') == true
-          ? (userData['lastFeedbackTime'] as Timestamp?)?.toDate()
-          : null;
-
-      if (lastFeedbackTime != null && DateTime.now().difference(lastFeedbackTime).inDays >= 1){
-        feedbackCount = 0;
-      }
-
-      if (feedbackCount > 3){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('의견을 보내주셔서 대단히 감사합니다.\n건의사항은 하루에 최대 3번까지 \n접수할 수 있음을 알려드립니다.'
-              , textAlign: TextAlign.center,),
-            duration: Duration(seconds: 2),),
-        );
-        return; // 피드백 전송을 중단하고 함수 종료
-      }
-
-      // 피드백 카운트를 증가
-      feedbackCount += 1;
-
-      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final documentName = '${nickname}_${user!.email}_$timestamp';
-
-      await FirebaseFirestore.instance.collection('feedback').doc(documentName).set({
-        'nickname': nickname,
-        'email': user!.email,
-        'feedback': feedback,
-        'timestamp': DateTime.now(),
-      });
-      // 사용자 데이터에 피드백 카운트와 마지막 피드백 시간을 업데이트
-      await userRef.update({
-        'feedbackCount': feedbackCount,
-        'lastFeedbackTime': DateTime.now(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('소중한 의견을 주셔서 감사합니다. \n답변은 이메일로 보내드리겠습니다!'
-          , textAlign: TextAlign.center,),
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-    }
-  }
-
-  // 건의사항 다이어로그
-  void _showFeedbackDialog() {
-    final TextEditingController feedbackController = TextEditingController();
-
+  void logoutDialog(BuildContext context) {
     showDialog(
-      barrierDismissible: false, // 바깥을 눌러도 다이어로그가 닫히지 않게 설정
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+        return Container(
+          padding: EdgeInsets.only(
+            left: MediaQuery.of(context).size.width * 0.03,
+            right: MediaQuery.of(context).size.width * 0.03,
           ),
-          title: Center(
-            child: Row(
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.feedback, color: Colors.indigo),
-                SizedBox(width: 8),
-                Text(
-                  '개발자에게 하고 싶은 말',
-                  style: TextStyle(
-                    fontFamily: 'NanumSquareRound',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 19,
-                    color: Colors.indigo,
+                Container(
+                  margin: EdgeInsets.fromLTRB(
+                    0,
+                    MediaQuery.of(context).size.height * 0.04,
+                    0,
+                    MediaQuery.of(context).size.height * 0.025,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF1D4786),
+                      borderRadius: BorderRadius.circular(
+                        MediaQuery.of(context).size.width * 0.15,
+                      ),
+                    ),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      height: MediaQuery.of(context).size.width * 0.2,
+                      padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.width * 0.05,
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.1,
+                        height: MediaQuery.of(context).size.width * 0.1,
+                        child: SvgPicture.asset(
+                          'assets/pigma/exit_white.svg',
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(width: 8),
+                SizedBox(height: 5),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '정말 로그아웃을 하시겠어요?',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          height: 1,
+                          letterSpacing: -0.4,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                Divider(color: Colors.grey, height: 1),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          _logout();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '로그아웃',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF636666),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5, // 구분선의 두께
+                      height: 55, // 구분선의 높이
+                      color: Colors.grey, // 구분선의 색상
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '다음에',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1D4786),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-            width: MediaQuery.of(context).size.width * 1, // 다이얼로그 너비 설정
-              child: TextField(
-              controller: feedbackController,
-              maxLines: 7,
-              decoration: InputDecoration(
-                hintText: '건의사항을 입력해주세요.',
-                hintStyle: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15,
-                  color: Colors.black45,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.indigo), // 포커스 시 색상 변경
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ),
-            SizedBox(height: 15,),
-
-            Text('※ 소중한 의견에 대한 답변은 이메일을 통해 보내드리도록 하겠습니다.',
-              style: TextStyle(
-                fontFamily: 'NanumSquareRound',
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-                color: Colors.indigo,
-                height: 1.5
-              ),
-            ),
-          ],),
-
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                if (feedbackController.text.isNotEmpty) {
-                  _submitFeedback(feedbackController.text);
-                  Navigator.of(context).pop();
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('건의사항을 입력해주세요.'
-                      , textAlign: TextAlign.center,),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              child: Text('전송'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo[400],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('취소'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade300,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          ],
         );
       },
     );
@@ -295,87 +351,159 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
 
 
+
+
+
+
   // 계정 삭제할지 물어보는 다이어로그
-  void _checkNicknameAvailability() async {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              title: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline_outlined, color: Colors.indigo),
-                    SizedBox(width: 8),
-                    Text(
-                      '알림',
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 25,
-                        color: Colors.indigo,
+  void accountDeletionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: MediaQuery.of(context).size.width * 0.03,
+            right: MediaQuery.of(context).size.width * 0.03,
+          ),
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  margin: EdgeInsets.fromLTRB(
+                    0,
+                    MediaQuery.of(context).size.height * 0.04,
+                    0,
+                    MediaQuery.of(context).size.height * 0.025,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF1D4786),
+                      borderRadius: BorderRadius.circular(
+                        MediaQuery.of(context).size.width * 0.15,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      height: MediaQuery.of(context).size.width * 0.2,
+                      padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.width * 0.05,
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.1,
+                        height: MediaQuery.of(context).size.width * 0.1,
+                        child: SvgPicture.asset(
+                          'assets/pigma/exit_white.svg',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 5),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '정말 해당 계정을 삭제하시겠어요?',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          height: 1,
+                          letterSpacing: -0.4,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      TextSpan(
+                        text: '\n\n⚠️탈퇴 시 정보가 모두 삭제됩니다.',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                          fontSize: 14, // 작은 글씨 크기 설정
+                          color: Colors.grey, // 회색으로 설정
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                Divider(color: Colors.grey, height: 1),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "길게 누르시면 계정이 삭제 됩니다.",
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        onLongPress: () {
+                          _deleteAccount();
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '회원탈퇴',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF636666),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5, // 구분선의 두께
+                      height: 55, // 구분선의 높이
+                      color: Colors.grey, // 구분선의 색상
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '다음에',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1D4786),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              content: Text(
-                '정말 해당 계정을 삭제 하시겠습니까? \n\n삭제 버튼을 누르시면\n계정의 정보가 모두 삭제됩니다.',
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              actions: [
-                ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "길게 누르시면 계정이 삭제 됩니다.",
-                            textAlign: TextAlign.center,
-                          ),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    onLongPress: () {
-                      _deleteAccount();
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('삭제'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[400],
-                      shape: RoundedRectangleBorder(
-                        borderRadius:  BorderRadius.circular(30)
-                      )
-                    )
-                ),
-                // SizedBox(width: 5,),
-
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('취소'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo[400],
-                        shape: RoundedRectangleBorder(
-                        borderRadius:  BorderRadius.circular(30)
-                        )
-                    )
-                ),
               ],
-            );
-          },
+            ),
+          ),
         );
+      },
+    );
   }
 
   //계정 삭제하는 함수
@@ -489,13 +617,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       // 상태 업데이트
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '프로필 사진이 변경되었습니다.',
-            textAlign: TextAlign.center,
-          ),
-          duration: Duration(seconds: 2),
-        )
+          SnackBar(
+            content: Text(
+              '프로필 사진이 변경되었습니다.',
+              textAlign: TextAlign.center,
+            ),
+            duration: Duration(seconds: 2),
+          )
       );
     } catch (e) {
       print('Error occurred while uploading the image: $e');
@@ -716,310 +844,90 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
 
-
-  Widget _buildProfileHeader() {
-    return FutureBuilder<DocumentSnapshot>(
-        future: _firestore.collection('users').doc(nickname).get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return SizedBox.shrink(); // 아무것도 표시하지 않음
-          }
-
-          if (!snapshot.hasData) {
-            return Text('No user data found');
-          }
-
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
-          var photoURL = userData['profilePhotoURL'] as String?;
-
-          return Center(
-            child: Column(
+  Widget _buildGradeCard(Grade? grade, String? nickname) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      color: Color(0xFFE8EFF8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+        side: BorderSide(color: grade?.border.top.color ?? Colors.black, width: 1.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                InkWell(
-                  onTap: (){
-                    HapticFeedback.lightImpact();
-                    _showProfileEditDeleteDialog(context, photoURL);
-                    }, //이미지 선택
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[200],
-                    child: photoURL != null  && photoURL.isNotEmpty
-                        ? null
-                        : Icon(Icons.account_circle, size: 100, color: Colors.indigo,),
-                    backgroundImage: photoURL != null  && photoURL.isNotEmpty
-                        ? NetworkImage(photoURL)
-                        : null,
-                  ),
-                ),
-                SizedBox(height: 16),
+                Icon(Icons.person, color: Color(0xFF1D4786), size: 24.0), // 아이콘 추가
+                SizedBox(width: 8.0), // 간격 추가
                 Text(
-                  nickname ?? '사용자 이름',
+                  '${nickname ?? "사용자"} 님의 평점',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontFamily: 'Pretendard',
                     fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  user?.email ?? '이메일 없음',
-                  style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: Color(0xFF222222),
                   ),
                 ),
               ],
             ),
-          );
-        }
-      );
-  }
-
-
-
-  Widget _buildProfileInfoCard(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: ListTile(
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(value),
-        leading: Icon(Icons.info_outline),
-      ),
-    );
-  }
-
-  Widget _buildProfileAccount(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: ListTile(
-          title: Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(value),
-          leading: Icon(Icons.account_balance_outlined),
-          onTap: (){
-            HapticFeedback.lightImpact();
-            _updateBankAccountInfo();
-          }
-      ),
-    );
-  }
-
-  void _updateBankAccountInfo() async {
-    TextEditingController _bankController = TextEditingController();
-    TextEditingController _accountNumberController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          title: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.account_balance, color: Colors.indigo),
-                SizedBox(width: 8),
-                Text(
-                  '계좌 정보 수정',
-                  style: TextStyle(
-                    fontFamily: 'NanumSquareRound',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    color: Colors.indigo,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _bankController,
-                decoration: InputDecoration(
-                  labelText: '은행명',
-                  labelStyle: TextStyle(
-                    fontFamily: 'NanumSquareRound',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.black,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(
-                      color: Colors.indigo,
-                    )
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: _accountNumberController,
-                decoration: InputDecoration(
-                  labelText: '계좌번호',
-                  labelStyle: TextStyle(
-                    fontFamily: 'NanumSquareRound',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.black,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      )
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                String newBank = _bankController.text.trim();
-                String newAccountNumber = _accountNumberController.text.trim();
-
-                if (newBank.isNotEmpty && newAccountNumber.isNotEmpty) {
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(nickname) // Firestore에서 사용자 문서를 업데이트합니다.
-                      .update({
-                    'bank': newBank,
-                    'accountNumber': newAccountNumber,
-                  });
-
-                  setState(() {
-                    bank = newBank;
-                    accountNumber = newAccountNumber;
-                  });
-
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '계좌 정보가 성공적으로 업데이트되었습니다.',
-                        textAlign: TextAlign.center,
-                      ),
-                      duration: Duration(seconds: 2),
+            if (grade != null)
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: grade.color2, width: 1.5),
+                      borderRadius: BorderRadius.circular(5),
+                      color: Color(0xFFE8EFF8),
                     ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '모든 필드를 채워주세요.',
-                        textAlign: TextAlign.center,
+                    child:
+                    Container(
+                      padding: EdgeInsets.fromLTRB(13, 2.5, 13, 2.5),
+                      child: Row(
+                        children: [
+                          // Icon(Icons.school_outlined, color: grade.color),
+
+                          Text(
+                            '${grade.letterProfile}  ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: grade.color2,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 7),
+                          // Column(
+                          //   children: [
+                          //     SizedBox(height: 12),
+                          Text(
+                            '${grade.value.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: grade.color2,
+                              fontSize: 16,
+                            ),
+                          ),
+                          //   ],
+                          // ),
+                        ],
                       ),
-                      duration: Duration(seconds: 2),
                     ),
-                  );
-                }
-              },
-              child: Text('수정'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo[400],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  )
+                ],
+              )
+            else
+              Text(
+                '설정되지 않음',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Color(0xFF888888),
                 ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.of(context).pop();
-              },
-              child: Text('취소'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[600],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-            ),
           ],
-        );
-      },
-    );
-  }
-
-
-  Widget _buildGradeCard(Grade? grade) {
-    if (grade == null) {
-      return _buildProfileInfoCard('성적', '설정되지 않음');
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: grade.border.top.color, width: grade.border.top.width),
-      ),
-      child: ListTile(
-        title: Text(
-          '성적',
-          style: TextStyle(color: grade.color2, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text('${grade.letter} :   ${grade.value.toStringAsFixed(2)}',
-        style: TextStyle(color: grade.color2) ,),
-        leading: Icon(Icons.grade, color: grade.color2),
-      ),
-    );
-  }
-
-  Widget _buildButton(String text, VoidCallback onPressed, Color color) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16.0),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 16.0),
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextButton(String text, VoidCallback onPressed, Color color) {
-    return Container(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 15,
-          ),
         ),
       ),
     );
@@ -1030,46 +938,393 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     Grade? userGrade = grade != null ? Grade(grade!) : null;
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading : false, // '<' 이 뒤로가기 버튼 삭제
-        title: Text('프로필', style:
-        TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold)
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-        centerTitle: true,
-      ),
-
-
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildProfileHeader(),
-              SizedBox(height: 20),
-              _buildProfileInfoCard('닉네임', nickname ?? '설정되지 않음'),
-              _buildProfileInfoCard('이메일', user?.email ?? '설정되지 않음'),
-              _buildProfileAccount('${bank}', accountNumber ?? '설정되지 않음'),
-              _buildGradeCard(userGrade),
-              SizedBox(height: 40),
-              _buildButton('로그아웃', _logout, Colors.indigo.shade300),
-              _buildTextButton('개발자에게 하고 싶은 말', _showFeedbackDialog, Colors.blue), // 추가된 부분
-              _buildTextButton('회원탈퇴', _checkNicknameAvailability, Colors.red),
-            ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+        child: AppBar(
+          title: Text(
+            '프로필',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontWeight: FontWeight.w600,
+              fontSize: 19,
+              height: 1.0,
+              color: Colors.white,
+            ),
           ),
+          centerTitle: true,
+          backgroundColor: Color(0xFF1D4786),
+          elevation: 0,
+          leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+          actions: [
+            Container(
+              margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: <Widget>[
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data == null) {
+                        return IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/pigma/notification_white.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                  textAlign: TextAlign.center,
+                                ),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                        );
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/pigma/notification_white.svg',
+                          width: 25,
+                          height: 25,
+                        ),
+                        onPressed: () async {
+                          HapticFeedback.lightImpact();
+                          await resetMessageCount(ownerNickname);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AlarmUi(),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data == null) {
+                        return Container();
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return StreamBuilder<DocumentSnapshot>(
+                        stream: getMessageCountStream(ownerNickname),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return Container();
+                          }
+                          var data = snapshot.data!.data()
+                          as Map<String, dynamic>;
+                          int messageCount = data['messageCount'] ?? 0;
+
+                          return Positioned(
+                            right: 9,
+                            top: 9,
+                            child: messageCount > 0
+                                ? Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 14,
+                                minHeight: 14,
+                              ),
+                              child: Text(
+                                '$messageCount',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                                : Container(),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
 
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(
+              0,
+              0,
+              0,
+              MediaQuery.of(context).size.height * 0.04,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFF1D4786),
+              ),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    FutureBuilder<DocumentSnapshot>(
+                      future: _firestore.collection('users').doc(nickname).get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return SizedBox.shrink(); // 아무것도 표시하지 않음
+                        }
+
+                        if (!snapshot.hasData) {
+                          return Text('No user data found');
+                        }
+
+                        var userData = snapshot.data!.data() as Map<String, dynamic>;
+                        var photoURL = userData['profilePhotoURL'] as String?;
+
+                        return Center(
+                          child: Column(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _showProfileEditDeleteDialog(context, photoURL);
+                                }, //이미지 선택
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF1D4786),
+                                        Color(0xFF1D4786)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      (photoURL != null && photoURL.isNotEmpty)
+                                          ? BoxShadow(
+                                        color:
+                                        Colors.black.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: Offset(0, 1), // 그림자 위치 조정
+                                      )
+                                          : BoxShadow(),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey[200],
+                                    child: photoURL != null && photoURL.isNotEmpty
+                                        ? null
+                                        : SvgPicture.asset(
+                                      'assets/pigma/person_indigo.svg',
+                                      width: 50,  // 필요한 크기로 조정합니다.
+                                      height: 50,  // 필요한 크기로 조정합니다.
+                                      // color: Colors.indigo,
+
+                                    ),
+                                    backgroundImage: photoURL != null &&
+                                        photoURL.isNotEmpty
+                                        ? NetworkImage(photoURL)
+                                        : null
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(
+                        0,
+                        MediaQuery.of(context).size.height * 0.02,
+                        1,
+                        MediaQuery.of(context).size.height * 0.01,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                            child: Text(
+                              '${nickname}',
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 17,
+                                height: 1,
+                                letterSpacing: -0.4,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                          ),
+
+                          Text(
+                            '${user?.email}',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFFFFFFFF),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildGradeCard(userGrade, nickname)
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Container(
+              margin: EdgeInsets.fromLTRB(
+                MediaQuery.of(context).size.width * 0.05,
+                0,
+                MediaQuery.of(context).size.width * 0.05,
+                0,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 알림 설정 Row
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AccountInfoScreen(
+                            nickname: nickname ?? '재 로그인 해주세요.',
+                            oldBank: bank ?? '재 로그인 해주세요.',
+                            oldAccountNumber:
+                            accountNumber ?? '재 로그인 해주세요.',
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '계좌정보',
+                      'assets/pigma/bank.svg',
+                      trailingIcon: 'assets/pigma/arrow.svg',
+                      isFirstItem: true,
+                    ),
+                  ),
+                  _buildDivider(context),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DepartmentManager(
+                            nickname: nickname ?? '앱 종료 후 다시 시작해주세요.',
+                            department: department ?? '앱 종료 후 다시 시작해주세요.',
+                            email: botton_email ?? '재 로그인 해주세요.',
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '학과정보',
+                      'assets/pigma/school_indigo.svg',
+                      trailingIcon: 'assets/pigma/arrow.svg',
+                    ),
+                  ),
+                  _buildDivider(context),
+
+
+
+                  // 건의하기 Row
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SuggestionToAdminScreen(
+                            nickname: nickname ?? '앱 종료 후 다시 시작해주세요.',
+                            email: botton_email ?? '재 로그인 해주세요.',
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '건의하기',
+                      'assets/pigma/chatbubbles_indigo.svg',
+                      trailingIcon: 'assets/pigma/arrow.svg',
+                    ),
+                  ),
+                  _buildDivider(context),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      logoutDialog(context);
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '로그아웃',
+                      'assets/pigma/exit_indigo.svg',
+                    ),
+                  ),
+                  _buildDivider(context),
+                  // 회원탈퇴 Row
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      accountDeletionDialog(context);
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '회원탈퇴',
+                      'assets/pigma/trash-bin_indigo.svg',
+                    ),
+                  ),
+                  _buildDivider(context),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
 
       bottomNavigationBar: Padding(
-        padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 8, top: 8): const EdgeInsets.only(bottom: 30, top: 10),
+        padding: Platform.isAndroid
+            ? EdgeInsets.only(bottom: 8, top: 8)
+            : const EdgeInsets.only(bottom: 30, top: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -1136,7 +1391,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 _buildBottomNavItem(
                   iconPath: 'assets/pigma/school.svg',
-                  label: '학교랭킹',
+                  label: '학과랭킹',
                   isActive: _selectedIndex == 3,
                   onTap: () {
                     if (_selectedIndex != 3) {
@@ -1146,7 +1401,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                        MaterialPageRoute(builder: (context) => DepartmentRankingScreen()),
                       );
                     }
                   },

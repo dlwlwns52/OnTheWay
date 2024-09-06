@@ -15,7 +15,7 @@ import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';
 import '../Pay/PaymentScreen.dart';
 import '../Profile/Profile.dart';
-import '../Ranking/SchoolRanking.dart';
+import '../Ranking/DepartmentRanking.dart';
 import 'HanbatWriteBoard.dart';
 import 'CnuHelpScreen.dart';
 import '../Alarm/Alarm.dart';
@@ -897,7 +897,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                 ),
                 _buildBottomNavItem(
                   iconPath: 'assets/pigma/school.svg',
-                  label: '학교랭킹',
+                  label: '학과랭킹',
                   isActive: _selectedIndex == 3,
                   onTap: () {
                     if (_selectedIndex != 3) {
@@ -907,7 +907,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                       HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SchoolRankingScreen()),
+                        MaterialPageRoute(builder: (context) => DepartmentRankingScreen()),
                       );
                     }
                   },
