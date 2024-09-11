@@ -24,7 +24,7 @@ class _HandoverCompletedScreenState extends State<HandoverCompletedScreen> {
   //삭제되면 delete 업로드
   Future<List<Map<String, dynamic>>> _fetchCompletedDeliveries() async {
     try {
-      // Firestore에서 completedReceipts 컬렉션에서 ownerEmail이 현재 이메일과 일치하는 문서들을 가져옴
+      // Firestore에서l completedReceipts 컬렉션에서 ownerEmail이 현재 이메일과 일치하는 문서들을 가져옴
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('completedDeliveries')
           .where('helperEmail', isEqualTo: currentEmail)
