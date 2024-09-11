@@ -163,31 +163,32 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Lottie.asset(
-                'assets/lottie/blue3.json',
-                fit: BoxFit.fill,
-              ),
-            ),
-            AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 1,
-              shadowColor: Colors.indigo.withOpacity(0.5),
-              title: Text('헬퍼 위치 확인',
-                style: TextStyle(
-                  fontFamily: 'NanumSquareRound',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 23,
-                ),
-              ),
-              centerTitle: true,
-            ),
-          ],
+      appBar: AppBar(
+        title: Text(
+          '길찾기',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontWeight: FontWeight.w600,
+            fontSize: 19,
+            height: 1.0,
+            letterSpacing: -0.5,
+            color: Colors.white,
+          ),
         ),
+
+        centerTitle: true,
+        backgroundColor: Color(0xFF1D4786),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+          color: Colors.white, // 아이콘 색상
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context); // 뒤로가기 기능
+          },
+        ),
+        actions: <Widget>[
+        ],
       ),
       body: Container(
         width: double.infinity,

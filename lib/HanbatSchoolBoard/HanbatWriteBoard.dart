@@ -210,12 +210,12 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
     }
 
     if(currentLocationSet == false){
-      _showSnackBar("\'픽업 장소 찾기\' 을 완료해주세요.");
+      _showSnackBar("\'픽업 위치 찾기\' 을 완료해주세요.");
       return;
     }
 
     if(storeLocationSet == false){
-      _showSnackBar("\'드랍 장소 찾기\' 을 완료해주세요.");
+      _showSnackBar("\'드랍 위치 찾기\' 을 완료해주세요.");
       return;
     }
 

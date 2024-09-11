@@ -22,8 +22,6 @@ class _NotificationScreenState extends State<AlarmUi> {
   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
 
-  // 수락시 lottie 파일 조정 변주
-  bool _isAccepting =false;
 
 
   @override
@@ -1452,31 +1450,6 @@ class _NotificationScreenState extends State<AlarmUi> {
                   ),
                 ],
               ),
-              if (_isAccepting)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.grey.withOpacity(0.5),
-                    child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Lottie.asset(
-                            'assets/lottie/congratulation.json',
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.contain,
-                          ),
-                          Lottie.asset(
-                            'assets/lottie/clapCute.json',
-                            width: 300,
-                            height: 300,
-                            fit: BoxFit.contain,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
 

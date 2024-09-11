@@ -10,7 +10,7 @@ import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
-import '../Pay/PaymentScreen.dart';
+import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import 'IndividualRankingPage.dart';
 
@@ -132,16 +132,16 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
   }
 
   // 등수 대로 랭킹 순위 크기 차별화
-  double _getSizeForRank(int index) {
+  FontWeight _getFontWeightForRank(int index) {
     switch (index) {
       case 0:
-        return 25; // 1등
+        return FontWeight.w900; // 1등
       case 1:
-        return 23; // 2등
+        return FontWeight.w800; // 2등
       case 2:
-        return 21; // 3등
+        return FontWeight.w700; // 3등
       default:
-        return 20; // 4등부터
+        return FontWeight.w600; // 4등부터
     }
   }
 
@@ -372,6 +372,15 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                           children: [
                             GestureDetector(
                               onTap: (){
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "${Department['department']}는 현재 ${Department['score']}회로 ${index + 1}위를 기록하고 있습니다.",
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                );
                                 HapticFeedback.lightImpact();
                               },
                               child: Container(
@@ -392,13 +401,13 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                                       Row(
                                         children: [
                                           Container(
-                                            margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, screenWidth * 0.03, screenHeight * 0.006),
+                                            margin: EdgeInsets.fromLTRB(0, screenHeight * 0.006, screenWidth * 0.04, screenHeight * 0.006),
                                             child: Text(
                                               '${index + 1}위',
                                               style: TextStyle(
                                                 fontFamily: 'Pretendard',
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: _getSizeForRank(index),
+                                                fontWeight: _getFontWeightForRank(index),
+                                                fontSize: 20,
                                                 height: 1,
                                                 letterSpacing: -0.5,
                                                   color: _getColor(index)
@@ -432,7 +441,7 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                                                   style: TextStyle(
                                                     fontFamily: 'Pretendard',
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: _getSizeForDepartment(index),
+                                                    fontSize: 16,
                                                     height: 1,
                                                     letterSpacing: -0.4,
                                                     color: Color(0xFF222222),
@@ -456,7 +465,7 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                                                 style: TextStyle(
                                                   fontFamily: 'Pretendard',
                                                   fontWeight: FontWeight.w600,
-                                                  fontSize: _getSizeForDepartment(index),
+                                                  fontSize: 16,
                                                   height: 1,
                                                   letterSpacing: -0.4,
                                                   color: Color(0xFF6294E0),

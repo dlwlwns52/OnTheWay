@@ -18,7 +18,7 @@ import '../Board/UiBoard.dart';
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/FullScreenImage.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
-import '../Pay/PaymentScreen.dart';
+import '../Progress/PaymentScreen.dart';
 import '../Ranking/DepartmentRanking.dart';
 import 'SuggestionToAdminScreen.dart';
 
@@ -877,11 +877,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               Row(
                 children: [
                   Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: grade.color2, width: 1.5),
-                      borderRadius: BorderRadius.circular(5),
-                      color: Color(0xFFE8EFF8),
-                    ),
+                    // decoration: BoxDecoration(
+                    //   border: Border.all(color: grade.color2, width: 1.5),
+                    //   borderRadius: BorderRadius.circular(5),
+                    //   color: Color(0xFFE8EFF8),
+                    // ),
                     child:
                     Container(
                       padding: EdgeInsets.fromLTRB(13, 2.5, 13, 2.5),
@@ -890,11 +890,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           // Icon(Icons.school_outlined, color: grade.color),
 
                           Text(
-                            '${grade.letterProfile}  ',
+                            '${grade.letterProfile}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: grade.color2,
-                              fontSize: 16,
+                              fontSize: 18,
                             ),
                           ),
                           SizedBox(width: 7),
@@ -902,11 +902,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           //   children: [
                           //     SizedBox(height: 12),
                           Text(
-                            '${grade.value.toStringAsFixed(2)}',
+                            '(${grade.value.toStringAsFixed(2)})',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: grade.color2,
-                              fontSize: 16,
+                              fontSize: 18,
                             ),
                           ),
                           //   ],

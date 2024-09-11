@@ -113,6 +113,8 @@ flutter:
     - assets/lottie/imageSending.json
 
 
+
+    - assets/images/logo-toss-pay.png
     - assets/images/Toss_Symbol_Primary.png
     - assets/images/payment_icon_yellow_large.png
     - assets/images/payment_icon_yellow_medium.png
@@ -120,6 +122,7 @@ flutter:
     - assets/images/LoginLogo.png
     - assets/images/LoginLogo2.png
     - assets/images/FindPassword.png
+    - assets/images/RateStar.png
 
 
 
@@ -165,6 +168,9 @@ flutter:
 #    - assets/pigma/Rectangle3.svg
     - assets/pigma/cnuLogo.svg
     - assets/pigma/school_indigo.svg
+    - assets/pigma/Toss_Symbol.svg
+
+
 
 
   fonts:

@@ -14,7 +14,7 @@ import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
-import '../Pay/PaymentScreen.dart';
+import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
 import 'ChatScreen.dart';
@@ -46,6 +46,9 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
   late Future<String?> _nickname;
 
 
+  // ScrollController 추가
+  ScrollController _scrollController = ScrollController();
+  bool _isNearBottom = false;
 
   @override
   void initState() {
@@ -59,6 +62,14 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     //닉네임 가져옴
     _nickname = getNickname();
 
+    // 스크롤 위치 변경 감지
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        bool isBottom = _scrollController.position.pixels != 0;
+        _isNearBottom = isBottom;
+      }
+    });
+
   }
 
 
@@ -66,6 +77,8 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
   void dispose() {
     _chatActionsSubscription.cancel(); // 스트림 구독 해제
     _messageCountSubscription.cancel();
+    _scrollController.dispose();  // ScrollController 해제
+
     super.dispose();
   }
 
@@ -149,8 +162,9 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
           await Future.wait(fetchLastMessageFutures);
           combinedDocs.sort((a, b) => lastMessageTimes[b.id]!.compareTo(lastMessageTimes[a.id]!));
 
-          // 위젯이 화면에 여전히 존재하는 경우에만 상태를 업데이트합니다.
-          if (mounted) {
+
+          // 스크롤이 최하단에 있지 않으면 화면 갱신
+          if (mounted && !_isNearBottom) {
             setState(() {
               acceptedChatActions = combinedDocs;
             });
@@ -357,164 +371,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
     }
   }
 
-  // helper 채팅방 나가기 dialog
-  void helperShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          title: Text(
-            '채팅방 나가기',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'NanumSquareRound',
-              fontWeight: FontWeight.w800,
-              fontSize: 25,
-            ),
-          ),
-          content: Text(
-            '대화내용 및 채팅 목록이 모두 삭제됩니다.',
-            style: TextStyle(
-              fontFamily: 'NanumSquareRound',
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(
-                '나가기',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
-                helperDeleteChatRoom(documentId, helperNickname);
-                deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
-                Navigator.of(context).pop();
-                HapticFeedback.lightImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "채팅방이 삭제되었습니다.",
-                      textAlign: TextAlign.center,
-                    ),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(
-                '취소',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-
-// owner 채팅방 나가기 dialog
-  void ownerShowExitChatRoomDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          title: Column (
-                  children: [
-                      Text(
-                      '채팅방 나가기',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'NanumSquareRound',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 25,
-                    ),
-                  ),
-                    SizedBox(height: 20,)
-                ]
-            ,),
-          content: Text(
-            '대화내용 및 채팅 목록이 모두 삭제됩니다.\n',
-            style: TextStyle(
-              fontFamily: 'NanumSquareRound',
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(
-                '나가기',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                // 여기에 '나가기' 버튼을 눌렀을 때의 로직을 구현하세요.
-                HapticFeedback.lightImpact();
-                ownerDeleteChatRoom(documentId, ownerNickname);
-                deleteChatRoomIfBothDeleted(documentId, ownerNickname, helperNickname);
-              Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "채팅방이 삭제되었습니다.",
-                      textAlign: TextAlign.center,
-                    ),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(
-                '취소',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void showNicknameConfirmationDialog(BuildContext context, String documentId, String ownerNickname, String helperNickname, bool isHelper) {
     showDialog(
@@ -808,6 +664,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                 ? Container(
               padding: EdgeInsets.only(top: 10.0),
               child: ListView.builder(
+                controller: _scrollController,
                 itemCount: acceptedChatActions.length,
                 itemBuilder: ((context, index) {
                   DocumentSnapshot userDoc = acceptedChatActions[index];

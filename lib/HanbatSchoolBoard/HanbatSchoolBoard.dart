@@ -13,7 +13,7 @@ import 'package:flutter_svg/svg.dart';
 import '../Alarm/AlarmUi.dart';
 
 import '../Board/UiBoard.dart';
-import '../Pay/PaymentScreen.dart';
+import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
 import 'HanbatWriteBoard.dart';
@@ -57,6 +57,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
   // 초기 게시글 개수를 0으로 설정
   int postCount = 0;
+
+
 
 
 
@@ -104,7 +106,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     });
   }
 
-  // 현재 로그인한 사용자의 이메일을 반환하는 메서드로그인이 필요합니다
+  // 현재 로그인한 사용자의 이메일을 반환하는 메서드
   String? currentUserEmail() {
     final user = FirebaseAuth.instance.currentUser;
     return user?.email;
@@ -588,7 +590,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             children: <Widget>[
               SizedBox(height: 10), // AppBar와 Row 사이에 10픽셀의 높이를 가진 공간을 추가합니다.
                 Container(
-                margin: EdgeInsets.fromLTRB(20, 0, 20, 19),
+                margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: Align(
                   alignment: Alignment.topLeft,
                   child: StreamBuilder<QuerySnapshot>(
@@ -658,7 +660,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
                       if (posts.isEmpty) {
                         return Align(
-                          alignment: Alignment.topCenter,
+                          alignment: Alignment.center,
                           child: Container(
                             width: 300,
                             height: 200,
@@ -805,8 +807,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            // builder: (context) => HanbatNewPostScreen()),
-                          builder: (context) => Design()),
+                            builder: (context) => HanbatNewPostScreen()),
+                          // builder: (context) => Design()),
                       );
                     },
                     child: Icon(Icons.edit),

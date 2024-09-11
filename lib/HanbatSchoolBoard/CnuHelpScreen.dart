@@ -691,7 +691,6 @@ class _HelpScreenState extends State<HelpScreen> {
         'response': null,
         'helperBank' : helperBank,
         'helperAccount' : helperAccount,
-
       });
 
 

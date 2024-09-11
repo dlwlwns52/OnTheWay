@@ -57,6 +57,12 @@ exports.respondToHelpRequest = functions.firestore
     const helperEmail = requestData.helper_email; // 도움을 제공한 사용자 이메일
     const response = requestData.response; // 요청에 대한 응답 ('accepted' 또는 'rejected')
 
+    // 'accepted'인 경우에만 알림 전송
+    if (response !== 'accepted') {
+      console.log('Request was not accepted, no notification sent.');
+      return null; // 수락되지 않았으므로 함수 종료
+    }
+
     // 요청을 보낸 사용자의 디바이스 토큰 조회
     const helperDoc = await admin.firestore().collection('users')
       .where('email', '==', helperEmail).get();
@@ -72,7 +78,7 @@ exports.respondToHelpRequest = functions.firestore
     const message = {
       notification: {
         title: '온더웨이',
-        body: `귀하의 요청이 ${response === 'accepted' ? '수락되었습니다' : '거절되었습니다'}.`
+        body: '성공적으로 매칭되었습니다! \n진행상황에서 확인 후 진행해주세요!',
       },
       token: helperDeviceToken
     };
@@ -87,6 +93,8 @@ exports.respondToHelpRequest = functions.firestore
 
     return null;
   });
+
+
 
 
 //세 번째 함수 : 채팅방 생성 알림 함수
@@ -338,3 +346,124 @@ exports.scheduledFunction = functions.pubsub.schedule('00 09 * * *').timeZone('A
   await batch.commit();
   console.log('Documents older than 48 hours have been deleted');
 });
+
+
+
+
+
+// 7번째 함수: 결제 요청 전 '결제하기'를 눌렀을 때 알람 전송
+exports.notRequestPushAlarm = functions.firestore
+  .document('Payments/{documentId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    const helperEmail = afterData.helper_email; // 도움을 제공한 사용자 이메일
+
+    if (beforeData.isPaymentRequested == null && afterData.isPaymentRequested === false) {
+      // 요청을 보낸 사용자의 디바이스 토큰 조회
+      const helperDoc = await admin.firestore().collection('users')
+        .where('email', '==', helperEmail).get();
+
+      if (helperDoc.empty) {
+        console.log('No device token found for helper.');
+        return null;
+      }
+
+      const helperDeviceToken = helperDoc.docs[0].data().token; // 디바이스 토큰
+
+      // 푸시 알림 메시지 구성
+      const message = {
+        notification: {
+          title: '온더웨이',
+          body: `결제를 위해 헬퍼님의 결제 요청이 필요합니다! 진행상황에서 '결제 요청하기'를 눌러주세요.`
+        },
+        token: helperDeviceToken
+      };
+
+      // 푸시 알림 전송
+      try {
+        const response = await admin.messaging().send(message);
+        console.log('Successfully sent message:', response); // 성공 로그
+      } catch (error) {
+        console.log('Error sending message:', error);
+      }
+    }
+    return null;
+  });
+
+
+  //8번째 함수 : 거래 완료시 수령완료 내역이 생성되었다는 알림
+exports.notifyReceiptCompletion = functions.firestore
+  .document('completedReceipts/{documentId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data();
+    const ownerEmail = data.ownerEmail; 
+
+
+    const userDoc = await admin.firestore().collection('users')
+      .where('email', '==', ownerEmail).get();
+
+    if (userDoc.empty) {
+      console.log('No device token found for owner.');
+      return null;
+    }
+
+    const ownerDeviceToken = userDoc.docs[0].data().token; 
+
+    const message = {
+      notification: {
+        title: '온더웨이',
+        body: '거래가 종료되었습니다. \n계좌이체를 선택하셨을 경우 입금을 완료해 주세요.',
+      },
+      token: ownerDeviceToken
+    };
+
+
+    try {
+      await admin.messaging().send(message);
+      console.log('Successfully sent receipt completion notification');
+    } catch (error) {
+      console.log('Error sending receipt completion notification:', error);
+    }
+
+    return null;
+  });
+
+
+  //9번째 함수 : 거래 완료시 전달완료 내역이 생성되었다는 알림
+exports.notifyDeliveryCompletion = functions.firestore
+  .document('completedDeliveries/{documentId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data(); // 생성된 문서 데이터
+    const helperEmail = data.helperEmail; // 문서 필드에 있는 helperEmail
+
+    // helperEmail을 가진 사용자의 디바이스 토큰 조회
+    const userDoc = await admin.firestore().collection('users')
+      .where('email', '==', helperEmail).get();
+
+    if (userDoc.empty) {
+      console.log('No device token found for helper.');
+      return null;
+    }
+
+    const helperDeviceToken = userDoc.docs[0].data().token; // 디바이스 토큰
+
+    // 푸시 알림 메시지 구성
+    const message = {
+      notification: {
+        title: '온더웨이',
+        body: '성공적으로 물품을 전달하였습니다. 전달완료 내역을 확인해 주세요.',
+      },
+      token: helperDeviceToken
+    };
+
+    // 푸시 알림 전송
+    try {
+      await admin.messaging().send(message);
+      console.log('Successfully sent delivery completion notification');
+    } catch (error) {
+      console.log('Error sending delivery completion notification:', error);
+    }
+
+    return null;
+  });
