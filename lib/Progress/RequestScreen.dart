@@ -297,7 +297,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
-                                fontFamily: 'NanumSquareRound',
+                                  fontFamily: 'Pretendard',
                                 color: Color(0xFF1D4786),
                               ),
                             ),

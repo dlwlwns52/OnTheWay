@@ -1,7 +1,6 @@
 import 'package:OnTheWay/Chat/AllUsersScreen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'AlarmUi.dart';
 
@@ -23,14 +22,13 @@ class Alarm {
     });
 
     // 메시지 카운트 초기화
-
   }
 
   Future<void> _handleMessage(RemoteMessage message) async {
-    if (message.data['ownerEmail'] == currentUserEmail  && message.data['screen'] == 'AlarmUi') {
+    if (message.data['ownerEmail'] == currentUserEmail &&
+        message.data['screen'] == 'AlarmUi') {
       await _initializeMessageCount(currentUserEmail);
       if (context != null) {
-
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => AlarmUi(),
@@ -39,9 +37,7 @@ class Alarm {
       } else {
         print("Context is null");
       }
-    }
-
-    else if(message.data['screen'] == 'AllUsersScreen'){
+    } else if (message.data['screen'] == 'AllUsersScreen') {
       if (context != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -69,9 +65,8 @@ class Alarm {
   Future<void> resetMessageCount(String email) async {
     String? nickname = await getNickname(email);
     if (nickname != null) {
-      DocumentReference docRef = FirebaseFirestore.instance
-          .collection('userStatus')
-          .doc(nickname);
+      DocumentReference docRef =
+      FirebaseFirestore.instance.collection('userStatus').doc(nickname);
 
       await docRef.set({'messageCount': 0}, SetOptions(merge: true));
     }
@@ -83,4 +78,3 @@ class Alarm {
     }
   }
 }
-

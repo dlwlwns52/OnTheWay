@@ -3,16 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import '../login/LoginScreen.dart';
-import '../CreateAccount/SchoolEmailDialog.dart';
 import 'DepartmentList.dart';
+import 'NicknameValidator.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -92,7 +89,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _emailUserController.addListener(_onEmaildChanged);
     _accountNameController.addListener(_onAccountNameChanged);
     _accountNumberController.addListener(_onAccountNumberChanged);
-
 
 
     _emailUserController.addListener(() {
@@ -1363,6 +1359,19 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
       return false;
     }
+
+    // 4. 닉네임이 금지된 목록에 있을 때
+    if (!NicknameValidator.isNicknameValid(_nicknameController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('사용할 수 없는 닉네임입니다.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+
     return true;
   }
 

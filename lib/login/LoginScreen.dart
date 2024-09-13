@@ -5,13 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:lottie/lottie.dart';
 import '../Board/UiBoard.dart';
 import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import '../CreateAccount/SchoolEmailDialog.dart';
-import '../Map/LocationTracker.dart';
-import '../test/Design.dart';
 import 'PasswordFind.dart';
 
 class LoginScreen extends StatefulWidget {

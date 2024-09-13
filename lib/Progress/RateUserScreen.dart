@@ -122,7 +122,6 @@ class _RateUserScreenState extends State<RateUserScreen> {
     return double.parse(value.toStringAsFixed(2)); // 소수점 두 자리까지만 남김
   }
 
-
   // 수령완료 컬렉션과 전달완료 컬렉션에 데이터를 저장하는 함수
   Future<void> saveToFirestore() async {
     // 수령완료 컬렉션에 저장할 데이터

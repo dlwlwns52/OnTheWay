@@ -375,7 +375,7 @@ exports.notRequestPushAlarm = functions.firestore
       const message = {
         notification: {
           title: '온더웨이',
-          body: `결제를 위해 헬퍼님의 결제 요청이 필요합니다! 진행상황에서 '결제 요청하기'를 눌러주세요.`
+          body: `결제를 위해 헬퍼님의 결제 요청이 필요합니다! \n진행상황에서 '결제 요청하기'를 눌러주세요.`
         },
         token: helperDeviceToken
       };
@@ -452,7 +452,7 @@ exports.notifyDeliveryCompletion = functions.firestore
     const message = {
       notification: {
         title: '온더웨이',
-        body: '성공적으로 물품을 전달하였습니다. 전달완료 내역을 확인해 주세요.',
+        body: '성공적으로 물품을 전달하였습니다. \n전달완료 내역을 확인해 주세요.',
       },
       token: helperDeviceToken
     };

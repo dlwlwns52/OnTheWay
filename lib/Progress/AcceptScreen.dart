@@ -345,7 +345,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
       String helperBank = paymentData['helperBank'] ?? '도우미 은행 없음';
       String helperAccount = paymentData['helperAccount'] ?? '도우미 계좌 없음';
       String cost = paymentData['cost'] ?? '0'; // 비용은 문자열로 저장되므로 필요에 따라 변환 가능
-      print(documentName);
+
 
 
       showDialog(
@@ -399,8 +399,37 @@ class _AcceptScreenState extends State<AcceptScreen> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 12),
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 HapticFeedback.lightImpact();
+
+                                //메시지 저장(채팅 메시지)
+                                Reference storageReference = FirebaseStorage.instance
+                                    .ref()
+                                    .child('images/$documentName/${DateTime
+                                    .now()
+                                    .millisecondsSinceEpoch}');
+                                UploadTask uploadTask = storageReference.putFile(imageFile!);
+                                TaskSnapshot taskSnapshot = await uploadTask;
+                                String downloadUrl = await taskSnapshot.ref
+                                    .getDownloadURL();
+                                await FirebaseFirestore.instance
+                                    .collection('ChatActions')
+                                    .doc(documentName)
+                                    .collection('messages')
+                                    .add({
+                                  'senderName': helperNickname,
+                                  'photoUrl': downloadUrl,
+                                  'senderUid': FirebaseAuth.instance.currentUser?.uid,
+                                  'timestamp': FieldValue.serverTimestamp(),
+                                  'type': 'image',
+                                  'message': '사진',
+                                  'read': false,
+                                  'isDeleted': false,
+                                });
+
+                                //메시지 저장(채팅 목록)
+                                await _sendMessage(documentName, helperNickname, ownerNickname, helperUid,
+                                    ownerUid, helperBank, helperAccount, cost);
 
                                 Navigator.of(context).pop(true);
                               },
@@ -431,9 +460,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           ],
                         ),
                   );
-//메시지 저장(채팅 목록)
-                  await _sendMessage(documentName, helperNickname, ownerNickname, helperUid,
-                      ownerUid, helperBank, helperAccount, cost);
+
 
                   if (shouldUpload) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -444,33 +471,11 @@ class _AcceptScreenState extends State<AcceptScreen> {
                         duration: Duration(seconds: 3),
                       ),
                     );
+                    await FirebaseFirestore.instance.collection('ChatActions').doc(documentName).update(
+                        {
+                          'success_trade': true,
+                        });
 
-
-                    //메시지 저장(채팅 메시지)
-                    Reference storageReference = FirebaseStorage.instance
-                        .ref()
-                        .child('images/$documentName/${DateTime
-                        .now()
-                        .millisecondsSinceEpoch}');
-                    UploadTask uploadTask = storageReference.putFile(
-                        imageFile!);
-                    TaskSnapshot taskSnapshot = await uploadTask;
-                    String downloadUrl = await taskSnapshot.ref
-                        .getDownloadURL();
-                    await FirebaseFirestore.instance
-                        .collection('ChatActions')
-                        .doc(documentName)
-                        .collection('messages')
-                        .add({
-                      'senderName': helperNickname,
-                      'photoUrl': downloadUrl,
-                      'senderUid': FirebaseAuth.instance.currentUser?.uid,
-                      'timestamp': FieldValue.serverTimestamp(),
-                      'type': 'image',
-                      'message': '사진',
-                      'read': false,
-                      'isDeleted': false,
-                    });
 
                     if (paymentData['isPaymentRequested'] == null || paymentData['isPaymentRequested'] == false){
                       await FirebaseFirestore.instance.collection('Payments').doc(documentName).update(
@@ -503,7 +508,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                   child: Text(
                     '사진 전송 및 정산',
                     style: TextStyle(
-                      fontFamily: 'NanumSquareRound',
+                      fontFamily: 'Pretendard',
                       fontWeight: FontWeight.w800,
                       fontSize: 20,
                       color: Colors.black,
@@ -515,11 +520,10 @@ class _AcceptScreenState extends State<AcceptScreen> {
                     children: <Widget>[
                       Center(
                         child: Text(
-                          '다른 학생에게 도움을 주셔서 감사드립니다.\n덕분에 자영업자분들도 배달 수수료 \n부담을 덜 수 있었습니다.\n '
-                              '마지막으로 전달 완료한 사진을 \n전달하시면 정산 요청도 함께 보내집니다.\n감사합니다.',
+                          '도움을 주셔서 감사합니다! \n사진 전송 시 정산 요청이 진행됩니다.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontFamily: 'NanumSquareRound',
+                            fontFamily: 'Pretendard',
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                             color: Colors.black54,
@@ -530,9 +534,8 @@ class _AcceptScreenState extends State<AcceptScreen> {
                       SizedBox(height: 20),
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isPhotoSent
-                                ?  Color(0xFF1D4786)
-                                : Colors.grey,
+                            backgroundColor: Color(0xFF1D4786),
+
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),

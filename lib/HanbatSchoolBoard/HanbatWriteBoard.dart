@@ -648,7 +648,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                         onChanged: (value) => _checkMaxLength(_costController, 10),
                                         cursorColor: Color(0xFF1D4786),
                                         decoration: InputDecoration(
-                                          hintText: '₩ 금액을 입력해주세요.',
+                                          hintText: '금액을 입력해주세요.',
                                           hintStyle: TextStyle(
                                             fontFamily: 'Pretendard',
                                             fontWeight: FontWeight.w500,

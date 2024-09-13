@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
-import 'package:lottie/lottie.dart' as lottie;
 
 
 class StoreMapScreen extends StatefulWidget {

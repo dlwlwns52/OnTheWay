@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:lottie/lottie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class OwnerTMapView extends StatefulWidget {
@@ -41,21 +39,6 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
       return null;
     }
   }
-  //
-  // //헬퍼위치 호출
-  // void moveToHelperLocation() async {
-  //   String? helperLocation = await getHelperLocation(widget.documentName);
-  //   if (helperLocation != null) {
-  //     List<String> coords = helperLocation.split(',');
-  //     String latitude = coords[0];
-  //     String longitude = coords[1];
-  //
-  //     controller.runJavaScript(
-  //         "updateHelperLocation($latitude, $longitude);"
-  //     );
-  //   }
-  // }
-
 
 
   //경로찾기
@@ -77,6 +60,8 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
       'ownerClick': isClicked,
     });
   }
+
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -165,7 +150,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '길찾기',
+          '헬퍼 위치',
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontWeight: FontWeight.w600,

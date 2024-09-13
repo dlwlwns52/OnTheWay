@@ -3,10 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:lottie/lottie.dart';
-
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/FullScreenImage.dart';
 import 'Alarm.dart'; // Alarm 클래스를 가져옵니다.
@@ -18,6 +15,7 @@ class AlarmUi extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<AlarmUi> {
+
   late final Alarm alarm;  // NaverAlarm 클래스의 인스턴스를 선언합니다.
   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
@@ -27,7 +25,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   @override
   void initState() {
     super.initState();
-    // 현재 사용자의 이메일을 가져와서 NaverAlarm 클래스를 초기화합니다.
+
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
 
     alarm = Alarm(currentUserEmail, () {
@@ -36,9 +34,6 @@ class _NotificationScreenState extends State<AlarmUi> {
     }, context);
 
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
-    // context가 초기화된 후에 SnackBar를 표시합니다.\
-
-
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,7 +51,6 @@ class _NotificationScreenState extends State<AlarmUi> {
 
   @override
   void dispose() {
-    // 여기에서 스트림 구독 취소 및 기타 정리 작업을 수행합니다.
     super.dispose();
   }
 
@@ -226,6 +220,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   String _extractDomain(String email)  {
     return email.split('@').last;
   }
+
 
   // 도메인 별로 카운트
   Future<void> _updateIndividualCount(String userDepartment, String domain) async {
@@ -674,7 +669,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                         await _updateTime(documentId, now);
                         await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
 
-                        // await _deletePost(documentId); // 수락시 게시글 삭제          ////////출시할때 수정
+                        await _deletePost(documentId); // 수락시 게시글 삭제          ////////출시할때 수정
                         _deleteNotification(documentId); // 수락시 알림 내용 삭제
 
 
@@ -961,27 +956,6 @@ class _NotificationScreenState extends State<AlarmUi> {
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                        //
-                                                                        // Container(
-                                                                        //   margin: EdgeInsets.fromLTRB(0, 0, 10, 30),
-                                                                        //   decoration: BoxDecoration(
-                                                                        //     borderRadius: BorderRadius.circular(16),
-                                                                        //   ),
-                                                                        //   child: CircleAvatar(
-                                                                        //     radius: 20, // 반지름 설정 (32 / 2)
-                                                                        //     backgroundColor: Colors.grey[200],
-                                                                        //     child: (profileImageUrl != null && profileImageUrl.isNotEmpty)
-                                                                        //         ? null
-                                                                        //         : Icon(
-                                                                        //       Icons.account_circle,
-                                                                        //       size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
-                                                                        //       color: Color(0xFF1D4786),
-                                                                        //     ),
-                                                                        //     backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
-                                                                        //         ? NetworkImage(profileImageUrl)
-                                                                        //         : null,
-                                                                        //   ),
-                                                                        // ),
                                                                       ),
                                                                       Column(
                                                                         mainAxisAlignment: MainAxisAlignment.start,
@@ -1189,9 +1163,6 @@ class _NotificationScreenState extends State<AlarmUi> {
 
                                       return GestureDetector(
                                         onTap: () {
-                                          // FirebaseFirestore.instance.collection('helpActions').doc(doc.id).update({
-                                          //   'touch': false,
-                                          // });
                                           HapticFeedback.lightImpact();
                                           showCustomBottomSheet(context, doc, profileImageUrl);
 

@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:lottie/lottie.dart';
 
 
 import '../Map/Navigation/HelperTMapView.dart';
@@ -334,7 +333,7 @@ class _HelpScreenState extends State<HelpScreen> {
   String? getUserEmail() {
     // 현재 로그인한 사용자의 이메일 반환하는 메서드 정의
     final user = FirebaseAuth.instance.currentUser; // 현재 로그인한 사용자 정보 가져오기
-    return user?.email; // 사용자의 이메일 반환
+    return user?.email; // 사용자의 이메일 반환기
   }
 
 
@@ -366,7 +365,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       ),
                     ),
                     TextSpan(
-                      text: '\n\n⚠️ 거래가 매칭되면 안전한 거래를 위해 \n거래 기간 동안 사용자의 위치 정보가 \n일시적으로 공유되며, 종료 시 자동 삭제됩니다.',
+                      text: '\n\n⚠️ 거래 매칭 시, 안전한 거래를 위해 일시적으로 \n위치 정보가 공유되며 결제 요청 시 자동 삭제됩니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
@@ -456,7 +455,8 @@ class _HelpScreenState extends State<HelpScreen> {
         final data = snapshot.data() as Map<String, dynamic>;
         final response = data['response'];
         final ownerClick = data['ownerClick'];
-        if (response == 'accepted' && ownerClick == true) {
+        bool success = data['success_trade'];
+        if (response == 'accepted' && ownerClick == true && success == false ) {
           print('위치 시작');
           locationTracker.startTracking();
         }
@@ -527,27 +527,26 @@ class _HelpScreenState extends State<HelpScreen> {
 
 
 // 만약 사용자가 이미 2번 이상 '도와주기'를 요청했다면, 경고 메시지를 표시하고 함수를 종료합니다.!!!!!!!!!!!!!!!!!!
-// 현재는 100번 test용
-//       if (clickCount >= 2) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
-//             duration: Duration(seconds: 2),
-//           ),
-//         );
-//         return;
-//       }
+      if (clickCount >= 2) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("도와주기 요청은 최대 2회까지 가능합니다.", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
 
-// 만약 마지막 '도와주기' 요청 이후 5초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다. !!!!!!!!!!!!!!!!!!
-//       if (now.difference(lastClickedTime).inSeconds < 5) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
-//             duration: Duration(seconds: 2),
-//           ),
-//         );
-//         return;
-//       }
+// 만약 마지막 '도와주기' 요청 이후 30초가 지나지 않았다면, 경고 메시지를 표시하고 함수를 종료합니다. !!!!!!!!!!!!!!!!!!
+      if (now.difference(lastClickedTime).inSeconds < 30) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미 '도와주기' 요청 완료했습니다.\n다시 한 번 시도하시려면 30초 후에 다시 시도해주세요.", textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
 
 
       // 도와주기 버튼 누른 사람 닉네임 users 컬렉션에서 조회한 후 변수에 저ㄹ장!
@@ -672,6 +671,7 @@ class _HelpScreenState extends State<HelpScreen> {
         'currentLocation': doc['current_location'],
         'storeLocation': doc['store_location'],
         'response': null,
+        'success_trade' : false,
       });
 
       // 'Payments' 컬렉션에 결제 관련 정보를 저장합니다.

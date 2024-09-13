@@ -12,9 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:lottie/lottie.dart';
-import 'package:rxdart/rxdart.dart';
+
 
 import '../Alarm/AlarmUi.dart';
 import '../Board/UiBoard.dart';

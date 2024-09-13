@@ -9,15 +9,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
+
 
 import '../Map/Navigation/HelperTMapView.dart';
-import '../Ranking/DepartmentRanking.dart';
+
 
 class ChatScreen extends StatefulWidget {
   final String receiverName;
@@ -1791,43 +1790,63 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           ),
                         ),
 
-
                       onPressed: () async {
                         HapticFeedback.lightImpact();
                         await _tmapDirections(); // 위치 데이터를 가져옵니다.
 
-                        if (nicknames!['helperNickname'] == widget.senderName) {
-                          if (tmapDirections.length >= 2) {
-                            // tmapDirections 리스트에서 위치 정보 사용
-                            String currentLocation = tmapDirections[0];
-                            String storeLocation = tmapDirections[1];
-                            // Navigator를 사용하여 새 페이지로 이동
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  HelperTMapView(
-                                    currentLocation: currentLocation,
-                                    storeLocation: storeLocation,
-                                  ),
-                            ));
-                          }
-                        }
+                        // Firestore에서 success_trade 값 확인
+                        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+                            .collection('ChatActions')
+                            .doc(widget.documentName)
+                            .get();
 
-                        else if (nicknames!['ownerNickname'] == widget.senderName) {
-                          if (tmapDirections.length >= 2) {
-                            // tmapDirections 리스트에서 위치 정보 사용
-                            String currentLocation = tmapDirections[0];
-                            String storeLocation = tmapDirections[1];
-                            // 여기에 헬퍼 위치 보이게 하기
-                            String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  OwnerTMapView(
-                                    currentLocation: currentLocation,
-                                    storeLocation: storeLocation,
-                                    helperId: helperNickname,
-                                    documentName: widget.documentName,
-                                  ),
-                            ));
+                        if (docSnapshot.exists) {
+                          final data = docSnapshot.data() as Map<String, dynamic>;
+                          bool successTrade = data['success_trade'] ?? false; // success_trade 필드가 없으면 기본값 false
+
+                          if (successTrade) {
+                            // 거래가 완료된 경우 스낵바 표시
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('거래가 완료된 건입니다.', textAlign: TextAlign.center),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return; // 더 이상 진행하지 않고 종료
+                          }
+
+                          if (nicknames!['helperNickname'] == widget.senderName) {
+                            if (tmapDirections.length >= 2) {
+                              // tmapDirections 리스트에서 위치 정보 사용
+                              String currentLocation = tmapDirections[0];
+                              String storeLocation = tmapDirections[1];
+                              // Navigator를 사용하여 새 페이지로 이동
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    HelperTMapView(
+                                      currentLocation: currentLocation,
+                                      storeLocation: storeLocation,
+                                    ),
+                              ));
+                            }
+                          }
+
+                          // 거래가 완료되지 않았을 때 OwnerTMapView로 이동
+                          else if (nicknames!['ownerNickname'] == widget.senderName) {
+                            if (tmapDirections.length >= 2) {
+                              String currentLocation = tmapDirections[0];
+                              String storeLocation = tmapDirections[1];
+                              String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
+
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => OwnerTMapView(
+                                  currentLocation: currentLocation,
+                                  storeLocation: storeLocation,
+                                  helperId: helperNickname,
+                                  documentName: widget.documentName,
+                                ),
+                              ));
+                            }
                           }
                         }
                       },

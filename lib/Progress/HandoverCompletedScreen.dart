@@ -24,7 +24,7 @@ class _HandoverCompletedScreenState extends State<HandoverCompletedScreen> {
   //삭제되면 delete 업로드
   Future<List<Map<String, dynamic>>> _fetchCompletedDeliveries() async {
     try {
-      // Firestore에서l completedReceipts 컬렉션에서 ownerEmail이 현재 이메일과 일치하는 문서들을 가져옴
+      // Firestore에서 completedReceipts 컬렉션에서 ownerEmail이 현재 이메일과 일치하는 문서들을 가져옴
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('completedDeliveries')
           .where('helperEmail', isEqualTo: currentEmail)
@@ -174,46 +174,57 @@ class _HandoverCompletedScreenState extends State<HandoverCompletedScreen> {
     required String ownerPhotoUrl,
 
   }) {
-    return GestureDetector(
-      onLongPress: () async {
-        HapticFeedback.lightImpact();
-        showDeleteConfirmationDialog(context, docName);
-      },
-      child: Container(
+    return Container(
         margin: EdgeInsets.fromLTRB(
             0,
             0,
             0,
-            MediaQuery
-                .of(context)
-                .size
-                .height * 0.02),
+            MediaQuery.of(context).size.height * 0.02),
         decoration: BoxDecoration(
           border: Border.all(color: Color(0xFFD0D0D0)),
           borderRadius: BorderRadius.circular(12),
           color: Color(0xFFFFFFFF),
         ),
         child: Container(
-          padding: EdgeInsets.fromLTRB(15, 15, 15, 5),
+          padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Text(
-                  timeAgo,
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    // Pretendard 폰트 지정
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                    height: 1,
-                    letterSpacing: -0.5,
-                    color: Color(0xFFAAAAAA),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                    child: Text(
+                      timeAgo,
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        height: 1,
+                        letterSpacing: -0.5,
+                        color: Color(0xFFAAAAAA),
+                      ),
+                    ),
                   ),
-                ),
+
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      showDeleteConfirmationDialog(context, docName);
+                    },
+                    child: Icon(
+                      Icons.delete,
+                      size: 20,
+                      color: Color(0xFFAAAAAA),// 아이콘 크기 조정
+                    ),
+                  ),
+                ],
               ),
+
+
               Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                 width: double.infinity,
@@ -330,8 +341,7 @@ class _HandoverCompletedScreenState extends State<HandoverCompletedScreen> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   //게시글 구조

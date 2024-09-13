@@ -90,27 +90,9 @@ flutter:
     - assets/avatar.png
     - assets/ava.png
 
-    - assets/lottie/Animation.json
-    - assets/lottie/BoardColor.json
-    - assets/lottie/AppbarColor.json
-    - assets/lottie/blue.json
-    - assets/lottie/blue2.json
-    - assets/lottie/blue3.json
-    - assets/lottie/puple.json
 
-
-    - assets/lottie/walk.json
-    - assets/lottie/login.json
-    - assets/lottie/smile.json
-    - assets/lottie/loading_indigo.json
-    - assets/lottie/check1.json
     - assets/lottie/check_indigo.json
-    - assets/lottie/clap.json
-    - assets/lottie/congratulation.json
-    - assets/lottie/clapCute.json
-    - assets/lottie/createSuccess.json
-    - assets/lottie/payment_appbar.json
-    - assets/lottie/imageSending.json
+
 
 
 
@@ -160,12 +142,6 @@ flutter:
     - assets/pigma/trash-bin_white.svg
     - assets/pigma/exit_white.svg
     - assets/pigma/account_circle.svg
-#    - assets/pigma/RankingRectangle1.svg
-#    - assets/pigma/RankingRectangle2.svg
-#    - assets/pigma/RankingRectangle3.svg
-#    - assets/pigma/Rectangle1.svg
-#    - assets/pigma/Rectangle2.svg
-#    - assets/pigma/Rectangle3.svg
     - assets/pigma/cnuLogo.svg
     - assets/pigma/school_indigo.svg
     - assets/pigma/Toss_Symbol.svg

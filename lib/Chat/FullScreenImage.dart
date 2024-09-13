@@ -1,6 +1,3 @@
-//이 코드는 Flutter 애플리케이션에서 전체 화면 이미지를 표시하는 위젯을 정의하는 Dart 코드입니다.
-//이 위젯은 전체 화면에 이미지를 표시하고 이미지를 닫기 위한 아이콘 버튼을 포함한 상단 앱 바도 표시합니다.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

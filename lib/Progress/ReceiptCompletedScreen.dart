@@ -169,12 +169,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
 
   }) {
 
-    return GestureDetector(
-      onLongPress: () async {
-        HapticFeedback.lightImpact();
-        showDeleteConfirmationDialog(context, docName);
-      },
-        child: Container(
+    return Container(
           margin: EdgeInsets.fromLTRB(
               0,
               0,
@@ -186,24 +181,42 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
             color: Color(0xFFFFFFFF),
           ),
           child: Container(
-            padding: EdgeInsets.fromLTRB(15, 15, 15, 5),
+            padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                  child: Text(
-                          timeAgo,
-                          style: TextStyle(
-                            fontFamily: 'Pretendard', // Pretendard 폰트 지정
-                            fontWeight: FontWeight.w500,
-                            fontSize: 13,
-                            height: 1,
-                            letterSpacing: -0.5,
-                            color: Color(0xFFAAAAAA),
-                          ),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                      child: Text(
+                        timeAgo,
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                          height: 1,
+                          letterSpacing: -0.5,
+                          color: Color(0xFFAAAAAA),
+                        ),
+                      ),
+                    ),
+
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        showDeleteConfirmationDialog(context, docName);
+                      },
+                      child: Icon(
+                        Icons.delete,
+                        size: 20,
+                        color: Color(0xFFAAAAAA),// 아이콘 크기 조정
+                      ),
+                    ),
+                  ],
                 ),
                 Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -317,7 +330,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
               ],
             ),
           ),
-        ),
+
     );
   }
 
