@@ -5,8 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DeleteMember {
   final String userEmail;
   final String userNickname;
-
-  DeleteMember(this.userEmail, this.userNickname);
+  final String collection_domain;
+  DeleteMember(this.userEmail, this.userNickname, this.collection_domain);
 
 
   Future<void> deleteUserData() async {
@@ -14,7 +14,7 @@ class DeleteMember {
     await _deleteCollectionData('ChatActions');
     await _deleteCollectionData('Payments');
     await _deleteCollectionData('helpActions');
-    await _deleteCollectionData('naver_posts');
+    await _deleteCollectionData(collection_domain);
     await _deleteCollectionData('schoolScores');
     await _deleteCollectionData('userStatus');
     await _deleteCollectionData('users');
@@ -45,7 +45,7 @@ class DeleteMember {
       querySnapshots.add(await FirebaseFirestore.instance.collection(collectionName).where('owner_email', isEqualTo: value).get());
       querySnapshots.add(await FirebaseFirestore.instance.collection(collectionName).where('helper_email', isEqualTo: value).get());
 
-    } else if (collectionName == 'naver_posts') {
+    } else if (collectionName == collection_domain) {
       querySnapshots.add(await FirebaseFirestore.instance.collection(collectionName).where('email', isEqualTo: value).get());
     }
 

@@ -38,25 +38,11 @@ class _MapScreenState extends State<StoreMapScreen> {
 
     setState(() {
       storeSelectedLocation = newCenter; // 선택된 위치 업데이트
-      markers.clear(); // 기존 마커 제거
-      markers.add(Marker(
-        markerId: UniqueKey().toString(),
-        latLng: newCenter,
-        draggable: true, // 마커를 드래그 가능하게 설정
-
-      ));
     });
 
     // 지도의 중심을 업데이트
     _mapController.setCenter(newCenter);
 
-    //마커를 움직이라는 알림
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('푸른색 마커를 드래그하여 정확한 위치를 설정해 주세요.',
-        textAlign: TextAlign.center,),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -96,18 +82,32 @@ class _MapScreenState extends State<StoreMapScreen> {
 
       body: Stack(
           children : [
-            KakaoMap(
-        onMapCreated: (controller) {
-          _mapController = controller; // Kakao Map Controller 생성 및 할당
-        },
-        markers: markers.toList(), // 마커 리스트 설정
-        center: storeSelectedLocation ?? LatLng(37.5718, 126.9769), // 초기 중심 위치 설정
-        onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
-          if (markerDragType == MarkerDragType.end) {
-            markerPosition = latLng;
-          }
-        },
-      ),
+            Stack(
+              alignment: Alignment.center, // Stack의 모든 자식 위젯을 중앙에 배치
+              children: [
+                KakaoMap(
+                  onMapCreated: (controller) {
+                    _mapController = controller;
+                  },
+                  center: storeSelectedLocation ?? LatLng(37.5718, 126.9769),
+                  onCameraIdle: (LatLng center, int zoomLevel) {
+                    setState(() {
+                      markerPosition = center;
+                    });
+                  },
+                ),
+                Container(
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).size.height * 0.05,
+                  ),
+                  child: Icon(
+                    Icons.location_pin,
+                    size: 48,
+                    color: Colors.indigo[500],
+                  ), // 중앙에 고정된 마커
+                ),
+              ],
+            ),
 
       //현재위치 아이콘
             Positioned(

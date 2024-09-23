@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:OnTheWay/HanbatSchoolBoard/HanbatSchoolBoard.dart';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +10,7 @@ import 'package:lottie/lottie.dart';
 
 import '../Map/WriteMap/CurrentMapScreen.dart';
 import '../Map/WriteMap/StoreMapScreen.dart';
+import 'SchoolBoard.dart';
 
 class HanbatNewPostScreen extends StatefulWidget {
   final DocumentSnapshot? post;
@@ -45,10 +46,21 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
   // 게시하기 색상 변경
   bool _helpButtonColor = false;
 
-//게시물 수정하기 누를때 전 정보를 불러옴
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
+  String collection_domain = "";
+
+
   @override
   void initState() {
     super.initState();
+
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
+    botton_domain = currentUserEmail.split('@').last.toLowerCase();
+    collection_domain = botton_domain.replaceAll('.','_');
+
+
+
     if (widget.post != null) {
       _locationController.text = widget.post!['my_location'] ?? '';
       _storeController.text = widget.post!['store'] ?? '';
@@ -194,7 +206,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
 
 
     if (_costController.text.isEmpty) {
-      _showSnackBar("\'비용\' 칸을 입력해주세요.");
+      _showSnackBar("\'금액\' 칸을 입력해주세요.");
       return;
     }
 
@@ -225,7 +237,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
       String? nickname;
 
       QuerySnapshot existingPosts = await db
-          .collection('naver_posts')
+          .collection(collection_domain)
           .where('my_location', isEqualTo: _locationController.text)
           .where('email', isEqualTo: email)
           .get();
@@ -253,7 +265,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
         _showSnackBar('동일한 제목의 게시물이 이미 존재합니다.');
       } else {
         String documentName = widget.post?.id ?? "${_locationController.text}_${email ?? 'unknown'}";
-        await db.collection('naver_posts').doc(documentName).set({
+        await db.collection(collection_domain).doc(documentName).set({
           'nickname' : nickname,
           'store_location' :_storeSelectedLocation ?? '가게 위치 미설정',
           'current_location' : _currentSelectedLocation ?? '현재 위치 미설정',
@@ -275,7 +287,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
         Future.delayed(Duration(seconds: 2), () {
           Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
             MaterialPageRoute(
-              builder: (context) => HanbatBoardPage(),
+              builder: (context) => BoardPage(),
             ),
           );
 
@@ -496,15 +508,32 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                     margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                                     child: Align(
                                       alignment: Alignment.topLeft,
-                                      child: Text(
-                                        '드랍 장소',
-                                        style: TextStyle(
-                                          fontFamily: 'Pretendard',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          height: 1,
-                                          letterSpacing: -0.4,
-                                          color: Color(0xFF424242),
+                                      child:
+                                      RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: '드랍 장소',
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFF424242),
+                                                ),
+                                            ),
+                                            TextSpan(
+                                              text: '   ⚠️ 민감한 세부 정보는 채팅을 이용해주세요',
+                                              style: TextStyle(
+                                                fontFamily: 'Pretendard',
+                                                fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                                                fontSize: 13, // 작은 글씨 크기 설정
+                                                color: Colors.grey, // 회색으로 설정
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -648,7 +677,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                                         onChanged: (value) => _checkMaxLength(_costController, 10),
                                         cursorColor: Color(0xFF1D4786),
                                         decoration: InputDecoration(
-                                          hintText: '금액을 입력해주세요.',
+                                          hintText: '헬퍼비를 입력해주세요.',
                                           hintStyle: TextStyle(
                                             fontFamily: 'Pretendard',
                                             fontWeight: FontWeight.w500,

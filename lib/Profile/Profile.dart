@@ -14,12 +14,13 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import '../Alarm/AlarmUi.dart';
 import '../Alarm/Grade.dart';
-import '../Board/UiBoard.dart';
+
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/FullScreenImage.dart';
-import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
+
 import '../Progress/PaymentScreen.dart';
 import '../Ranking/DepartmentRanking.dart';
+import '../SchoolBoard/SchoolBoard.dart';
 import 'SuggestionToAdminScreen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -40,6 +41,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   int _selectedIndex = 4; // 기본 선택된 항목을 '프로필'으로 설정
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
+  String collection_domain = "";
 
   //프로필 사진 이미지 변환
   File? _image;
@@ -59,7 +61,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
-
+    collection_domain = botton_domain.replaceAll('.','_');
     //닉네임 가져옴
     _nickname = getNickname();
   }
@@ -510,7 +512,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _deleteAccount() async {
     HapticFeedback.lightImpact();
 
-    DeleteMember member = DeleteMember(botton_email ,nickname!); // 회원탈퇴 로직 추가 필요
+    DeleteMember member = DeleteMember(botton_email ,nickname!, collection_domain); // 회원탈퇴 로직 추가 필요
     await member.deleteMember();
 
     Navigator.pushAndRemoveUntil(
@@ -1372,20 +1374,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         _selectedIndex = 2;
                       });
                       HapticFeedback.lightImpact();
-                      switch (botton_domain) {
-                        case 'naver.com':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                          );
-                          break;
-                        default:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => BoardPage()),
-                          );
-                          break;
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardPage()),
+                      );
                     }
                   },
                 ),

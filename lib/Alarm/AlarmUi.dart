@@ -19,7 +19,8 @@ class _NotificationScreenState extends State<AlarmUi> {
   late final Alarm alarm;  // NaverAlarm 클래스의 인스턴스를 선언합니다.
   late Stream<List<DocumentSnapshot>> notificationsStream; // 알림을 스트림으로 받아오는 변수를 선언합니다.
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
-
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
+  String collection_domain = "";
 
 
   @override
@@ -27,6 +28,10 @@ class _NotificationScreenState extends State<AlarmUi> {
     super.initState();
 
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
+    botton_domain = currentUserEmail.split('@').last.toLowerCase();
+    collection_domain = botton_domain.replaceAll('.','_');
+
 
     alarm = Alarm(currentUserEmail, () {
       if (mounted) {
@@ -119,7 +124,7 @@ class _NotificationScreenState extends State<AlarmUi> {
     String deletePostId = postId.get('post_id');
 
     FirebaseFirestore.instance
-        .collection('naver_posts')
+        .collection(collection_domain)
         .doc(deletePostId)
         .delete()
         .then((_) => print("Document successfully deleted"))
@@ -600,7 +605,6 @@ class _NotificationScreenState extends State<AlarmUi> {
   //수락 확정 다이어로그
 
   void showNicknameConfirmationDialog(BuildContext context, String nickname, String documentId) {
-    final rootContext = context;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -662,18 +666,31 @@ class _NotificationScreenState extends State<AlarmUi> {
                     child: TextButton(
                       onPressed: () async {
 
-                        DateTime now = DateTime.now();
+                        DocumentSnapshot postId = await FirebaseFirestore.instance
+                            .collection('helpActions')
+                            .doc(documentId)
+                            .get();
 
-                        HapticFeedback.lightImpact();
-                        await _HelperCount(documentId);
-                        await _updateTime(documentId, now);
-                        await _respondToActions(documentId, 'accepted'); // ChatActions : null -< accept
+                        String deletePostId = postId.get('post_id');
+                        DocumentSnapshot postSnapshot = await FirebaseFirestore.instance
+                            .collection(collection_domain)
+                            .doc(deletePostId)
+                            .get();
 
-                        await _deletePost(documentId); // 수락시 게시글 삭제          ////////출시할때 수정
-                        _deleteNotification(documentId); // 수락시 알림 내용 삭제
+                        if(postSnapshot.exists) {
+                          DateTime now = DateTime.now();
+
+                          HapticFeedback.lightImpact();
+                          await _HelperCount(documentId);
+                          await _updateTime(documentId, now);
+                          await _respondToActions(documentId,
+                              'accepted'); // ChatActions : null -< accept
+
+                          await _deletePost(documentId); // 수락시 게시글 삭제          ////////출시할때 수정
+                          _deleteNotification(documentId); // 수락시 알림 내용 삭제
 
 
-                        Navigator.of(context).pop();
+                          Navigator.of(context).pop();
 
                           // ScaffoldMessenger 호출을 여기서 안전하게 실행
                           WidgetsBinding.instance?.addPostFrameCallback((_) {
@@ -692,11 +709,26 @@ class _NotificationScreenState extends State<AlarmUi> {
 
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => AllUsersScreen()), // 로그인 화면으로 이동
+                            MaterialPageRoute(builder: (context) =>
+                                AllUsersScreen()), // 로그인 화면으로 이동
                           );
+                        }
 
+                        else if (!postSnapshot.exists){
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '해당 게시글은 이미 거래가 성사되었습니다',
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          _deleteNotification(documentId);
+                          Navigator.of(context).pop(); // 다이얼로그 닫기
+                          return;
+                        }
                       },
-
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
                       ),
@@ -1023,7 +1055,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                                       SnackBar(
                                                                         content: Text(
-                                                                          "해당 삭제되었습니다.", textAlign: TextAlign.center,),
+                                                                          "해당 알림이 삭제되었습니다.", textAlign: TextAlign.center,),
                                                                         duration: Duration(seconds: 1),
                                                                       ),
                                                                   );

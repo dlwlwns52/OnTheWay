@@ -12,12 +12,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import '../Alarm/AlarmUi.dart';
 
-import '../Board/UiBoard.dart';
+
 import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
-import 'HanbatWriteBoard.dart';
-import 'CnuHelpScreen.dart';
+import 'WriteBoard.dart';
+import 'HelpScreen.dart';
 import '../Alarm/Alarm.dart';
 import 'dart:io' show Platform;
 import 'package:lottie/lottie.dart';
@@ -25,13 +25,13 @@ import 'package:lottie/lottie.dart';
 import 'HelpScreenArguments.dart';
 
 // BoardPage 클래스는 게시판 화면의 상태를 관리하는 StatefulWidget 입니다.
-class HanbatBoardPage extends StatefulWidget {
+class BoardPage extends StatefulWidget {
   @override
-  _HanbatBoardPageState createState() => _HanbatBoardPageState(); // 상태(State) 객체를 생성합니다.
+  _BoardPageState createState() => _BoardPageState(); // 상태(State) 객체를 생성합니다.
 }
 
 // _BoardPageState 클래스는 BoardPage의 상태를 관리합니다.
-class _HanbatBoardPageState extends State<HanbatBoardPage> {
+class _BoardPageState extends State<BoardPage> {
   // Firestore 인스턴스를 생성하여 데이터베이스에 접근할 수락 있게 합니다.
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // PostManager 인스턴스 생성
@@ -47,7 +47,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   int _selectedIndex = 2; // 기본 선택된 항목을 '게시판'으로 설정
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
-
+  String collection_domain = "";
   //닉네임 가져오기
   late Future<String?> _nickname;
 
@@ -67,10 +67,13 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     super.initState();
     alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
 
+
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
     botton_domain = botton_email.split('@').last.toLowerCase();
+    collection_domain = botton_domain.replaceAll('.','_');
+
 
 
     //닉네임 가져옴
@@ -78,7 +81,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
 
     // 각 이메일에 대해 프로필 사진 URL을 미리 로드 (학교 바뀌면 컬렉션 변환)
-    FirebaseFirestore.instance.collection('naver_posts').get().then((snapshot) {
+    FirebaseFirestore.instance.collection(collection_domain).get().then((snapshot) {
       for (var doc in snapshot.docs) {
         final email = doc['email'];
         _profilePhotoUrls[email] = _getProfileImage(email);
@@ -99,9 +102,9 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     });
   }
 
-  // Firestore의 'posts' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
+  // Firestore의 'collection_domain' 컬렉션으로부터 게시글 목록을 스트림 형태로 불러오는 함수입니다.
   Stream<List<DocumentSnapshot>> getPosts() {
-    return firestore.collection('naver_posts').snapshots().map((snapshot) {
+    return firestore.collection(collection_domain).snapshots().map((snapshot) {
       return snapshot.docs.toList(); // 스냅샷의 문서들을 리스트로 변환하여 반환합니다.
     });
   }
@@ -165,27 +168,6 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
 
   }
 
-  // //게시글 갯수 - 다른학교 추가시 수정
-  // Future<int> getPostCount() async{
-  //   try{
-  //     QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('naver_posts').get();
-  //     return querySnapshot.size;
-  //   }
-  //   catch(e)
-  //   {
-  //     print('Error fetching post count: $e');
-  //     return 0; // 오류가 발생하면 0을 반환합니다.
-  //   }
-  // }
-  //
-  // void _loadPostCount() async {
-  //   int count = await getPostCount(); // Firestore에서 게시글 개수를 가져옴
-  //   setState(() {
-  //     postCount = count; // 가져온 게시글 개수를 상태에 반영
-  //   });
-  // }
-
-
 
   //프로필 사진 링크 가져오기
   Future<String?> _getProfileImage(String email) async{
@@ -198,8 +180,8 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     if(nicknameSnapshot.docs.isNotEmpty){
       DocumentSnapshot document = nicknameSnapshot.docs.first;
       String? profilePhotoURL = document.get('profilePhotoURL');
-        return profilePhotoURL;
-      }
+      return profilePhotoURL;
+    }
 
     else {
       print("해당 이메일을 가진 사용자가 없습니다.");
@@ -345,7 +327,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             ),
             _buildInfoRow(
               iconPath: 'assets/pigma/dollar_circle.svg',
-              label: '비용',
+              label: '헬퍼비',
               value: cost,
             ),
           ],
@@ -451,6 +433,19 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
   }
 
 
+  //게시판 제목 (대학 추가시 추가)
+  String getTitle(String domain){
+    switch (domain) {
+      case 'naver.com':
+        return '네이버대학교 게시판';
+      case 'cnu.ac.kr':
+        return '충남대학교 게시판';
+      case 'edu.hanbat.ac.kr':
+        return '다음 게시판';
+      default:
+        return '기본 타이틀'; // 기본값 설정
+    }
+  }
 
   // build 함수는 위젯을 렌더링하는 데 사용됩니다.
   @override
@@ -458,128 +453,128 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
-          child: AppBar(
-              title: Text(
-                '한국대학교 게시판',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 19,
-                  height: 1.0,
-                  // letterSpacing: -0.5,
-                  color: Colors.white,
-                ),
-              ),
-              centerTitle: true,
-              backgroundColor: Color(0xFF1D4786),
-              elevation: 0,
-              leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
-              actions: [
-                Container(
-                  margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: <Widget>[
-                      FutureBuilder<String?>(
-                        future: _nickname,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                            return IconButton(
-                              icon: SvgPicture.asset(
-                                'assets/pigma/notification_white.svg',
-                                width: 24,
-                                height: 24,
-                              ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    duration: Duration(seconds: 1),
-                                  ),
-                                );
-                              },
-                            );
-                          }
-
-                          String ownerNickname = snapshot.data!;
-                          return IconButton(
-                            icon: SvgPicture.asset(
-                              'assets/pigma/notification_white.svg',
-                              width: 25,
-                              height: 25,
-                            ),
-                            onPressed: () async {
-                              HapticFeedback.lightImpact();
-                              await resetMessageCount(ownerNickname);
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => AlarmUi(),
-                                  //   builder: (context) => Design(),
+        child: AppBar(
+          title: Text(
+            getTitle(botton_domain),
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontWeight: FontWeight.w600,
+              fontSize: 19,
+              height: 1.0,
+              // letterSpacing: -0.5,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Color(0xFF1D4786),
+          elevation: 0,
+          leading: SizedBox(), // 상단 왼쪽 빈 공간을 만들기 위해 빈 SizedBox를 사용
+          actions: [
+            Container(
+              margin: EdgeInsets.only(right: 18.7), // 오른쪽 여백 설정
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: <Widget>[
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                        return IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/pigma/notification_white.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "아이디를 확인할 수 없습니다. \n다시 로그인 해주세요.",
+                                  textAlign: TextAlign.center,
                                 ),
-                              );
-                            },
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                        );
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/pigma/notification_white.svg',
+                          width: 25,
+                          height: 25,
+                        ),
+                        onPressed: () async {
+                          HapticFeedback.lightImpact();
+                          await resetMessageCount(ownerNickname);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AlarmUi(),
+                              //   builder: (context) => Design(),
+                            ),
                           );
                         },
-                      ),
-                      FutureBuilder<String?>(
-                        future: _nickname,
+                      );
+                    },
+                  ),
+                  FutureBuilder<String?>(
+                    future: _nickname,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                        return Container();
+                      }
+
+                      String ownerNickname = snapshot.data!;
+                      return StreamBuilder<DocumentSnapshot>(
+                        stream: getMessageCountStream(ownerNickname),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
                             return Container();
                           }
+                          var data = snapshot.data!.data() as Map<String, dynamic>;
+                          int messageCount = data['messageCount'] ?? 0;
 
-                          String ownerNickname = snapshot.data!;
-                          return StreamBuilder<DocumentSnapshot>(
-                            stream: getMessageCountStream(ownerNickname),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData || !snapshot.data!.exists) {
-                                return Container();
-                              }
-                              var data = snapshot.data!.data() as Map<String, dynamic>;
-                              int messageCount = data['messageCount'] ?? 0;
-
-                              return Positioned(
-                                right: 9,
-                                top: 9,
-                                child: messageCount > 0
-                                    ? Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  constraints: BoxConstraints(
-                                    minWidth: 14,
-                                    minHeight: 14,
-                                  ),
-                                  child: Text(
-                                    '$messageCount',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                                    : Container(),
-                              );
-                            },
+                          return Positioned(
+                            right: 9,
+                            top: 9,
+                            child: messageCount > 0
+                                ? Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 14,
+                                minHeight: 14,
+                              ),
+                              child: Text(
+                                '$messageCount',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                                : Container(),
                           );
                         },
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+          ],
+        ),
       ),
       //게시판 몸통
       body: Stack(
@@ -589,48 +584,26 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               SizedBox(height: 10), // AppBar와 Row 사이에 10픽셀의 높이를 가진 공간을 추가합니다.
-                Container(
+              Container(
                 margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
-                  child: Align(
+                child: Align(
                   alignment: Alignment.topLeft,
                   child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('naver_posts').snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Text("Error: ${snapshot.error}");
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    }
+                      stream: FirebaseFirestore.instance.collection(collection_domain).snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text("Error: ${snapshot.error}");
+                        }
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
 
 
 
-                    postCount = snapshot.data?.size ?? 0;
-                    return RichText(
-                      text: TextSpan(
-                        text: '총 ',
-                        style: TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          height: 1,
-                          letterSpacing: -0.5,
-                          color: Color(0xFF222222),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: '$postCount건',
-                            style: TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                              height: 1.3,
-                              letterSpacing: -0.5,
-                              color: Color(0xFF1D4786),
-                            ),
-                          ),
-                          TextSpan(
-                            text: '의 게시글이 있어요!',
+                        postCount = snapshot.data?.size ?? 0;
+                        return RichText(
+                          text: TextSpan(
+                            text: '총 ',
                             style: TextStyle(
                               fontFamily: 'Pretendard',
                               fontWeight: FontWeight.w600,
@@ -639,11 +612,33 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                               letterSpacing: -0.5,
                               color: Color(0xFF222222),
                             ),
+                            children: [
+                              TextSpan(
+                                text: '$postCount건',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                  height: 1.3,
+                                  letterSpacing: -0.5,
+                                  color: Color(0xFF1D4786),
+                                ),
+                              ),
+                              TextSpan(
+                                text: '의 게시글이 있어요!',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  height: 1,
+                                  letterSpacing: -0.5,
+                                  color: Color(0xFF222222),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  }
+                        );
+                      }
                   ),
                 ),
               ),
@@ -658,6 +653,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                     } else if (snapshot.hasData) {
                       final posts = snapshot.data!;
 
+
                       if (posts.isEmpty) {
                         return Align(
                           alignment: Alignment.center,
@@ -671,7 +667,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
                                 fontFamily: 'NanumSquareRound',
-                                color: Colors.grey,
+                                color: Color(0xFF1D4786),
                               ),
                             ),
                           ),
@@ -765,7 +761,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                                       );
                                     },
                                   ),
-                              ),
+                                ),
                               ),
                             ],
                           );
@@ -780,7 +776,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
               ),
             ],
           ),
-            if (_pushHelp)
+          if (_pushHelp)
             Container(
               color: Colors.grey.withOpacity(0.5),
               child: Center(
@@ -808,7 +804,7 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
-                          // builder: (context) => Design()),
+                        // builder: (context) => Design()),
                       );
                     },
                     child: Icon(Icons.edit),
@@ -880,20 +876,10 @@ class _HanbatBoardPageState extends State<HanbatBoardPage> {
                         _selectedIndex = 2;
                       });
                       HapticFeedback.lightImpact();
-                      switch (botton_domain) {
-                        case 'naver.com':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                          );
-                          break;
-                        default:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => BoardPage()),
-                          );
-                          break;
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardPage()),
+                      );
                     }
                   },
                 ),

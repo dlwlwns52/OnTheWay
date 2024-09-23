@@ -236,7 +236,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
                 ),
                 _buildInfoRow(
                   iconPath: 'assets/pigma/dollar_circle.svg',
-                  label: '비용',
+                  label: '헬퍼비',
                   value: cost,
                 ),
                 //헬퍼는 프로필 사진도 넣야해서 따로
@@ -457,18 +457,17 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
                 ),
                 Center(
                   child: Container(
-                    margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.3),
-                    child: Text(
+                    margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.22),
+                    child:
+                    Text(
                       '수령 완료된 데이터가 아직 없습니다. \n거래를 진행해 주세요!',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 1,
-                        letterSpacing: -0.4,
-                        color: Color(0xFF222222),
-                      ),
                       textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'NanumSquareRound',
+                        color: Color(0xFF1D4786),
+                      ),
                     ),
                   ),
                 ),

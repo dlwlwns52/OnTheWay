@@ -7,11 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import '../Alarm/AlarmUi.dart';
-import '../Board/UiBoard.dart';
+
 import '../Chat/AllUsersScreen.dart';
-import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
+
 import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
+import '../SchoolBoard/SchoolBoard.dart';
 import 'IndividualRankingPage.dart';
 
 class DepartmentRankingScreen extends StatefulWidget {
@@ -546,20 +547,10 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                         _selectedIndex = 2;
                       });
                       HapticFeedback.lightImpact();
-                      switch (botton_domain) {
-                        case 'naver.com':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                          );
-                          break;
-                        default:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => BoardPage()),
-                          );
-                          break;
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardPage()),
+                      );
                     }
                   },
                 ),

@@ -16,6 +16,8 @@ class _RequestScreenState extends State<RequestScreen> {
   // 초기 게시글 개수
   int postCount = 0;
   String email = ""; // 사용자의 이메일을 저장할 변수
+  String botton_domain = "";
+  String collection_domain = "";
 
 
   @override
@@ -23,13 +25,17 @@ class _RequestScreenState extends State<RequestScreen> {
     super.initState();
     final FirebaseAuth _auth = FirebaseAuth.instance;
     email = _auth.currentUser?.email ?? "";
+
+    botton_domain = email.split('@').last.toLowerCase();
+    collection_domain = botton_domain.replaceAll('.','_');
+
   }
 
 
 
-  // Firestore의 'naver_posts' 컬렉션에서 내 문서들 추출
+  // Firestore의 collection_domain 컬렉션에서 내 문서들 추출
   Stream<List<DocumentSnapshot>> getPosts() {
-    return firestore.collection('naver_posts')
+    return firestore.collection(collection_domain)
         .where('email', isEqualTo: email)
         .snapshots().map((snapshot) {
       return snapshot.docs.toList(); // 스냅샷의 문서들을 리스트로 변환하여 반환합니다.
@@ -129,7 +135,7 @@ class _RequestScreenState extends State<RequestScreen> {
             ),
             _buildInfoRow(
               iconPath: 'assets/pigma/dollar_circle.svg',
-              label: '비용',
+              label: '헬퍼비',
               value: cost,
             ),
             Container(
@@ -221,7 +227,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('naver_posts')
+                      stream: FirebaseFirestore.instance.collection(collection_domain)
                           .where('email', isEqualTo: email)
                           .snapshots(),
                       builder: (context, snapshot) {
@@ -297,7 +303,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
-                                  fontFamily: 'Pretendard',
+                                fontFamily: 'NanumSquareRound',
                                 color: Color(0xFF1D4786),
                               ),
                             ),

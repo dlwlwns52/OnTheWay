@@ -221,9 +221,9 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
     });
 
 
-// 5번째 함수 한밭대 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
+// 5번째 함수 충남대 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
 exports.sendPushNotificationToHanBatStudents = functions.firestore
-    .document('naver_posts/{postId}')
+    .document('cnu_ac_kr/{postId}')
     .onCreate(async (snap, context) => {
         // 새 게시물의 데이터를 변수에 저장합니다.
         const newValue = snap.data();
@@ -234,7 +234,7 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
 
         // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
         const userSnapshot = await admin.firestore().collection('users')
-            .where('domain', '==', 'naver.com')
+            .where('domain', '==', 'cnu.ac.kr')
             .get();
 
         // 해당하는 사용자가 없으면 로그를 출력하고 함수를 종료합니다.
@@ -467,3 +467,58 @@ exports.notifyDeliveryCompletion = functions.firestore
 
     return null;
   });
+
+
+
+  // 10번째 함수 x테스트 네이버 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
+exports.sendPushNotificationToHanBatStudents = functions.firestore
+.document('naver_com/{postId}')
+.onCreate(async (snap, context) => {
+    // 새 게시물의 데이터를 변수에 저장합니다.
+    const newValue = snap.data();
+    const currentLocation = newValue.my_location; // 게시물 현재위치
+    const storeLocation = newValue.store // 게시물 가격위치
+    const cost = newValue.cost // 게시물 심부름비 
+    const userEmail = newValue.user_email; // 게시물 작성자
+
+    // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
+    const userSnapshot = await admin.firestore().collection('users')
+        .where('domain', '==', 'naver.com')
+        .get();
+
+    // 해당하는 사용자가 없으면 로그를 출력하고 함수를 종료합니다.
+    if (userSnapshot.empty) {
+        console.log('No matching users found.');
+        return;
+    }
+
+    const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+
+    // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰을 배열에 추가합니다.
+    userSnapshot.forEach(doc => {
+        const user = doc.data();
+        if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
+            tokens.push(user.token);
+        }
+    });
+
+    // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
+    if (tokens.length > 0){
+      const message = {
+          notification : {
+            title : `새로운 게시물이 생성되었습니다! `,
+            body : `위치 : ${storeLocation} → ${currentLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
+          },
+            tokens: tokens, // 알림을 받을 토큰 배열
+        };
+
+        try {
+            // Firebase Cloud Messaging을 이용하여 알림을 전송합니다.
+            const response = await admin.messaging().sendMulticast(message);
+            console.log('Successfully sent message:', response);
+        } catch (error) {
+            // 알림 전송 중 에러가 발생하면 로그를 출력합니다.
+            console.log('Error sending message:', error);
+        }
+    }
+});

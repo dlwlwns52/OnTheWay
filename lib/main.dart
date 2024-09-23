@@ -10,9 +10,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
-import 'HanbatSchoolBoard/HanbatSchoolBoard.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import 'SchoolBoard/SchoolBoard.dart';
 
 
 
@@ -107,17 +109,8 @@ class _MyAppState extends State<MyApp> {
           }
           else if (snapshot.hasData) {
             bool isAutoLogin = snapshot.data?['isAutoLogin'] ?? false;
-            String domain = snapshot.data?['domain'] ?? '';
             if (isAutoLogin) {
-              switch (domain) {
-                case 'naver.com':
-                  return HanbatBoardPage();
-
-              // 여기에 다른 도메인별 게시판 페이지 조건을 추가
-
-                default:
-                  return LoginScreen(); // 기본 게시판 페이지 // 테스트로 현재 게시판으로 이동
-              }
+              return BoardPage();
             } else {
               // return LoginScreen(); // 로그인 화면
               return LoginScreen(); // 임시

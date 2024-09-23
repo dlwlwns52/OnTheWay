@@ -660,7 +660,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               ),
                             ),
                             onChanged: (value) {
-                              print(value);
                               _filterDepartments(value);
                             },
                           ),
@@ -1146,6 +1145,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               'bank' : _bankName,
                               'department' : _selectedDepartment,
                               'accountNumber' : accountNumber,
+                              'profilePhotoURL' : '',
                             });
 
                             // 다이어로그를 닫음

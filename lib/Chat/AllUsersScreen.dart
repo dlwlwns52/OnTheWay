@@ -10,9 +10,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../Alarm/AlarmUi.dart';
-import '../Board/UiBoard.dart';
-import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
-import '../HanbatSchoolBoard/HanbatWriteBoard.dart';
+import '../SchoolBoard/SchoolBoard.dart';
+import '../SchoolBoard/WriteBoard.dart';
 import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
@@ -659,7 +658,7 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
         ),
       ),
 
-            body: acceptedChatActions != null
+            body: acceptedChatActions != null && acceptedChatActions.length > 0
                 ? Container(
               padding: EdgeInsets.only(top: 10.0),
               child: ListView.builder(
@@ -670,6 +669,8 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                   Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
                   final DocumentSnapshot doc = acceptedChatActions[index];
                   final String documentName = userDoc.id; // 채팅방 문서 ID
+
+
 
                   // 로그인한 사람 이메일 확인
                   User? currentUser = FirebaseAuth.instance.currentUser;
@@ -719,7 +720,6 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
 
                   return Column(
                    children: [
-
                      if (userData['helper_email'] == currentUserEmail) ...[
                        Dismissible(
                          key: Key(doc.id),
@@ -1235,7 +1235,20 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
               ),
             )
                 : Center(
-              child: CircularProgressIndicator(), // 로딩 중 표시
+              child: Container(
+                width: 300,
+                height: 200,
+                child: Text(
+                  '현재 활성화된 채팅방이 없습니다. \n거래가 성사되면, 이곳에서 확인하실 수 있습니다.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'NanumSquareRound',
+                    color: Color(0xFF1D4786),
+                  ),
+                ),
+              ),
             ),
 
 
@@ -1300,20 +1313,10 @@ class _AllUsersScreenState extends State<AllUsersScreen>{
                         _selectedIndex = 2;
                       });
                       HapticFeedback.lightImpact();
-                      switch (botton_domain) {
-                        case 'naver.com':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                          );
-                          break;
-                        default:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => BoardPage()),
-                          );
-                          break;
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardPage()),
+                      );
                     }
                   },
                 ),

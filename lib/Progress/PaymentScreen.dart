@@ -15,13 +15,14 @@ import 'package:flutter_svg/svg.dart';
 
 
 import '../Alarm/AlarmUi.dart';
-import '../Board/UiBoard.dart';
+
 import '../Chat/AllUsersScreen.dart';
 import '../Chat/ChatScreen.dart';
 import '../Chat/Message.dart';
-import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
+
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
+import '../SchoolBoard/SchoolBoard.dart';
 import 'RequestScreen.dart';
 
 class PaymentStatusScreen extends StatefulWidget {
@@ -420,20 +421,10 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                         _selectedIndex = 2;
                       });
                       HapticFeedback.lightImpact();
-                      switch (botton_domain) {
-                        case 'naver.com':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-                          );
-                          break;
-                        default:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => BoardPage()),
-                          );
-                          break;
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardPage()),
+                      );
                     }
                   },
                 ),

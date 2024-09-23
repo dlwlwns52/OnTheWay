@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:location/location.dart';
 
-
-
 class CurrentMapScreen extends StatefulWidget {
   @override
   _MapScreenState createState() => _MapScreenState();
@@ -26,36 +24,24 @@ class _MapScreenState extends State<CurrentMapScreen> {
   void _moveToCurrentLocation() async {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
-        textAlign: TextAlign.center,),
-          duration: Duration(milliseconds: 900),
+      SnackBar(
+        content: Text(
+          '위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
+          textAlign: TextAlign.center,
+        ),
+        duration: Duration(milliseconds: 900),
       ),
     );
 
-    var location = new Location();
+    var location = Location();
     var currentLocation = await location.getLocation(); // 현재 위치 정보 가져오기
     LatLng newCenter = LatLng(currentLocation.latitude!, currentLocation.longitude!);
-
     setState(() {
       currentSelectedLocation = newCenter; // 선택된 위치 업데이트
-      markers.clear(); // 기존 마커 제거
-      markers.add(Marker(
-        markerId: UniqueKey().toString(),
-        latLng: newCenter,
-        draggable: true, // 마커를 드래그 가능하게 설정
-      ));
     });
 
     // 지도의 중심을 업데이트
     _mapController.setCenter(newCenter);
-
-    //마커를 움직이라는 알림
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('푸른색 마커를 드래그하여 정확한 위치를 설정해 주세요!',
-        textAlign: TextAlign.center,),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -73,7 +59,6 @@ class _MapScreenState extends State<CurrentMapScreen> {
             color: Colors.white,
           ),
         ),
-
         centerTitle: true,
         backgroundColor: Color(0xFF1D4786),
         elevation: 0,
@@ -85,29 +70,36 @@ class _MapScreenState extends State<CurrentMapScreen> {
             Navigator.pop(context); // 뒤로가기 기능
           },
         ),
-        actions: <Widget>[
-        ],
+        actions: <Widget>[],
       ),
-      // appBar: AppBar(
-      //   backgroundColor: Color(0xFFFF8B13),
-      //   title: Text('현재 위치 설정', style: TextStyle(fontWeight: FontWeight.bold),),
-      // ),
-
       body: Stack(
-        children : [
-          KakaoMap(
-            onMapCreated: (controller) {
-              _mapController = controller; // Kakao Map Controller 생성 및 할당
-            },
-            markers: markers.toList(), // 마커 리스트 설정
-            center: currentSelectedLocation ?? LatLng(37.5718, 126.9769), // 초기 중심 위치 설정
-            onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
-              if (markerDragType == MarkerDragType.end) {
-                markerPosition = latLng;
-              }
-            },
+        children: [
+          Stack(
+            alignment: Alignment.center, // Stack의 모든 자식 위젯을 중앙에 배치
+            children: [
+              KakaoMap(
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                },
+                center: currentSelectedLocation ?? LatLng(37.5718, 126.9769),
+                onCameraIdle: (LatLng center, int zoomLevel) {
+                  setState(() {
+                    markerPosition = center;
+                  });
+                },
+              ),
+              Container(
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height * 0.05,
+                ),
+                child: Icon(
+                  Icons.location_pin,
+                  size: 48,
+                  color: Colors.indigo[500],
+                ), // 중앙에 고정된 마커
+              ),
+            ],
           ),
-
           //현재위치 아이콘
           Positioned(
             right: 20,
@@ -121,7 +113,7 @@ class _MapScreenState extends State<CurrentMapScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
-                      BoxShadow(color: Colors.black26, blurRadius: 5)
+                      BoxShadow(color: Colors.black26, blurRadius: 5),
                     ],
                   ),
                   child: Text(
@@ -143,7 +135,8 @@ class _MapScreenState extends State<CurrentMapScreen> {
                     child: Icon(
                       Icons.my_location,
                       size: 54, // 아이콘 크기 조절
-                      color: Colors.black,), // 아이콘 크기
+                      color: Colors.black,
+                    ), // 아이콘 크기
                     tooltip: '설정된 위치로 이동',
                   ),
                 ),
@@ -152,51 +145,51 @@ class _MapScreenState extends State<CurrentMapScreen> {
           ),
         ],
       ),
-
-
-
-      //바텀바 ui
+      //바텀바 UI
       bottomNavigationBar: BottomAppBar(
         child: Container(
           margin: EdgeInsets.all(16.0), // 여백 추가
           decoration: BoxDecoration(
-              color: Color(0xFF1D4786), // 버튼 배경색
+            color: Color(0xFF1D4786), // 버튼 배경색
             borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
-
           ),
           //저장하기 버튼
           child: ElevatedButton(
             onPressed: () {
               HapticFeedback.lightImpact();
-              // 현재위치 설정을 안했을때
+              // 현재위치 설정을 안 했을 때
               if (currentSelectedLocation == null) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('현재 위치를 선택해주세요.', textAlign: TextAlign.center,),
-                  duration: Duration(seconds: 2),
-                ));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '현재 위치를 선택해주세요.',
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
                 return;
               }
-
-              // 현재위치 마커와 움직인 마커위치에 따라 값 다르게 넣기
-              else if(markerPosition != currentSelectedLocation){
-                if(markerPosition == null){
+              // 현재위치 마커와 움직인 마커 위치에 따라 값 다르게 넣기
+              else if (markerPosition != currentSelectedLocation) {
+                if (markerPosition == null) {
                   Navigator.of(context).pop(currentSelectedLocation);
-                }
-
-                else{
+                } else {
                   currentSelectedLocation = markerPosition;
                   Navigator.of(context).pop(currentSelectedLocation);
                 }
               }
             },
-
             // 위치 값 저장
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.pin_drop), // 저장 아이콘
                 SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
-                Text('저장하기', style: TextStyle(fontSize: 18),),
+                Text(
+                  '저장하기',
+                  style: TextStyle(fontSize: 18),
+                ),
               ],
             ),
             style: ElevatedButton.styleFrom(

@@ -740,7 +740,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
             ),
             _buildInfoRow(
               iconPath: 'assets/pigma/dollar_circle.svg',
-              label: '비용',
+              label: '헬퍼비',
               value: cost,
             ),
             //헬퍼는 프로필 사진도 넣야해서 따로
@@ -1459,7 +1459,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                     ),
                   ),
                   TextSpan(
-                    text: '의 결제 요청건이 있어요!',
+                    text: '의 수락건이 있어요!',
                     style: TextStyle(
                       fontFamily: 'Pretendard',
                       fontWeight: FontWeight.w600,
@@ -1479,7 +1479,25 @@ class _AcceptScreenState extends State<AcceptScreen> {
           Expanded(
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 20),
-              child: ListView.builder(
+              child: acceptedPayments.isEmpty
+                  ? Align(
+                alignment: Alignment.center,
+                child: Container(
+                  width: 300,
+                  height: 200,
+                  child: Text(
+                    '현재 수락된 요청이 없습니다. \n새로운 요청을 수락하시면\n이곳에서 확인하실 수 있습니다.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'NanumSquareRound',
+                      color: Color(0xFF1D4786),
+                    ),
+                  ),
+                ),
+              )
+                  : ListView.builder(
                 controller: _scrollController,
                 itemCount: acceptedPayments.length,
                 itemBuilder: (context, index) {
@@ -1501,26 +1519,31 @@ class _AcceptScreenState extends State<AcceptScreen> {
                       if (snapshot.hasError) {
                         return Center(child: Text("Error occurred: ${snapshot.error}"));
                       }
-                        else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(child: Text('수락된 데이터가 아직 없습니다! \n거래를 진행해 주세요!', textAlign: TextAlign.center,));}
+                      else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                          child: Text(
+                            '수락된 데이터가 아직 없습니다! \n거래를 진행해 주세요!',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
 
                       if (snapshot.hasData) {
                         List<String?> profileUrls = snapshot.data!;
                         String? orderPhotoUrl = profileUrls[0];  // 주문자 프로필 이미지
                         String? helperPhotoUrl = profileUrls[1]; // 헬퍼 프로필 이미지
 
-
                         if (paymentData['helper_email'] == email && paymentData['isDeleted_${paymentData['helper_email_nickname']}'] == true) {
-                          return Container(); // 또는 적절한 '삭제됨' UI를 표시
+                          return Container(); // 삭제된 경우 빈 컨테이너 반환
                         }
                         if (paymentData['owner_email'] == email && paymentData['isDeleted_${paymentData['owner_email_nickname']}'] == true) {
-                          return Container(); // 또는 적절한 '삭제됨' UI를 표시
+                          return Container(); // 삭제된 경우 빈 컨테이너 반환
                         }
 
                         return _buildPostCard(
                           docName: paymentData['docName'],
                           owner_email_nickname: paymentData['owner_email_nickname'] ?? '사용자 이름 없음',
-                          timeAgo: DateFormat('yyyy-MM-dd HH:mm').format(paymentData['timestamp'] .toDate()),
+                          timeAgo: DateFormat('yyyy-MM-dd HH:mm').format(paymentData['timestamp'].toDate()),
                           storeName: paymentData['post_store'] ?? '가게 이름 없음',
                           location: paymentData['orderer_location'] ?? '위치 정보 없음',
                           cost: paymentData['cost'] ?? '비용 정보 없음',
@@ -1528,9 +1551,10 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           isHelper: isHelper,
                           orderPhotoUrl: orderPhotoUrl ?? '사용자 사진 없음',
                           helperPhotoUrl: helperPhotoUrl ?? '사용자 사진 없음',
-                          isRequested : isRequested,
+                          isRequested: isRequested,
                         );
                       }
+
                       return SizedBox();  // 데이터가 없을 경우
                     },
                   );
@@ -1538,6 +1562,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
               ),
             ),
           ),
+
         ],
       ),
     );

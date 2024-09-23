@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import '../Board/UiBoard.dart';
-import '../HanbatSchoolBoard/HanbatSchoolBoard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../SchoolBoard/SchoolBoard.dart';
 import 'PasswordFind.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -171,27 +170,10 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         if (!mounted) return; // 위젯이 언마운트된 경우 종료합니다.
 
-        switch (domain.toLowerCase()) {
-          case 'naver.com':
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HanbatBoardPage()),
-            );
-            break;
-        // case 'pusan.ac.kr': // 임시!!!!!!!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1!!!!!!!!!!1
-        //   Navigator.pushReplacement(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => BoardPage()),
-        //   );
-        //   break;
-        // 다른 도메인에 대한 처리...
-          default:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => BoardPage()),
-            );
-            break;
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BoardPage()),
+        );
 
         // 로그인 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
@@ -259,8 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
         .where('email', isEqualTo: email)
         .get();
 
-    User? currentUser = FirebaseAuth.instance.currentUser; //임시!!!!!!!!!
-    String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기  //임시!!!!!!!
+    // User? currentUser = FirebaseAuth.instance.currentUser; //임시!!!!!!!!!
+    // String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기  //임시!!!!!!!
 
     if (querySnapshot.docs.isNotEmpty) {
       // 해당 이메일을 가진 사용자 문서가 존재하는 경우
@@ -268,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // 해당 사용자 문서에 토큰을 저장합니다.
       await firestore.collection('users').doc(userId).set({
-        'uid': userUid, //임시!!!!!!!!!!!
+        // 'uid': userUid, //임시!!!!!!!!!!!
         'token': token,
       }, SetOptions(merge: true));
     } else {

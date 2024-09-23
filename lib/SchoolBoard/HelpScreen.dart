@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:OnTheWay/HanbatSchoolBoard/HanbatWriteBoard.dart';
+import 'package:OnTheWay/SchoolBoard/WriteBoard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -11,8 +11,9 @@ import 'package:flutter_svg/svg.dart';
 import '../Map/Navigation/HelperTMapView.dart';
 import '../Map/Navigation/PostDetailMapView.dart';
 import '../Map/LocationTracker.dart';
-import 'HanbatSchoolBoard.dart';
+
 import 'HelpScreenArguments.dart';
+import 'SchoolBoard.dart';
 
 
 class HelpScreen extends StatefulWidget {
@@ -30,11 +31,19 @@ class _HelpScreenState extends State<HelpScreen> {
   User? user;
 
   bool _isListening = false;
+  String botton_domain = ""; // 사용자의 도메인을 저장할 변수
+  String collection_domain = "";
 
   @override
   void initState() {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     user = _auth.currentUser;
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
+    botton_domain = currentUserEmail.split('@').last.toLowerCase();
+    collection_domain = botton_domain.replaceAll('.','_');
+
+
     super.initState();
   }
 
@@ -260,7 +269,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           _deletePost(doc.id, postStore, postOwnerEmail!);// '삭제' 버튼 클릭 시 게시물 삭제 메서드 실행
                           Navigator.of(context).push( // 새 화면으로 이동하는 Flutter 내비게이션 함수 호출
                             MaterialPageRoute(
-                              builder: (context) => HanbatBoardPage(),
+                              builder: (context) => BoardPage(),
                             ),
                           );
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -313,14 +322,14 @@ class _HelpScreenState extends State<HelpScreen> {
   //게시물 삭제 메서드
   void _deletePost(String docId, String postStore, String postOwnerEmail) async {
     try {
-      // 'naverUserHelpStatus' 컬렉션에서 문서 이름 생성
+      // 'UserHelpStatus' 컬렉션에서 문서 이름 생성
       String documentName = createDocumentName(postStore, postOwnerEmail);
 
-      // 'naverUserHelpStatus' 컬렉션에서 해당 문서 삭제
-      await FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).delete();
+      // 'UserHelpStatus' 컬렉션에서 해당 문서 삭제
+      await FirebaseFirestore.instance.collection('UserHelpStatus').doc(documentName).delete();
 
       // 게시물 삭제
-      await FirebaseFirestore.instance.collection('naver_posts').doc(docId).delete();
+      await FirebaseFirestore.instance.collection(collection_domain).doc(docId).delete();
 
     } catch (e) {
       print('게시물 삭제 중 오류 발생: $e');
@@ -608,16 +617,6 @@ class _HelpScreenState extends State<HelpScreen> {
 
       updateHelpClickStatus(postStore, postOwnerEmail, helperEmail!);
 
-      // 문서 이름을 만듭니다.
-      // 초 단위의 timestamp 사용
-
-
-      // String documentName = "${postStore}_${helperEmail}";
-      // 헬퍼의 초기 위치 저장
-      // FirstLocation locationService = FirstLocation(helperNickname);
-      // await locationService.saveInitialLocation();
-
-
 
       // Firestore에 '도와주기' 액션을 기록하면서 문서 이름을 설정합니다.
       await FirebaseFirestore.instance.collection('helpActions').doc(documentName).set({
@@ -711,24 +710,24 @@ class _HelpScreenState extends State<HelpScreen> {
     }
   }
 
-// 'naverUserHelpStatus' 컬렉션에서 특정 문서를 조회하는 메서드입니다.
+// 'UserHelpStatus' 컬렉션에서 특정 문서를 조회하는 메서드입니다.
 // 조회에 성공하면 문서의 데이터를 Map 형태로 반환하고, 없으면 빈 Map을 반환합니다.
   Future<Map<String, dynamic>> getUserHelpClickStatus(String postStore, String? postOwnerEmail) async {
     String documentName = createDocumentName(postStore, postOwnerEmail);
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).get();
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('UserHelpStatus').doc(documentName).get();
     if (userDoc.exists) {
       return userDoc.data() as Map<String, dynamic>;
     }
     return {};
   }
 
-// 'naverUserHelpStatus' 컬렉션에 사용자의 '도와주기' 상태를 업데이트하는 함수
+// 'UserHelpStatus' 컬렉션에 사용자의 '도와주기' 상태를 업데이트하는 함수
   void updateHelpClickStatus(String postStore, String postOwnerEmail, String helperEmail) {
     // 문서 이름은 게시물을 올린 사용자의 이메일과 스토어 이름을 결합하여 생성합니다.
     String documentName = createDocumentName(postStore, postOwnerEmail);
 
     // 문서에 '도와주기'를 누른 사용자의 이메일을 키로 하여 클릭 카운트와 마지막 클릭 시간을 저장합니다.
-    FirebaseFirestore.instance.collection('naverUserHelpStatus').doc(documentName).set({
+    FirebaseFirestore.instance.collection('UserHelpStatus').doc(documentName).set({
       helperEmail: { // 키
         'clickCount': FieldValue.increment(1),
         'lastClickedTime': FieldValue.serverTimestamp(),
@@ -1098,7 +1097,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                     Container(
                                       margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
                                       child: Text(
-                                        '비용',
+                                        '헬퍼비',
                                         style: TextStyle(
                                           fontFamily: 'Pretendard',
                                           fontWeight: FontWeight.w500,
