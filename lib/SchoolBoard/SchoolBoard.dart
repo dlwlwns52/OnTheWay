@@ -438,7 +438,7 @@ class _BoardPageState extends State<BoardPage> {
     switch (domain) {
       case 'naver.com':
         return '네이버대학교 게시판';
-      case 'cnu.ac.kr':
+      case 'g.cnu.ac.kr':
         return '충남대학교 게시판';
       case 'edu.hanbat.ac.kr':
         return '다음 게시판';

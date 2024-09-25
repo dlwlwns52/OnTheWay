@@ -369,7 +369,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
 
       bottomNavigationBar: Padding(
-        padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 80, top: 8): const EdgeInsets.only(bottom: 30, top: 10),
+        padding: Platform.isAndroid ?  EdgeInsets.only(bottom: 8, top: 8): const EdgeInsets.only(bottom: 30, top: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

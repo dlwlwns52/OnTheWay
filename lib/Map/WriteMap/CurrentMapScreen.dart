@@ -90,12 +90,12 @@ class _MapScreenState extends State<CurrentMapScreen> {
               ),
               Container(
                 margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.height * 0.05,
+                  bottom: MediaQuery.of(context).size.height * 0.048,
                 ),
                 child: Icon(
                   Icons.location_pin,
-                  size: 48,
-                  color: Colors.indigo[500],
+                  size: 42,
+                  color: Colors.red[500],
                 ), // 중앙에 고정된 마커
               ),
             ],

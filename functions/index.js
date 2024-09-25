@@ -105,7 +105,7 @@ exports.notifyChatRoomCreated = functions.firestore
     const afterData = change.after.data();
 
     // 요청이 수락된 경우만 처리
-    if (beforeData.response !== 'accepted' && afterData.response === 'accepted') {
+    if (beforeData.response === null && afterData.response === 'accepted') {
       const postOwnerId = afterData.post_id;
       const helperEmail = afterData.helper_email;
       const postOwnerEmail = afterData.owner_email; // 게시물 작성자의 이메일
@@ -133,7 +133,7 @@ exports.notifyChatRoomCreated = functions.firestore
       const messageForPostOwner = {
         notification: {
           title: '온더웨이',
-          body: '채팅방이 생성되었습니다.'
+          body: '헬퍼와 연결되었습니다! 채팅방에서 세부 사항을 논의해보세요!'
         },
         data: {
           screen: 'AllUsersScreen',
@@ -144,7 +144,7 @@ exports.notifyChatRoomCreated = functions.firestore
       const messageForHelper = {
         notification: {
           title: '온더웨이',
-          body: '채팅방이 생성되었습니다.'
+          body: '오더와 연결되었습니다! 채팅방에서 세부 사항을 논의해보세요!'
         },
         data: {
           screen: 'AllUsersScreen',
@@ -221,9 +221,9 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
     });
 
 
-// 5번째 함수 충남대 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
-exports.sendPushNotificationToHanBatStudents = functions.firestore
-    .document('cnu_ac_kr/{postId}')
+// 5번째 함수 충남대 게시판에 게시물이 올라올때 충남대 학생일 경우 푸시알림 전달
+exports.sendPushNotificationToCnuStudents = functions.firestore
+    .document('g_cnu_ac_kr/{postId}')
     .onCreate(async (snap, context) => {
         // 새 게시물의 데이터를 변수에 저장합니다.
         const newValue = snap.data();
@@ -231,10 +231,10 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
         const storeLocation = newValue.store // 게시물 가격위치
         const cost = newValue.cost // 게시물 심부름비 
         const userEmail = newValue.user_email; // 게시물 작성자
-
+        
         // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
         const userSnapshot = await admin.firestore().collection('users')
-            .where('domain', '==', 'cnu.ac.kr')
+            .where('domain', '==', 'g.cnu.ac.kr')
             .get();
 
         // 해당하는 사용자가 없으면 로그를 출력하고 함수를 종료합니다.
@@ -257,16 +257,16 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
         if (tokens.length > 0){
           const message = {
               notification : {
-                title : `새로운 게시물이 생성되었습니다! `,
+                title : `새로운 요청이 생성되었습니다! `,
                 body : `위치 : ${storeLocation} → ${currentLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
               },
                 tokens: tokens, // 알림을 받을 토큰 배열
             };
 
             try {
-                // Firebase Cloud Messaging을 이용하여 알림을 전송합니다.
-                const response = await admin.messaging().sendMulticast(message);
-                console.log('Successfully sent message:', response);
+              const response = await admin.messaging().sendEachForMulticast(message);
+      
+              console.log('Successfully sent message:', response);
             } catch (error) {
                 // 알림 전송 중 에러가 발생하면 로그를 출력합니다.
                 console.log('Error sending message:', error);
@@ -471,10 +471,11 @@ exports.notifyDeliveryCompletion = functions.firestore
 
 
   // 10번째 함수 x테스트 네이버 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
-exports.sendPushNotificationToHanBatStudents = functions.firestore
+exports.sendPushNotificationToNaverStudents = functions.firestore
 .document('naver_com/{postId}')
 .onCreate(async (snap, context) => {
     // 새 게시물의 데이터를 변수에 저장합니다.
+  
     const newValue = snap.data();
     const currentLocation = newValue.my_location; // 게시물 현재위치
     const storeLocation = newValue.store // 게시물 가격위치
@@ -514,7 +515,8 @@ exports.sendPushNotificationToHanBatStudents = functions.firestore
 
         try {
             // Firebase Cloud Messaging을 이용하여 알림을 전송합니다.
-            const response = await admin.messaging().sendMulticast(message);
+            const response = await admin.messaging().sendEachForMulticast(message);
+      
             console.log('Successfully sent message:', response);
         } catch (error) {
             // 알림 전송 중 에러가 발생하면 로그를 출력합니다.

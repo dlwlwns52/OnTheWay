@@ -21,7 +21,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   bool isDeleteMode = false; // 삭제 모드 활성화 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
   String collection_domain = "";
-
+  bool _isSnackBarShown = false;
 
   @override
   void initState() {
@@ -40,17 +40,21 @@ class _NotificationScreenState extends State<AlarmUi> {
 
     notificationsStream = getNotifications(); // 알림 스트림을 초기화합니다.
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
-            textAlign: TextAlign.center,
+
+    if(_isSnackBarShown == false) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "수락하지 않은 알림은 12시간 후에 자동으로 삭제됩니다.",
+              textAlign: TextAlign.center,
+            ),
+            duration: Duration(seconds: 1),
           ),
-          duration: Duration(seconds: 1),
-        ),
-      );
-    });
+        );
+      });
+      _isSnackBarShown= true;
+    }
 
   }
 

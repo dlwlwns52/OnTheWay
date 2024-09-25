@@ -48,7 +48,7 @@ class LocationTracker {
     saveLocation(initialPosition);
 
 
-    _timer = Timer.periodic(Duration(seconds: 10), (Timer t) async {
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );

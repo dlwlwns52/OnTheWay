@@ -92,6 +92,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addObserver(this);  // 오브저버 등록
     _updateOwnerClick(true);
 
@@ -123,7 +124,6 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
       if (snapshot.exists) {
         String? helperLocation = snapshot.get('helper_location');
         if (helperLocation != null) {
-          print('리스너 테스트 - 호출');
           List<String> coords = helperLocation.split(',');
           String latitude = coords[0];
           String longitude = coords[1];
@@ -134,6 +134,34 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
           );
         }
       }
+    });
+
+    // 위젯이 트리에 완전히 삽입된 후에 스낵바를 보여줌
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // 스낵바의 크기를 텍스트 내용에 맞춤
+            children: [
+              Text(
+                "헬퍼위치 데이터를 업로드 중입니다. \n잠시만 기다려 주세요.",
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 6), // 텍스트 사이에 약간의 여백 추가
+              Text(
+                "헬퍼가 앱을 종료할 경우에는, 위치 추적이 중단됩니다!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13, // 작은 텍스트 크기
+                  color: Colors.white70, // 텍스트 색상을 약간 밝게 설정
+                ),
+              ),
+            ],
+          ),
+          duration: Duration(seconds: 2),
+        ),
+
+      );
     });
   }
 

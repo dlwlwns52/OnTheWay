@@ -67,12 +67,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 // 도메인 데이터
   List<Map<String, String>> _domains = [
-    {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
-    {'name': '충남대학교', 'domain': 'cnu.ac.kr'},
-    {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
-    {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
-    {'name': '테스트', 'domain': 'gmail.com'},
-    {'name': '테스트1', 'domain' : 'naver.com'},
+    // {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
+    {'name': '충남대학교 (최초출시!)', 'domain': 'g.cnu.ac.kr'},
+    // {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
+    // {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
+    // {'name': '테스트', 'domain': 'gmail.com'},
+    // {'name': '테스트1', 'domain' : 'naver.com'},교
   ];
 
   List<Map<String, String>> _filteredDomains = [];  // 필터링된 도메인 목록
@@ -1115,7 +1115,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
                             // 비밀번호 추가하기
                             if (currentUser != null) {
-
                               await currentUser.updatePassword(password);
                             } else {
                               // Firebase Authentication에 이메일과 비밀번호로 새 사용자 생성
@@ -1430,7 +1429,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         );
         return false;
       }
-
 
       if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

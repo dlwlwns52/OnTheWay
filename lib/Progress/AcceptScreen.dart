@@ -44,6 +44,9 @@ class _AcceptScreenState extends State<AcceptScreen> {
   //오더용 페이 선택 변수
   String selectedMethod = "bankTransfer";
 
+  //내 닉네임
+  String myNickname = '';
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +54,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     email = _auth.currentUser?.email ?? "";
 
+    _getNickname(email);
     _fetchPayments();
 
 
@@ -130,6 +134,30 @@ class _AcceptScreenState extends State<AcceptScreen> {
     );
   }
 
+
+  //닉네임 가져오기
+  Future<void> _getNickname(String email) async {
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    QuerySnapshot nicknameSnapshot = await db
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (nicknameSnapshot.docs.isNotEmpty) {
+      DocumentSnapshot document = nicknameSnapshot.docs.first;
+      String? myNickname = document.get('nickname');
+
+      // 닉네임 값을 업데이트
+      setState(() {
+        this.myNickname = myNickname!;
+      });
+    } else {
+      print("해당 이메일을 가진 사용자가 없습니다.");
+    }
+  }
+
+
+  //이미지 링크 가져오기
   Future<String?> _getProfileImage(String email) async{
     FirebaseFirestore db = FirebaseFirestore.instance;
     QuerySnapshot nicknameSnapshot = await db
@@ -338,8 +366,8 @@ class _AcceptScreenState extends State<AcceptScreen> {
       Map<String, dynamic> paymentData = docSnapshot.data() as Map<String, dynamic>;
 
 
-      String helperNickname = paymentData['helperNickname'] ?? '헬퍼 닉네임 없음';
-      String ownerNickname = paymentData['ownerNickname'] ?? '오더 닉네임 없음';
+      String helperNickname = paymentData['helper_email_nickname'] ?? '헬퍼 닉네임 없음';
+      String ownerNickname = paymentData['owner_email_nickname'] ?? '오더 닉네임 없음';
       String helperUid = paymentData['helperUid'] ?? '헬퍼 UID 없음';
       String ownerUid = paymentData['ownerUid'] ?? '오더 UID 없음';
       String helperBank = paymentData['helperBank'] ?? '도우미 은행 없음';
@@ -410,8 +438,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                                     .millisecondsSinceEpoch}');
                                 UploadTask uploadTask = storageReference.putFile(imageFile!);
                                 TaskSnapshot taskSnapshot = await uploadTask;
-                                String downloadUrl = await taskSnapshot.ref
-                                    .getDownloadURL();
+                                String downloadUrl = await taskSnapshot.ref.getDownloadURL();
                                 await FirebaseFirestore.instance
                                     .collection('ChatActions')
                                     .doc(documentName)
@@ -621,6 +648,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
     required String orderPhotoUrl,
     required String helperPhotoUrl,
     required bool isRequested,
+    required bool nicknameColorIsOwner,
 
   }) {
 
@@ -675,30 +703,50 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           child: CircleAvatar(
                             radius: 16, // 반지름 설정 (32 / 2)
                             backgroundColor: Colors.grey[200],
-                            child: (orderPhotoUrl != null && orderPhotoUrl.isNotEmpty)
+                            child: ((nicknameColorIsOwner ? orderPhotoUrl : helperPhotoUrl) != null && (nicknameColorIsOwner ? orderPhotoUrl : helperPhotoUrl).isNotEmpty)
                                 ? null
                                 : Icon(
                               Icons.account_circle,
                               size: 32, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
                               color: Color(0xFF1D4786),
                             ),
-                            backgroundImage: orderPhotoUrl != null && orderPhotoUrl.isNotEmpty
-                                ? NetworkImage(orderPhotoUrl)
-                                : null,
+                            backgroundImage: nicknameColorIsOwner
+                                ? (orderPhotoUrl != null && orderPhotoUrl.isNotEmpty)
+                                  ? NetworkImage(orderPhotoUrl)
+                                  : null
+                                : (helperPhotoUrl != null && helperPhotoUrl.isNotEmpty)
+                                  ? NetworkImage(helperPhotoUrl)
+                                  : null
                           ),
                         ),
                       ),
                       Container(
                         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                        child: Text(
-                          '${owner_email_nickname}',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            height: 1,
-                            letterSpacing: -0.5,
-                            color: Color(0xFF1D4786),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text : nicknameColorIsOwner ? '${owner_email_nickname}' : '${helper_email_nickname}',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  height: 1,
+                                  letterSpacing: -0.5,
+                                  color: Color(0xFF1D4786),
+                                ),
+                              ),
+                              TextSpan(
+                                text : nicknameColorIsOwner ? ' (오더)' : ' (헬퍼)',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,// 작은 글씨는 일반적인 가중치로 설정
+                                  fontSize: 13, // 작은 글씨 크기 설정
+                                  color: Colors.grey, // 회색으로 설정
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -778,23 +826,28 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           child: CircleAvatar(
                             radius: 12, // 반지름 설정 (32 / 2)
                             backgroundColor: Colors.grey[200],
-                            child: (helperPhotoUrl != null && helperPhotoUrl.isNotEmpty)
+                            child: ((nicknameColorIsOwner ? helperPhotoUrl : orderPhotoUrl) != null && (nicknameColorIsOwner ? helperPhotoUrl : orderPhotoUrl).isNotEmpty)
                                 ? null
                                 : Icon(
                               Icons.account_circle,
                               size: 24, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
                               color: Color(0xFF1D4786),
                             ),
-                            backgroundImage: helperPhotoUrl != null && helperPhotoUrl.isNotEmpty
-                                ? NetworkImage(helperPhotoUrl)
-                                : null,
+                            backgroundImage: nicknameColorIsOwner
+                                ? (helperPhotoUrl != null && helperPhotoUrl.isNotEmpty)
+                                  ? NetworkImage(helperPhotoUrl)
+                                : null
+                                : (orderPhotoUrl != null && orderPhotoUrl.isNotEmpty)
+                                  ? NetworkImage(orderPhotoUrl)
+                                : null
+
                           ),
                         ),
                       ),
                       Container(
                         margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
                         child: Text(
-                          '헬퍼',
+                          nicknameColorIsOwner ? '헬퍼' :'오더',
                           style: TextStyle(
                             fontFamily: 'Pretendard',
                             fontWeight: FontWeight.w500,
@@ -810,7 +863,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                   Container(
                     margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
                     child: Text(
-                      '${helper_email_nickname}',
+                      nicknameColorIsOwner ? '${helper_email_nickname}' : '${owner_email_nickname}',
                       style:TextStyle(
                         fontFamily: 'Pretendard',
                         fontWeight: FontWeight.w600,
@@ -1532,6 +1585,15 @@ class _AcceptScreenState extends State<AcceptScreen> {
                         List<String?> profileUrls = snapshot.data!;
                         String? orderPhotoUrl = profileUrls[0];  // 주문자 프로필 이미지
                         String? helperPhotoUrl = profileUrls[1]; // 헬퍼 프로필 이미지
+                        bool nicknameColorIsOwner = false;
+                        if(myNickname == paymentData['owner_email_nickname']){
+                          nicknameColorIsOwner = true;
+                        }
+                        else if(myNickname ==paymentData['helper_email_nickname']){
+                          nicknameColorIsOwner = false;
+                        }
+
+
 
                         if (paymentData['helper_email'] == email && paymentData['isDeleted_${paymentData['helper_email_nickname']}'] == true) {
                           return Container(); // 삭제된 경우 빈 컨테이너 반환
@@ -1552,6 +1614,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           orderPhotoUrl: orderPhotoUrl ?? '사용자 사진 없음',
                           helperPhotoUrl: helperPhotoUrl ?? '사용자 사진 없음',
                           isRequested: isRequested,
+                          nicknameColorIsOwner: nicknameColorIsOwner,
                         );
                       }
 
