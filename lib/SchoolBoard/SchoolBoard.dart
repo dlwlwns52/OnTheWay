@@ -9,10 +9,13 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 데이터베
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_app_badge/flutter_app_badge.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/date_symbol_data_file.dart';
 import '../Alarm/AlarmUi.dart';
 
 
+import '../Progress/HandoverCompletedScreen.dart';
 import '../Progress/PaymentScreen.dart';
 import '../Profile/Profile.dart';
 import '../Ranking/DepartmentRanking.dart';
@@ -67,6 +70,9 @@ class _BoardPageState extends State<BoardPage> {
     super.initState();
     alarm = Alarm(FirebaseAuth.instance.currentUser?.email ?? '', () => setState(() {}), context,);
 
+    FlutterAppBadge.count(0); // 실질적으로 배지 0 설정
+    badge_zero(); // 배지 파이어스토어 0으로 업데이트
+
 
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -94,7 +100,23 @@ class _BoardPageState extends State<BoardPage> {
     // _loadPostCount(); // 위젯 초기화 시 게시글 개수를 로드
   }
 
+  Future<void> badge_zero() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+    String? email = user?.email;
+    if(email != null){
+      QuerySnapshot querySnapshot = await firestore.collection('users')
+          .where('email', isEqualTo: email)
+          .get();
 
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+
+        await firestore.collection('users').doc(userDoc.id).update({'badgeCount': 0});
+
+      }
+    }
+  }
 
   void _pushHelpButton(bool value) {
     setState(() {
@@ -451,6 +473,7 @@ class _BoardPageState extends State<BoardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
         child: AppBar(
@@ -804,7 +827,7 @@ class _BoardPageState extends State<BoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
-                        // builder: (context) => Design()),
+
                       );
                     },
                     child: Icon(Icons.edit),

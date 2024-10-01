@@ -208,6 +208,7 @@ class _HelpScreenState extends State<HelpScreen> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -250,7 +251,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     ),
                   ),
                   Container(
-                    width: 0.5, // 구분선의 두께
+                    width: 1.0, // 구분선의 두께
                     height: 60, // 구분선의 높이
                     color: Colors.grey, // 구분선의 색상
                   ),
@@ -352,6 +353,7 @@ class _HelpScreenState extends State<HelpScreen> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -412,7 +414,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     ),
                   ),
                   Container(
-                    width: 0.5, // 구분선의 두께
+                    width: 1.0, // 구분선의 두께
                     height: 60, // 구분선의 높이
                     color: Colors.grey, // 구분선의 색상
                   ),
@@ -794,6 +796,7 @@ class _HelpScreenState extends State<HelpScreen> {
               }
             },
             child: Scaffold(
+              backgroundColor: Colors.white,
               appBar: PreferredSize(
                 preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
                 child: AppBar(
@@ -1293,8 +1296,8 @@ class _HelpScreenState extends State<HelpScreen> {
                           buildCustomHelpDialog(context, widget.args.doc);
                         },
                         style: ElevatedButton.styleFrom(
-                          primary: Color(0xFF1D4786), // 배경색
-                          onPrimary: Colors.white, // 텍스트 색상
+                          backgroundColor: Color(0xFF1D4786), // 배경색
+                          foregroundColor: Colors.white, // 텍스트 색상
                           padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
                           minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
                           shape: RoundedRectangleBorder(

@@ -176,6 +176,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           '헬퍼 위치',

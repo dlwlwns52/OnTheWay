@@ -245,6 +245,7 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
         child: AppBar(
@@ -468,7 +469,8 @@ class _DepartmentRankingScreenState extends State<DepartmentRankingScreen> {
                                                   borderRadius: BorderRadius.circular(64),
                                                   color: Color(0xFFF6F7F8),
                                                 ),
-                                                child: ClipRRect(
+                                                child:
+                                                ClipRRect(
                                                   borderRadius: BorderRadius.circular(32),
                                                   child: Container(
                                                     child: SvgPicture.asset(

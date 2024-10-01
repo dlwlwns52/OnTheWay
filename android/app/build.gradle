@@ -1,3 +1,10 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+    id 'kotlin-android'
+}
+
+
 // 'localProperties'에 'Properties' 객체를 생성
 def localProperties = new Properties()
 
@@ -33,65 +40,55 @@ if (flutterVersionName == null) {
 }
 
 // 필요한 플러그인들을 적용함
-apply plugin: "com.android.application" // Android 애플리케이션용 플러그인
-apply plugin: "com.google.gms.google-services" // Google 서비스 관련 플러그인
-apply plugin: "kotlin-android" // Kotlin을 지원하는 플러그인
+//apply plugin: "com.android.application" // Android 애플리케이션용 플러그인
+//apply plugin: "com.google.gms.google-services" // Google 서비스 관련 플러그인
+//apply plugin: "kotlin-android" // Kotlin을 지원하는 플러그인
 
-// Flutter 빌드 스크립트를 적용 (Flutter SDK 경로를 사용하여 스크립트 위치 지정)
+// Flutter 빌드 스크립트를 적용
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
-// Android 프로젝트의 설정 시작
 android {
-    namespace "com.example.OnTheWay" // Android 패키지 네임스페이스
-    compileSdkVersion 34 // 플러그인 요구사항에 맞춰 SDK 버전을 34로 변경
+    namespace "com.example.OnTheWay"
+    compileSdkVersion 34
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8 // Java 소스 버전
-        targetCompatibility JavaVersion.VERSION_1_8 // Java 대상 버전
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    // Kotlin 컴파일러 옵션 설정
     kotlinOptions {
         jvmTarget = '1.8'
     }
 
-    // 소스 디렉토리 설정 (Java와 Kotlin 디렉토리)
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    // 기본 설정 정의
     defaultConfig {
-        applicationId "com.example.OnTheWay" // 애플리케이션 ID
-        minSdkVersion 23 // 최소 지원 Android SDK 버전
-        targetSdkVersion 34 // targetSdkVersion도 SDK 34 버전으로 맞춰 설정
-        versionCode flutterVersionCode.toInteger() // 버전 코드 (정수로 변환)
-        versionName flutterVersionName // 버전 이름
-        multiDexEnabled true // 멀티덱스 기능 활성화 (여러 덱스 파일 허용)
+        applicationId "com.example.OnTheWay"
+        minSdkVersion 23
+        targetSdkVersion 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
     }
 
-    // 빌드 타입 정의
     buildTypes {
         release {
-            // 릴리즈 빌드용 서명 구성 (현재는 디버그 키 사용)
             signingConfig signingConfigs.debug
         }
     }
 }
 
-// Flutter 소스의 루트 디렉토리 경로 지정
 flutter {
     source '../..'
 }
 
-// 프로젝트에 필요한 의존성 추가
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version" // Kotlin 라이브러리
-    implementation(platform("com.google.firebase:firebase-bom:32.2.0")) // Firebase 라이브러리 BOM
-    implementation("com.google.firebase:firebase-analytics-ktx") // Firebase Analytics 라이브러리
-    implementation("com.google.android.gms:play-services-auth:20.6.0") // Google Play 인증 서비스
-
-    implementation 'com.google.firebase:firebase-auth-ktx' // Firebase Auth 라이브러리
-    implementation 'com.google.firebase:firebase-firestore-ktx' // Firestore 라이브러리
-
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation platform('com.google.firebase:firebase-bom:32.2.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
 }

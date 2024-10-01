@@ -323,6 +323,7 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
     @override
     Widget build(BuildContext context) {
       return Scaffold(
+        backgroundColor: Colors.white,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
             child: AppBar(
@@ -817,8 +818,8 @@ class _HanbatNewPostScreenState extends State<HanbatNewPostScreen> {
                   _uploadPost();
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Color(0xFF1D4786), // 배경색
-                  onPrimary: Colors.white, // 텍스트 색상
+                  backgroundColor: Color(0xFF1D4786), // 배경색
+                  foregroundColor: Colors.white, // 텍스트 색상
                   padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
                   minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
                   shape: RoundedRectangleBorder(

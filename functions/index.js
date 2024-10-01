@@ -23,7 +23,15 @@ exports.sendHelpNotification = functions.firestore
     
         // 가정: 게시물 작성자의 디바이스 토큰을 가져옵니다. 첫 번째 일치 항목만 사용합니다.
         const postOwnerDeviceToken = postOwnerDoc.docs[0].data().token;
-    
+  
+        // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+        let currentBadgeCount = postOwnerDoc.docs[0].data().badgeCount || 0;
+        currentBadgeCount += 1;  // 배지 카운트 증가
+        
+        // Firestore에 업데이트된 배지 카운트 저장
+        await admin.firestore().collection('users').doc(postOwnerDoc.docs[0].id).update({
+          badgeCount: currentBadgeCount
+        });
 
         const message = {
           notification: {
@@ -34,7 +42,15 @@ exports.sendHelpNotification = functions.firestore
             screen: 'AlarmUi',
             ownerEmail: postOwnerEmail // 게시물 작성자의 이메일
           },
-          token: postOwnerDeviceToken
+          token: postOwnerDeviceToken,
+          apns: {
+            payload: {
+              aps: {
+                badge: currentBadgeCount,  // iOS 배지 설정
+                sound: "default"
+              }
+            }
+          }
         };
 
         // 푸시 알림을 보냅니다.
@@ -74,13 +90,33 @@ exports.respondToHelpRequest = functions.firestore
 
     const helperDeviceToken = helperDoc.docs[0].data().token; // 디바이스 토큰
 
+    // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+    let currentBadgeCount = helperDoc.docs[0].data().badgeCount || 0;
+    currentBadgeCount += 1;  // 배지 카운트 증가
+    
+    // Firestore에 업데이트된 배지 카운트 저장
+    await admin.firestore().collection('users').doc(helperDoc.docs[0].id).update({
+      badgeCount: currentBadgeCount
+    });
+
     // 푸시 알림 메시지 구성
     const message = {
       notification: {
         title: '온더웨이',
         body: '성공적으로 매칭되었습니다! \n진행상황에서 확인 후 진행해주세요!',
       },
-      token: helperDeviceToken
+      data: {
+        screen: 'PaymentScreen1',
+      },
+      token: helperDeviceToken,
+      apns: {
+        payload: {
+          aps: {
+            badge: currentBadgeCount,  // iOS 배지 설정
+            sound: "default"
+          }
+        }
+      }
     };
 
     // 푸시 알림 전송
@@ -129,6 +165,29 @@ exports.notifyChatRoomCreated = functions.firestore
       }
       const helperDeviceToken = helperDoc.docs[0].data().token;
 
+
+      // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화(오더)
+      let currentOwnerBadgeCount = postOwnerDoc.docs[0].data().badgeCount || 0;
+      currentOwnerBadgeCount += 1;  // 배지 카운트 증가
+      
+      // Firestore에 업데이트된 배지 카운트 저장
+      await admin.firestore().collection('users').doc(postOwnerDoc.docs[0].id).update({
+        badgeCount: currentOwnerBadgeCount
+      });
+
+
+          // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화(헬퍼)
+      let currentHelperBadgeCount = helperDoc.docs[0].data().badgeCount || 0;
+      currentHelperBadgeCount += 1;  // 배지 카운트 증가
+      
+      // Firestore에 업데이트된 배지 카운트 저장
+      await admin.firestore().collection('users').doc(helperDoc.docs[0].id).update({
+        badgeCount: currentHelperBadgeCount
+      });
+
+
+
+
       // 채팅방 생성 알림 메시지
       const messageForPostOwner = {
         notification: {
@@ -138,7 +197,15 @@ exports.notifyChatRoomCreated = functions.firestore
         data: {
           screen: 'AllUsersScreen',
         },
-        token: postOwnerDeviceToken // 게시물 소유자의 디바이스 토큰
+        token: postOwnerDeviceToken, // 게시물 소유자의 디바이스 토큰
+        apns: {
+          payload: {
+            aps: {
+              badge: currentOwnerBadgeCount,  // iOS 배지 설정
+              sound: "default"
+            }
+          }
+        }
       };
 
       const messageForHelper = {
@@ -149,15 +216,20 @@ exports.notifyChatRoomCreated = functions.firestore
         data: {
           screen: 'AllUsersScreen',
         },
-        token: helperDeviceToken // 도움을 제공한 사용자의 디바이스 토큰
+        token: helperDeviceToken, // 도움을 제공한 사용자의 디바이스 토큰
+        apns: {
+          payload: {
+            aps: {
+              badge: currentHelperBadgeCount,  // iOS 배지 설정
+              sound: "default"
+            }
+          }
+        }
       };
 
-      // 3초 지연 함수
-      const delay = ms => new Promise(res => setTimeout(res, ms));
-
+      
       try {
-        // 3초 지연 후 알림 전송
-        await delay(3000);
+      
         await admin.messaging().send(messageForPostOwner);
         await admin.messaging().send(messageForHelper);
         console.log('Successfully sent chat room creation notifications');
@@ -192,6 +264,15 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
           console.log('수신자가 채팅방에 있습니다. 푸시 알림을 보내지 않습니다.');
           return null;
       }
+        // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+        const userDoc = await admin.firestore().collection('users').doc(receiverName).get();
+        let currentBadgeCount = userDoc.exists && userDoc.data().badgeCount ? userDoc.data().badgeCount : 0;
+        currentBadgeCount += 1;  // 배지 카운트 증가
+
+        // Firestore에 업데이트된 배지 카운트 저장
+        await admin.firestore().collection('users').doc(receiverName).update({
+            badgeCount: currentBadgeCount
+        });
 
         return tokenRef.then(tokenDoc => { // 토큰 문서를 가져온 후 처리합니다.
             if (tokenDoc.exists) { // 토큰 문서가 존재하는 경우
@@ -207,7 +288,15 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
                     data : {
                       screen: 'AllUsersScreen',
                     },
-                    token: token // 알림을 받을 디바이스의 FCM 토큰
+                    token: token, // 알림을 받을 디바이스의 FCM 토큰
+                    apns: { // iOS 푸시 알림 설정
+                      payload: {
+                          aps: {
+                              badge: currentBadgeCount, // iOS 배지 카운트 설정
+                              sound: "default"
+                          }
+                      }
+                  },
                 };
 
                 // 설정한 페이로드로 푸시 알림을 보냅니다.
@@ -228,11 +317,11 @@ exports.sendPushNotificationToCnuStudents = functions.firestore
         // 새 게시물의 데이터를 변수에 저장합니다.
         const newValue = snap.data();
         const currentLocation = newValue.my_location; // 게시물 현재위치
-        const storeLocation = newValue.store // 게시물 가격위치
-        const cost = newValue.cost // 게시물 심부름비 
+        const storeLocation = newValue.store; // 게시물 가격위치
+        const cost = newValue.cost; // 게시물 심부름비
         const userEmail = newValue.user_email; // 게시물 작성자
         
-        // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
+        // 'users' 컬렉션에서 'domain' 필드가 'g.cnu.ac.kr'인 사용자를 찾습니다.
         const userSnapshot = await admin.firestore().collection('users')
             .where('domain', '==', 'g.cnu.ac.kr')
             .get();
@@ -244,35 +333,62 @@ exports.sendPushNotificationToCnuStudents = functions.firestore
         }
 
         const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+        const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+        
+        // Firestore 트랜잭션 시작
+        await admin.firestore().runTransaction(async (transaction) => {
+            // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰과 배지 업데이트를 처리
+            userSnapshot.forEach(doc => {
+                const user = doc.data();
+                if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
+                    tokens.push(user.token);
+                    
+                    // Firestore에서 배지 카운트 가져오기
+                    const currentBadgeCount = user.badgeCount || 0;
+                    const newBadgeCount = currentBadgeCount + 1;
 
-        // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰을 배열에 추가합니다.
-        userSnapshot.forEach(doc => {
-            const user = doc.data();
-            if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
-                tokens.push(user.token);
-            }
+                    // 배지 업데이트 트랜잭션 추가
+                    badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
+                        badgeCount: newBadgeCount
+                    }));
+                }
+            });
+            
+            // 트랜잭션 커밋
+            await Promise.all(badgeUpdates);
         });
 
         // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
-        if (tokens.length > 0){
-          const message = {
-              notification : {
-                title : `새로운 요청이 생성되었습니다! `,
-                body : `위치 : ${storeLocation} → ${currentLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
-              },
+        if (tokens.length > 0) {
+            const message = {
+                notification: {
+                    title: `새로운 요청이 생성되었습니다! `,
+                    body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+                },
+                data: {
+                  screen: 'SchoolBoard',
+                },
                 tokens: tokens, // 알림을 받을 토큰 배열
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: newBadgeCount,  // iOS 배지 설정 (사용자마다 증가한 배지 값)
+                            sound: "default"
+                        }
+                    }
+                }
             };
 
             try {
-              const response = await admin.messaging().sendEachForMulticast(message);
-      
-              console.log('Successfully sent message:', response);
+                const response = await admin.messaging().sendEachForMulticast(message);
+                console.log('Successfully sent message:', response);
             } catch (error) {
                 // 알림 전송 중 에러가 발생하면 로그를 출력합니다.
                 console.log('Error sending message:', error);
             }
         }
     });
+
 
 
 
@@ -369,7 +485,17 @@ exports.notRequestPushAlarm = functions.firestore
         return null;
       }
 
+      const helperDocRef = helperDoc.docs[0].ref;
       const helperDeviceToken = helperDoc.docs[0].data().token; // 디바이스 토큰
+
+
+      // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+      let currentHelperBadgeCount = helperDoc.docs[0].data().badgeCount || 0;
+      currentHelperBadgeCount += 1;  // 배지 카운트 증가
+
+      // Firestore에 업데이트된 배지 카운트 저장
+      await helperDocRef.update({ badgeCount: currentHelperBadgeCount });
+
 
       // 푸시 알림 메시지 구성
       const message = {
@@ -377,7 +503,18 @@ exports.notRequestPushAlarm = functions.firestore
           title: '온더웨이',
           body: `결제를 위해 헬퍼님의 결제 요청이 필요합니다! \n진행상황에서 '결제 요청하기'를 눌러주세요.`
         },
-        token: helperDeviceToken
+        data: {
+          screen: 'PaymentScreen1',
+        },
+        token: helperDeviceToken,
+        apns: {
+          payload: {
+            aps: {
+              badge: currentHelperBadgeCount,  // iOS 배지 설정
+              sound: "default"
+            }
+          }
+        }
       };
 
       // 푸시 알림 전송
@@ -410,12 +547,34 @@ exports.notifyReceiptCompletion = functions.firestore
 
     const ownerDeviceToken = userDoc.docs[0].data().token; 
 
+
+    // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+    let currentBadgeCount = userDoc.docs[0].data().badgeCount || 0;
+    currentBadgeCount += 1;  // 배지 카운트 증가
+
+    // Firestore에 업데이트된 배지 카운트 저장
+    await admin.firestore().collection('users').doc(userDoc.docs[0].id).update({
+      badgeCount: currentBadgeCount
+    });
+
+
     const message = {
       notification: {
         title: '온더웨이',
-        body: '거래가 종료되었습니다. \n계좌이체를 선택하셨을 경우 입금을 완료해 주세요.',
+        body: '거래가 종료되었습니다.\n수령완료 내역을 확인해주세요.\n계좌이체를 선택하셨을 경우 입금을 완료해 주세요.',
       },
-      token: ownerDeviceToken
+      data: {
+        screen: 'PaymentScreen2',
+      },
+      token: ownerDeviceToken,
+      apns: {
+        payload: {
+          aps: {
+            badge: currentBadgeCount,  // iOS 배지 설정
+            sound: "default"
+          }
+        }
+      }
     };
 
 
@@ -448,13 +607,35 @@ exports.notifyDeliveryCompletion = functions.firestore
 
     const helperDeviceToken = userDoc.docs[0].data().token; // 디바이스 토큰
 
+    // Firestore에서 배지 카운트를 가져오고, 없으면 0으로 초기화
+    let currentBadgeCount = userDoc.docs[0].data().badgeCount || 0;
+    currentBadgeCount += 1;  // 배지 카운트 증가
+
+    // Firestore에 업데이트된 배지 카운트 저장
+    await admin.firestore().collection('users').doc(userDoc.docs[0].id).update({
+      badgeCount: currentBadgeCount
+    });
+
+  
+
     // 푸시 알림 메시지 구성
     const message = {
       notification: {
         title: '온더웨이',
         body: '성공적으로 물품을 전달하였습니다. \n전달완료 내역을 확인해 주세요.',
       },
-      token: helperDeviceToken
+      data: {
+        screen: 'PaymentScreen3',
+      },
+      token: helperDeviceToken,
+      apns: {
+        payload: {
+          aps: {
+            badge: currentBadgeCount,  // iOS 배지 설정
+            sound: "default"
+          }
+        }
+      }
     };
 
     // 푸시 알림 전송
@@ -494,29 +675,54 @@ exports.sendPushNotificationToNaverStudents = functions.firestore
     }
 
     const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+    const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+    
+    // Firestore 트랜잭션 시작
+    await admin.firestore().runTransaction(async (transaction) => {
+        // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰과 배지 업데이트를 처리
+        userSnapshot.forEach(doc => {
+            const user = doc.data();
+            if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
+                tokens.push(user.token);
+                
+                // Firestore에서 배지 카운트 가져오기
+                const currentBadgeCount = user.badgeCount || 0;
+                const newBadgeCount = currentBadgeCount + 1;
 
-    // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰을 배열에 추가합니다.
-    userSnapshot.forEach(doc => {
-        const user = doc.data();
-        if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
-            tokens.push(user.token);
-        }
+                // 배지 업데이트 트랜잭션 추가
+                badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
+                    badgeCount: newBadgeCount
+                }));
+            }
+        });
+        
+        // 트랜잭션 커밋
+        await Promise.all(badgeUpdates);
     });
 
     // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
-    if (tokens.length > 0){
-      const message = {
-          notification : {
-            title : `새로운 게시물이 생성되었습니다! `,
-            body : `위치 : ${storeLocation} → ${currentLocation}\n금액 : ${cost} \n상세 내용을 확인하고 신청하세요!`
-          },
+    if (tokens.length > 0) {
+        const message = {
+            notification: {
+                title: `새로운 요청이 생성되었습니다! `,
+                body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+            },
+            data: {
+              screen: 'SchoolBoard',
+            },
             tokens: tokens, // 알림을 받을 토큰 배열
+            apns: {
+                payload: {
+                    aps: {
+                        badge: newBadgeCount,  // iOS 배지 설정 (사용자마다 증가한 배지 값)
+                        sound: "default"
+                    }
+                }
+            }
         };
 
         try {
-            // Firebase Cloud Messaging을 이용하여 알림을 전송합니다.
             const response = await admin.messaging().sendEachForMulticast(message);
-      
             console.log('Successfully sent message:', response);
         } catch (error) {
             // 알림 전송 중 에러가 발생하면 로그를 출력합니다.

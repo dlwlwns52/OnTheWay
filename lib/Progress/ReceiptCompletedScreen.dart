@@ -66,6 +66,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
         return Container(
 
           child: Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -114,7 +115,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
                       ),
                     ),
                     Container(
-                      width: 0.5, // 구분선의 두께
+                      width: 1.0, // 구분선의 두께
                       height: 55, // 구분선의 높이
                       color: Colors.grey, // 구분선의 색상
                     ),
@@ -400,6 +401,7 @@ class _ReceiptCompletedScreenState extends State<ReceiptCompletedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchCompletedReceipts(), // 데이터를 불러오는 Future
         builder: (context, snapshot) {

@@ -20,6 +20,10 @@
     ],
     "rewrites": [
       {
+        "source": "/privacy_policy_on_the_way",
+        "destination": "/privacy_policy_on_the_way.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

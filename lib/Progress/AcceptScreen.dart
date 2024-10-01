@@ -396,6 +396,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                     context: context,
                     builder: (context) =>
                         AlertDialog(
+                          backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -417,8 +418,8 @@ class _AcceptScreenState extends State<AcceptScreen> {
                           actionsAlignment: MainAxisAlignment.spaceEvenly,
                           actions: <Widget>[
                             ElevatedButton.icon(
-                              icon: Icon(Icons.send),
-                              label: Text('보내기'),
+                              icon: Icon(Icons.send, color: Colors.white,),
+                              label: Text('보내기', style: TextStyle(color: Colors.white),),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF1D4786),
                                 shape: RoundedRectangleBorder(
@@ -462,8 +463,8 @@ class _AcceptScreenState extends State<AcceptScreen> {
                               },
                             ),
                             ElevatedButton.icon(
-                              icon: Icon(Icons.cancel),
-                              label: Text('취소'),
+                              icon: Icon(Icons.cancel, color: Colors.white,),
+                              label: Text('취소', style: TextStyle(color: Colors.white),),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.grey,
                                 shape: RoundedRectangleBorder(
@@ -528,6 +529,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
               }
 
               return AlertDialog(
+                backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -600,7 +602,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                       ),
                     ),
                     child: Text(
-                        '닫기', style: TextStyle(fontWeight: FontWeight.bold)),
+                        '닫기', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       Navigator.of(context).pop(); // 대화 상자 닫기
@@ -1361,8 +1363,8 @@ class _AcceptScreenState extends State<AcceptScreen> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-
           child: Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -1415,7 +1417,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
                       ),
                     ),
                     Container(
-                      width: 0.5, // 구분선의 두께
+                      width: 1.0, // 구분선의 두께
                       height: 55, // 구분선의 높이
                       color: Colors.grey, // 구분선의 색상
                     ),
@@ -1482,6 +1484,7 @@ class _AcceptScreenState extends State<AcceptScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,6 +2,8 @@ import 'package:OnTheWay/Chat/AllUsersScreen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Progress/PaymentScreen.dart';
+import '../SchoolBoard/SchoolBoard.dart';
 import 'AlarmUi.dart';
 
 class Alarm {
@@ -11,13 +13,15 @@ class Alarm {
   BuildContext context;
 
   Alarm(this.currentUserEmail, this.onNotificationCountChanged, this.context) {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleMessage(message);
-    });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (context != null) {
         _handleMessage(message);
+      }
+      else {
+        print("Context is null");
+        // 대체 로직 또는 오류 처리
       }
     });
 
@@ -25,8 +29,7 @@ class Alarm {
   }
 
   Future<void> _handleMessage(RemoteMessage message) async {
-    if (message.data['ownerEmail'] == currentUserEmail &&
-        message.data['screen'] == 'AlarmUi') {
+    if (message.data['ownerEmail'] == currentUserEmail && message.data['screen'] == 'AlarmUi') {
       await _initializeMessageCount(currentUserEmail);
       if (context != null) {
         Navigator.of(context).push(
@@ -37,7 +40,8 @@ class Alarm {
       } else {
         print("Context is null");
       }
-    } else if (message.data['screen'] == 'AllUsersScreen') {
+    }
+    if (message.data['screen'] == 'AllUsersScreen') {
       if (context != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -48,6 +52,62 @@ class Alarm {
         print("Context is null");
       }
     }
+
+
+    if (message.data['screen'] == 'SchoolBoard') {
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => BoardPage(),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
+    }
+
+
+    if (message.data['screen'] == 'PaymentScreen1') {
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>  PaymentStatusScreen(initialIndex: 1),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
+    }
+
+
+    if (message.data['screen'] == 'PaymentScreen2') {
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>  PaymentStatusScreen(initialIndex: 2),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
+    }
+
+
+    if (message.data['screen'] == 'PaymentScreen3') {
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>  PaymentStatusScreen(initialIndex: 3),
+          ),
+        );
+      } else {
+        print("Context is null");
+      }
+    }
+
+
+
+
   }
 
   Future<String?> getNickname(String email) async {

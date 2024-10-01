@@ -613,6 +613,7 @@ class _NotificationScreenState extends State<AlarmUi> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -662,7 +663,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                     ),
                   ),
                   Container(
-                    width: 0.5, // 구분선의 두께
+                    width: 1.0, // 구분선의 두께
                     height: 60, // 구분선의 높이
                     color: Colors.grey, // 구분선의 색상
                   ),
@@ -772,6 +773,7 @@ class _NotificationScreenState extends State<AlarmUi> {
           }
         },
         child: Scaffold(
+          backgroundColor: Colors.white,
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
             child: AppBar(
@@ -799,7 +801,7 @@ class _NotificationScreenState extends State<AlarmUi> {
               ),
               actions: [
                 IconButton(
-                  icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete),
+                  icon: Icon(isDeleteMode ? Icons.delete_outline : Icons.delete, color: Colors.white,),
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     setState(() {

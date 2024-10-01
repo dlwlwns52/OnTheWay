@@ -666,9 +666,9 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Color(0xFF1D4786),
+                    backgroundColor: Color(0xFF1D4786),
                     // 배경색
-                    onPrimary: Colors.white,
+                    foregroundColor: Colors.white,
                     // 텍스트 색상
                     padding: EdgeInsets.symmetric(vertical: 13),
                     // 내부 패딩 (높이 조정)

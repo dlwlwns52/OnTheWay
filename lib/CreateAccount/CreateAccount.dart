@@ -67,12 +67,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 // 도메인 데이터
   List<Map<String, String>> _domains = [
-    // {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
-    {'name': '충남대학교 (최초출시!)', 'domain': 'g.cnu.ac.kr'},
-    // {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
-    // {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
+    {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
+    {'name': '충남대학교', 'domain': 'g.cnu.ac.kr'},
+    {'name': '서울대학교', 'domain': 'snu.ac.kr'},
+    {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
     // {'name': '테스트', 'domain': 'gmail.com'},
-    // {'name': '테스트1', 'domain' : 'naver.com'},교
   ];
 
   List<Map<String, String>> _filteredDomains = [];  // 필터링된 도메인 목록
@@ -161,6 +160,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -222,7 +222,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     ),
                   ),
                   Container(
-                    width: 0.5, // 구분선의 두께
+                    width: 1.0, // 구분선의 두께
                     height: 60, // 구분선의 높이
                     color: Colors.grey, // 구분선의 색상
                   ),
@@ -276,7 +276,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
   void _filterDomains(String query) {
-
     setState(() {
       if (query.isEmpty) {
         _filteredDomains = _domains;
@@ -451,7 +450,25 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         return GestureDetector(
                                           onTap: () {
                                             HapticFeedback.lightImpact();
-                                            _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            print(domain['name']);
+
+
+                                            // 학교 추가하면 여기에 추가
+                                            if(domain['name'] == '충남대학교' || domain['domain'] == 'g.cnu.ac.kr') {
+                                              _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            }
+                                            else{
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '곧 출시될 학교입니다.',
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  duration: Duration(seconds: 1),
+                                                ),
+                                              );
+                                            }
+
                                             Navigator.pop(context);
                                           },
                                           child: Container(
@@ -1051,6 +1068,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         context: context,
         builder: (BuildContext context) {
           return Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -1096,7 +1114,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       ),
                     ),
                     Container(
-                      width: 0.5, // 구분선의 두께
+                      width: 1.0, // 구분선의 두께
                       height: 60, // 구분선의 높이
                       color: Colors.grey, // 구분선의 색상
                     ),
@@ -2398,8 +2416,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 HapticFeedback.lightImpact();
               },
               style: ElevatedButton.styleFrom(
-                primary: Color(0xFF1D4786), // 배경색
-                onPrimary: Colors.white, // 텍스트 색상
+                backgroundColor: Color(0xFF1D4786), // 배경색
+                foregroundColor: Colors.white, // 텍스트 색상
                 padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
                 minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
                 shape: RoundedRectangleBorder(

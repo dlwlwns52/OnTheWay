@@ -26,11 +26,15 @@ import '../SchoolBoard/SchoolBoard.dart';
 import 'RequestScreen.dart';
 
 class PaymentStatusScreen extends StatefulWidget {
+  final int initialIndex;  // 처음에 선택할 탭 인덱스
+
+  PaymentStatusScreen({this.initialIndex = 1});  // 기본값은 첫 번째 탭
+
   @override
   _PaymentStatusScreenState createState() => _PaymentStatusScreenState();
 }
 
-class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
+class _PaymentStatusScreenState extends State<PaymentStatusScreen> with SingleTickerProviderStateMixin {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -51,6 +55,9 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
 
   late Future<String?> _nickname;
 
+  //body 특정 부분 이동
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
@@ -63,8 +70,16 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
         .toLowerCase();
 
     _nickname = getNickname();
+
+    // TabController를 초기화하고, initialIndex를 기반으로 선택된 탭 설정
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialIndex);
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
 
 
@@ -141,6 +156,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
     return DefaultTabController(
         length: 4,  // 탭의 개수
         child: Scaffold(
+          backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
         child: AppBar(
@@ -277,6 +293,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.07,
                 child: TabBar(
+                  controller: _tabController,
                   labelColor: Color(0xFF1D4786),
                   unselectedLabelColor: Colors.grey,
                   indicatorColor: Colors.indigo.shade500,
@@ -332,7 +349,6 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                   ],
                   onTap: (index)
                     {
-                      print(index);
                       HapticFeedback.lightImpact();
                       },
                 ),
@@ -340,6 +356,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
               Expanded(
                 // TabBarView는 TabBar 아래의 공간에서 다른 내용을 표시
                 child: TabBarView(
+                  controller: _tabController,
                   children: [
                     RequestScreen(), // 요청 화면으로 연결
                     AcceptScreen(),

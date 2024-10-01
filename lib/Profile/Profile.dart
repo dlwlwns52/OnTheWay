@@ -233,6 +233,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             right: MediaQuery.of(context).size.width * 0.03,
           ),
           child: Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -315,7 +316,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     ),
                     Container(
-                      width: 0.5, // 구분선의 두께
+                      width: 1.0, // 구분선의 두께
                       height: 55, // 구분선의 높이
                       color: Colors.grey, // 구분선의 색상
                     ),
@@ -368,6 +369,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             right: MediaQuery.of(context).size.width * 0.03,
           ),
           child: Dialog(
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -472,7 +474,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     ),
                     Container(
-                      width: 0.5, // 구분선의 두께
+                      width: 1.0, // 구분선의 두께
                       height: 55, // 구분선의 높이
                       color: Colors.grey, // 구분선의 색상
                     ),
@@ -940,6 +942,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     Grade? userGrade = grade != null ? Grade(grade!) : null;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
         child: AppBar(

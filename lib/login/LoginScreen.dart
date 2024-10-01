@@ -201,6 +201,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
 
+          case "invalid-credential":
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('로그인 정보가 정확하지 않습니다. \n 이메일과 비밀번호를 확인해주세요.', textAlign: TextAlign.center,),
+                duration: Duration(seconds: 2),
+              ),
+            );
+
+          case "network-request-failed":
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('네트워크 오류가 발생했습니다. \n연결 상태를 확인 후 다시 시도해주세요.', textAlign: TextAlign.center,),
+                duration: Duration(seconds: 2),
+              ),
+            );
+
           case "too-many-requests":
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -268,6 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {

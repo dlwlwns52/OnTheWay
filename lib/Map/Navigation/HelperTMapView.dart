@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -101,6 +103,7 @@ class _HelperTMapViewState extends State<HelperTMapView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           '길찾기',
@@ -139,45 +142,60 @@ class _HelperTMapViewState extends State<HelperTMapView> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.all(16.0), // 여백 추가
-          decoration: BoxDecoration(
-            color: Color(0xFF1D4786), // 버튼 배경색
-            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
-
-          ),
-          //저장하기 버튼
-          child: ElevatedButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '현재 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
-                    textAlign: TextAlign.center,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.15 : MediaQuery.of(context).size.width * 0.20,
+            child: ElevatedButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '현재 위치로 이동 중 입니다. \n잠시만 기다려주세요.',
+                      textAlign: TextAlign.center,
+                    ),
+                    duration: Duration(seconds: 1),
                   ),
-                  duration: Duration(seconds: 1),
+                );
+                moveToCurrentLocation();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF1D4786), // 배경색
+                foregroundColor: Colors.white, // 텍스트 색상
+                padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
+                minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
+                  side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
                 ),
-              );
-              moveToCurrentLocation();
-            },
-
-            // 위치 값 저장
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.pin_drop), // 저장 아이콘
-                SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
-                Text('현재 위치로 이동', style: TextStyle(fontSize: 18),),
-              ],
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF1D4786),
-              elevation: 0, // 경계선을 제거합니다.
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center, // 아이콘과 텍스트를 중앙 정렬
+                children: [
+                  Icon(
+                    Icons.pin_drop, // 원하는 아이콘 선택
+                    size: 24, // 아이콘 크기
+                    color: Colors.white, // 아이콘 색상
+                  ),
+                  SizedBox(width: 13), // 아이콘과 텍스트 사이 간격
+                  Text(
+                    '현재 위치로 이동',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 21,
+                      height: 1,
+                      letterSpacing: -0.5,
+                      color: Colors.white, // 텍스트 색상
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

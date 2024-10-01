@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:OnTheWay/Map/WriteMap/CurrentMapScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +50,7 @@ class _MapScreenState extends State<StoreMapScreen> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           '픽업 장소',
@@ -132,18 +135,22 @@ class _MapScreenState extends State<StoreMapScreen> {
                   ),
                   SizedBox(height: 8),
                   Container(
-                    width: 80.0, // 원하는 버튼의 너비
-                    height: 80.0, // 원하는 버튼의 높이
-                    child: FloatingActionButton(
-                      onPressed: _moveToCurrentLocation,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.my_location,
-                        size: 60, // 아이콘 크기 조절
-                        color: Colors.black,), // 아이콘 크기
-                      tooltip: '설정된 위치로 이동',
+                    width: 80.0,
+                    height: 80.0,
+                    child: ClipOval( // 원형으로 자르기
+                      child: FloatingActionButton(
+                        onPressed: _moveToCurrentLocation,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.my_location,
+                          size: 60, // 아이콘 크기 조절
+                          color: Colors.black,
+                        ),
+                        tooltip: '설정된 위치로 이동',
+                      ),
                     ),
                   ),
+
                 ],
               ),
             ),
@@ -152,54 +159,59 @@ class _MapScreenState extends State<StoreMapScreen> {
 
 
       //바텀바 ui
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.all(16.0), // 여백 추가
-          decoration: BoxDecoration(
-            color: Color(0xFF1D4786), // 버튼 배경색
-            borderRadius: BorderRadius.circular(10.0), // 버튼 모서리를 둥글게 만듦
+      bottomNavigationBar:
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+            Container(
+              height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.15 : MediaQuery.of(context).size.width * 0.20,
+              child: ElevatedButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  // 현재위치 설정을 안했을때
+                  if (storeSelectedLocation == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('현재 위치를 선택해주세요.', textAlign: TextAlign.center,),
+                      duration: Duration(seconds: 2),
+                    ));
+                    return;
+                  }
 
-          ),
-          //저장하기 버튼
-          child: ElevatedButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              // 현재위치 설정을 안했을때
-              if (storeSelectedLocation == null) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('현재 위치를 선택해주세요.', textAlign: TextAlign.center,),
-                  duration: Duration(seconds: 2),
-                ));
-                return;
-              }
-
-              // 현재위치 마커와 움직인 마커위치에 따라 값 다르게 넣기
-              else if(markerPosition != storeSelectedLocation){
-                if(markerPosition == null){
-                  Navigator.of(context).pop(storeSelectedLocation);
-                }
-                else{
-                  storeSelectedLocation = markerPosition;
-                  Navigator.of(context).pop(storeSelectedLocation);
-                }
-              }
-            },
-
-            // 위치 값 저장
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.pin_drop), // 저장 아이콘
-                SizedBox(width: 8.0), // 아이콘과 텍스트 사이의 간격 조절
-                Text('저장하기', style: TextStyle(fontSize: 18),),
-              ],
+                  // 현재위치 마커와 움직인 마커위치에 따라 값 다르게 넣기
+                  else if(markerPosition != storeSelectedLocation){
+                    if(markerPosition == null){
+                      Navigator.of(context).pop(storeSelectedLocation);
+                    }
+                    else{
+                      storeSelectedLocation = markerPosition;
+                      Navigator.of(context).pop(storeSelectedLocation);
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF1D4786), // 배경색
+                  foregroundColor: Colors.white, // 텍스트 색상
+                  padding: EdgeInsets.symmetric(vertical: 13), // 내부 패딩 (높이 조정)
+                  minimumSize: Size(double.infinity, kBottomNavigationBarHeight), // 버튼 크기 설정
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero, // 둥근 모서리를 제거하고 직사각형 모양으로 설정
+                    side: BorderSide(color: Color(0xFF1D4786)), // 테두리 색상 설정
+                  ),
+                ),
+                child: Text(
+                  '저장하기',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    height: 1,
+                    letterSpacing: -0.5,
+                    color: Colors.white, // 텍스트 색상
+                  ),
+                ),
+              ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF1D4786),
-              elevation: 0, // 경계선을 제거합니다.
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
