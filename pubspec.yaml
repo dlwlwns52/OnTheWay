@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none'
 
-version: 1.0.1+1
+version: 1.0.2+1
 
 environment:
   sdk: '>=3.0.5 <4.0.0'
@@ -150,6 +150,11 @@ flutter:
     - assets/pigma/cnuLogo.svg
     - assets/pigma/school_indigo.svg
     - assets/pigma/Toss_Symbol.svg
+
+    - assets/pigma/more_vert_5F6368.svg
+    - assets/pigma/more_vert_AAAAAA.svg
+    - assets/pigma/more_vert_white.svg
+    - assets/pigma/user_block_management.svg
 
 
 

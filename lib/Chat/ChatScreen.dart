@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:OnTheWay/Chat/FullScreenImage.dart';
+import 'package:OnTheWay/Chat/ReportChatUserService.dart';
+import 'package:OnTheWay/Chat/SuccessChatReport.dart';
 import 'package:OnTheWay/Chat/message.dart';
 import 'package:OnTheWay/Map/Navigation/OwnerTMapView.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -992,6 +994,347 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
+  Future<void> blockUser(String senderEmail, String receiverEmail) async {
+
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // 현재 사용자의 blacklist에 차단할 사용자를 추가
+    await firestore.collection('users')
+        .doc(widget.senderName)
+        .collection('blacklist')
+        .doc(widget.receiverName)
+        .set({
+      'blockedEmail': receiverEmail,
+      'blockedNickname' : receiverName,
+      'timestamp': FieldValue.serverTimestamp(),
+      'target' : true,
+    });
+
+    // 차단된 사용자의 blacklist에도 현재 사용자를 추가 (양방향 차단)
+    await firestore.collection('users')
+        .doc(widget.receiverName)
+        .collection('blacklist')
+        .doc(widget.senderName)
+        .set({
+      'blockedEmail': senderEmail,
+      'blockerNickname' : senderName,
+      'timestamp': FieldValue.serverTimestamp(),
+      'target' : false,
+    });
+  }
+
+
+
+  //사용자 차단 다이어로그
+  void blockUserDialog(BuildContext context, String senderEmail, String receiverEmail) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 45),
+              Container(
+                margin:  EdgeInsets.fromLTRB(
+                    MediaQuery.of(context).size.width *0.05,
+                    0,
+                    MediaQuery.of(context).size.width *0.05,
+                    0),
+                child:
+                RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '사용자 차단\n\n',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Colors.black,
+                            ),
+
+                          ),
+                          TextSpan(
+                            text: '사용자를 차단하면 해당 사용자와 본인이 나눴던\n 채팅이 서로 보이지 않게 됩니다. \n차단 여부는 상대방이 알 수 없으며, 프로필에서 언제든 차단을 해제할 수 있습니다.',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Colors.black,
+                            ),
+                          )
+                        ])
+
+                ),
+              ),
+              SizedBox(height: 40),
+              Divider(color: Colors.grey, height: 1,),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF636666),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1.0, // 구분선의 두께
+                    height: 60, // 구분선의 높이
+                    color: Colors.grey, // 구분선의 색상
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        blockUser(senderEmail, receiverEmail);
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        setState(() {
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "사용자를 성공적으로 차단했습니다. \n프로필에서 차단을 해제할 수 있습니다.",
+                                textAlign: TextAlign.center,
+                              ),
+                              duration: Duration(seconds: 2),
+                            )
+                        );
+
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '확인',
+                          style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1D4786)
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+
+  //사용자 차단 및 신고 바텀시트 다이어로그
+  void _blockAndReportUserDialog(BuildContext context, String senderEmail, String receiverEmail) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 15, 20, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(1, 0, 0, 43),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE3E3E3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  width: 44,
+                  height: 4,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 37),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // 차단하기 기능 호출
+                        HapticFeedback.lightImpact();
+                        blockUserDialog(context, senderEmail, receiverEmail);
+                      },
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.block, // 차단하기에 알맞은 블록 아이콘
+                                color: Color(0xFF1D4786),
+                              ),
+                              SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
+                              Text(
+                                '차단하기',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  height: 1,
+                                  letterSpacing: -0.4,
+                                  color: Color(0xFF1D4786),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // 신고하기 기능 호출
+                        HapticFeedback.lightImpact();
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ReportChatUserService(senderEmail: senderEmail, receiverEmail: receiverEmail, docName : widget.documentName)),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.notifications_active_sharp, // 신고하기와 관련된 경고 아이콘
+                                color: Color(0xFF1D4786),
+                              ),
+                              SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
+                              Text(
+                                '신고하기',
+                                style: TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17,
+                                  height: 1,
+                                  letterSpacing: -0.4,
+                                  color: Color(0xFF1D4786),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop(); // 취소 버튼 클릭 시 모달 닫기
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Color(0xFFFFFFFF),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x0D000000),
+                              offset: Offset(0, 4),
+                              blurRadius: 7.5,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
+                        child: Center(
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              height: 1,
+                              letterSpacing: -0.4,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
 
 // 채팅 메시지 레이아웃을 구성하는 함수
   Widget buildChatLayout(QueryDocumentSnapshot<Map<String, dynamic>> snapshot, bool shouldDisplayAvatar, bool isRead ) {
@@ -1851,6 +2194,36 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           }
                         }
                       },
+                    ),
+
+
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 0, 10, 5),
+                      child: GestureDetector(
+                        child: SvgPicture.asset(
+                          'assets/pigma/more_vert_white.svg',
+                          width: 27,
+                          height: 27,
+                        ),
+                        onTap: () async{
+                          HapticFeedback.lightImpact();
+                          DocumentSnapshot senderSnapshot = await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.senderName)
+                              .get();
+
+                          DocumentSnapshot receiverSnapshot = await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.receiverName)
+                              .get();
+
+                          String senderEmail = senderSnapshot['email'];
+                          String receiverEmail = receiverSnapshot['email'];
+
+                          _blockAndReportUserDialog(context, senderEmail,receiverEmail);
+
+                        },
+                      ),
                     ),
 
             ],

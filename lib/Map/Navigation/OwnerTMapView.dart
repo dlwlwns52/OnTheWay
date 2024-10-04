@@ -149,7 +149,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
               ),
               SizedBox(height: 6), // 텍스트 사이에 약간의 여백 추가
               Text(
-                "헬퍼가 앱을 종료할 경우에는, 위치 추적이 중단됩니다!",
+                "헬퍼가 앱을 종료하면 위치 추적이 중단되며, \n경로 정보만 표시됩니다.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13, // 작은 텍스트 크기

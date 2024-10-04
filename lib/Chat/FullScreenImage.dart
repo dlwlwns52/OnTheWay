@@ -25,6 +25,7 @@ class _FullScreenImageState extends State<FullScreenImage> {
           }
         },
         child: Scaffold(
+          backgroundColor: Colors.white,
           body: SizedBox.expand(
             child: Stack(
               children: <Widget>[

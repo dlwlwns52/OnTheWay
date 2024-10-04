@@ -43,13 +43,12 @@ class _HelperTMapViewState extends State<HelperTMapView> {
     controller.runJavaScript("moveToCurrentLocation();");
   }
 
+
+
+
   @override
   void initState() {
     super.initState();
-
-    // 위치 권한 요청
-    // requestLocationPermission();
-
 
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -62,7 +61,9 @@ class _HelperTMapViewState extends State<HelperTMapView> {
             // 페이지 로딩이 완료되면 updateMap 메서드를 호출
             update(widget.currentLocation, widget.storeLocation);
           },
-          onWebResourceError: (WebResourceError error) {},
+          onWebResourceError: (WebResourceError error) {
+            print("Web resource error: ${error.description}");
+          },
           onNavigationRequest: (NavigationRequest request) {
             return NavigationDecision.navigate;
           },
@@ -84,20 +85,9 @@ class _HelperTMapViewState extends State<HelperTMapView> {
       );
     });
 
+
   }
 
-  // 위치 권한 요청 함수
-  void requestLocationPermission() async {
-    var status = await Permission.location.request();
-    if (status.isGranted) {
-      // 위치 권한이 허용됨
-    } else if (status.isDenied) {
-      // 위치 권한이 거부됨
-    } else if (status.isPermanentlyDenied) {
-      // 위치 권한이 영구적으로 거부됨
-      openAppSettings();
-    }
-  }
 
 
   @override
@@ -146,7 +136,7 @@ class _HelperTMapViewState extends State<HelperTMapView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.15 : MediaQuery.of(context).size.width * 0.20,
+            height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.0 : MediaQuery.of(context).size.width * 0.20,
             child: ElevatedButton(
               onPressed: () {
                 HapticFeedback.lightImpact();

@@ -21,6 +21,7 @@ import '../Chat/FullScreenImage.dart';
 import '../Progress/PaymentScreen.dart';
 import '../Ranking/DepartmentRanking.dart';
 import '../SchoolBoard/SchoolBoard.dart';
+import 'ReportManagement.dart';
 import 'SuggestionToAdminScreen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -1207,14 +1208,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
             ),
           ),
-          SingleChildScrollView(
-            child: Container(
-              margin: EdgeInsets.fromLTRB(
-                MediaQuery.of(context).size.width * 0.05,
-                0,
-                MediaQuery.of(context).size.width * 0.05,
-                0,
-              ),
+          Expanded(
+          child:Container(
+                    margin: EdgeInsets.fromLTRB(
+                      MediaQuery.of(context).size.width * 0.05,
+                      0,
+                      MediaQuery.of(context).size.width * 0.05,
+                      0,
+                    ),
+             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1267,8 +1269,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   _buildDivider(context),
 
-
-
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportManagementScreen(),
+                        ),
+                      );
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '차단관리',
+                      'assets/pigma/user_block_management.svg',
+                      trailingIcon: 'assets/pigma/arrow.svg',
+                    ),
+                  ),
+                  _buildDivider(context),
                   // 건의하기 Row
                   GestureDetector(
                     onTap: () {
@@ -1316,12 +1334,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                   _buildDivider(context),
+
                 ],
               ),
             ),
           ),
+        ),
         ],
+
       ),
+
+
+
 
       bottomNavigationBar: Padding(
         padding: Platform.isAndroid

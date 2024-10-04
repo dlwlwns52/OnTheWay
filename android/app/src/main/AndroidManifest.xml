@@ -5,9 +5,11 @@
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 인터넷 사용 권한 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 네트워크 상태 확인 권한 -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 와이파이 상태 확인 권한 -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 일반 위치 권한 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 정밀 위치 권한 -->
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 백그라운드 위치 권한 추가 -->
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- 포그라운드 서비스 권한 추가 -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 햅틱 진동 권한 -->
@@ -74,6 +76,8 @@
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="69a96da745eed8af5198d8de5d72a2eb" />
+
+
 
     </application>
 </manifest>

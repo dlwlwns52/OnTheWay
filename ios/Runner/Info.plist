@@ -2,117 +2,97 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-
-    <!-- Google Sign-In 추가 설정 -->
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1</string>
-            </array>
-        </dict>
-    </array>
-
-    <!-- 외부 앱 리스트 등록 -->
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>kakaotalk</string> <!-- 카카오톡 -->
-        <string>supertoss</string> <!-- 토스 -->
-        <string>naversearchthirdlogin</string> <!-- 네이버페이 앱 로그인 -->
-    </array>
-
-    <!-- App Transport Security 설정 -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoadsInWebContent</key>
-        <true/>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-
-    <!-- Kakao 앱 키 -->
-    <key>KAKAO_APP_KEY</key>
-    <string>69a96da745eed8af5198d8de5d72a2eb</string>
-
-    <!-- 위치 추적 권한 설명 -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>게시글 작성 시나 길찾기 기능에서 본인의 현재 위치를 확인하기 위해 위치 접근 권한이 필요합니다.</string>
-
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>거래가 매칭된 후, 원활한 거래 진행을 위해 헬퍼의 위치를 실시간으로 확인할 수 있도록 위치 접근 권한이 필요합니다.</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>게시글 작성 시나 길찾기 기능에서 본인의 현재 위치를 확인하고, 거래가 매칭된 후 원활한 거래 진행을 위해 헬퍼의 위치를 실시간으로 확인할 수 있도록 위치 접근 권한이 필요합니다.</string>
-
-
-
-    <!-- 백그라운드 모드 설정 -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>location</string>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
-
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
-
-    <key>NSCameraUsageDescription</key>
-    <string>오더에게 물품이 전달된 사진을 촬영하기 위해 카메라 접근 권한이 필요합니다. 사용자는 언제든지 설정에서 카메라 접근 권한을 철회할 수 있습니다.</string>
-
-
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>프로필 사진을 변경하거나 채팅에서 사진을 전송하기 위해 갤러리 접근 권한이 필요합니다. 사용자는 언제든지 설정에서 사진 접근 권한을 철회할 수 있습니다.</string>
-
-
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true/>
+	<key></key>
+	<string></string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
     <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
-    <key>CFBundleDisplayName</key>
-    <string>온더웨이</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>온더웨이</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>$(FLUTTER_BUILD_NAME)</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleVersion</key>
-    <string>$(FLUTTER_BUILD_NUMBER)</string>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true/>
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-    <key>UIMainStoryboardFile</key>
-    <string>Main</string>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
+    <string>ko_KR</string>
 
+	<key>CFBundleDisplayName</key>
+	<string>온더웨이</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>온더웨이</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>69a96da745eed8af5198d8de5d72a2eb</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaotalk</string>
+		<string>supertoss</string>
+		<string>naversearchthirdlogin</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>오더에게 물품이 전달된 사진을 촬영하기 위해 카메라 접근 권한이 필요합니다. 사용자는 언제든지 설정에서 카메라 접근 권한을 철회할 수 있습니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>게시글 작성 시나 길찾기 기능에서 본인의 현재 위치를 확인하고, 거래가 매칭된 후 원활한 거래 진행을 위해 헬퍼의 위치를 실시간으로 확인할 수 있도록 위치 접근 권한이 필요합니다.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>거래가 매칭된 후, 원활한 거래 진행을 위해 헬퍼의 위치를 실시간으로 확인할 수 있도록 위치 접근 권한이 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>게시글 작성 시나 길찾기 기능에서 본인의 현재 위치를 확인하기 위해 위치 접근 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>프로필 사진을 변경하거나 채팅에서 사진을 전송하기 위해 갤러리 접근 권한이 필요합니다. 사용자는 언제든지 설정에서 사진 접근 권한을 철회할 수 있습니다.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 </dict>
 </plist>

@@ -42,6 +42,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   bool _obscureText1 = true;  // 비밀번호 가리기 (별표 처리)
   bool _obscureText2 = true;  // 비밀번호 확인 가리기 (별표 처리)
   bool isEmailVerified = false;  // 이메일 인증 여부
+  bool _isEULAChecked = false; // EULA 동의 여부
+  bool _isPrivacyPolicyChecked = false; // 개인정보 처리방침 동의 여부
 
 
 // 버튼 관련 상태
@@ -259,6 +261,307 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       },
     );
   }
+
+
+  //EULA 동의 여부 다이어로그
+  void _acceptTermsDialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(child:
+            Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(15, 25, 15, 0),
+        child : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                  '최종 사용자 사용권 계약 (EULA)',
+                  style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF222222),
+                ),
+              ),
+              SizedBox(height: 20,),
+              Text(
+                '본 계약은 귀하(이하 "사용자")와 온더웨이(이하 "회사") 간의 소프트웨어 사용에 대한 법적 계약을 정의합니다. 사용자는 온더웨이 앱을 설치하고 사용함으로써 본 계약의 모든 조항에 동의한 것으로 간주됩니다.\n\n'
+                    '1. 사용권 부여\n'
+                    '회사는 사용자가 온더웨이 애플리케이션(이하 "앱")을 비독점적이고 양도 불가한 방식으로 사용할 수 있는 권한을 부여합니다. '
+                    '본 앱은 사용자의 개인적인 용도로만 사용할 수 있으며, 상업적 목적이나 다른 사람에게 임대, 양도할 수 없습니다. '
+                    '사용자는 본 앱을 대한민국 내에서만 사용할 수 있습니다.\n\n'
+                    '2. 사용자의 의무\n'
+                    '사용자는 앱을 불법적 목적으로 사용하거나, 회사 또는 타인의 지적 재산권을 침해해서는 안 됩니다. '
+                    '사용자는 본 앱 내에서 타인의 개인정보를 무단으로 수집, 저장, 배포하는 행위를 해서는 안 됩니다. '
+                    '사용자는 온더웨이에서 제공하는 게시물, 채팅 등에서 **불법적이거나 부적절한 콘텐츠(예: 비속어, 음란물, 혐오 발언)**를 게시할 수 없습니다. '
+                    '사용자는 본 앱의 소스 코드 또는 소프트웨어를 역설계, 분해, 복제, 수정, 배포할 수 없습니다. 이러한 행위는 회사의 명시적 허가가 없는 한 금지됩니다.\n\n'
+                    '3. 지적 재산권\n'
+                    '본 앱에 포함된 모든 자료, 소스 코드, 상표, 디자인, 아이콘, 서비스 이름 등은 회사의 독점적 자산이며, 회사의 사전 서면 동의 없이 이를 복제, 수정, 배포, 상업적으로 이용할 수 없습니다. '
+                    '사용자 생성 콘텐츠(게시물, 리뷰 등)에 대한 저작권은 사용자에게 귀속되지만, 사용자는 해당 콘텐츠가 온더웨이 내에서 광고 및 홍보 목적으로 사용될 수 있음을 동의합니다.\n\n'
+                    '4. 책임 한계\n'
+                    '회사는 온더웨이 앱 사용 중 발생할 수 있는 직접적, 간접적 손해에 대해 법적 책임을 지지 않습니다. 이는 다음과 같은 경우를 포함하나 이에 국한되지 않습니다: '
+                    '사용자가 앱을 잘못 사용하여 발생한 손해, 제3자가 사용자 계정에 불법적으로 접근하여 발생한 손해, 네트워크 장애, 서버 오류, 또는 기타 기술적 문제로 인해 발생한 손해. '
+                    '회사는 앱의 기능이 모든 환경에서 완벽하게 작동한다는 보장을 하지 않습니다. 또한 앱 사용 중 발생할 수 있는 버그나 오류에 대한 책임은 회사에 있지 않습니다.\n\n'
+                    '5. 사용권 제한\n'
+                    '사용자가 본 계약의 조항을 위반할 경우, 회사는 사전 통지 없이 사용자의 앱 사용 권리를 제한하거나 계정을 삭제할 수 있습니다. '
+                    '사용자는 본 계약의 조항을 위반한 경우, 회사에 발생한 모든 손해에 대해 배상할 책임이 있습니다.\n\n'
+                    '6. 개인정보 보호\n'
+                    '회사는 사용자의 개인정보를 대한민국 개인정보 보호법에 따라 보호합니다. 사용자의 개인정보는 사용자가 동의한 목적과 범위 내에서만 사용되며, 사용자의 동의 없이 제3자에게 제공되지 않습니다. '
+                    '회사는 개인정보 처리방침에 따라 사용자의 정보를 보호하며, 해당 방침은 앱 내 설정 메뉴에서 확인할 수 있습니다.\n\n'
+                    '7. 라이선스의 종료\n'
+                    '사용자가 본 계약을 위반하거나, 회사의 서비스 이용 정책을 위반한 경우, 회사는 사용자의 라이선스를 즉시 종료할 수 있습니다. '
+                    '사용자는 언제든지 앱 사용을 중단할 수 있으며, 앱 삭제 시 사용자의 모든 권한은 즉시 종료됩니다.\n\n'
+                    '8. 서비스 중단 및 수정\n'
+                    '회사는 언제든지 사전 공지 없이 앱의 기능을 수정, 추가 또는 제거할 수 있습니다. '
+                    '회사는 사용자가 제공하는 서비스에 대해 보장을 하지 않으며, 필요에 따라 일시적으로 서비스를 중단할 수 있습니다. 이 경우 사용자에게 사전에 통지합니다.\n\n'
+                    '9. 준거법 및 분쟁 해결\n'
+                    '본 계약은 대한민국 법률에 따라 해석되며, 서비스와 관련된 모든 분쟁은 서울중앙지방법원을 전속 관할 법원으로 합니다.',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.normal,
+                  fontSize: 12, // 작은 글씨 크기 설정
+                  color: Colors.grey, // 회색으로 설정
+                ),
+              ),
+
+
+              SizedBox(height: 40),
+              Divider(color: Colors.grey, height: 1,),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _isEULAChecked = false;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF636666),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1.0, // 구분선의 두께
+                    height: 60, // 구분선의 높이
+                    color: Colors.grey, // 구분선의 색상
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _isEULAChecked = true;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                      ),
+                      child: Center(
+                        child: Text(
+                          '동의',
+                          style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1D4786)
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          ),
+            ),
+        );
+      },
+    );
+  }
+
+
+  //개인정보 처리방침 동의 여부 다이어로그
+  void _isPrivacyPolicyCheckdialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(child:
+        Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(15, 25, 15, 0),
+            child : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '개인정보 처리방침',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF222222),
+                  ),
+                ),
+                SizedBox(height: 20,),
+                Text(
+                  '온더웨이 개인정보 처리방침\n\n'
+                      '온더웨이는 이용자의 개인정보를 매우 중요하게 여기며, 대한민국 「개인정보 보호법」에 따라 개인정보를 안전하게 처리하고 보호하기 위해 최선을 다하고 있습니다. 본 개인정보 처리방침은 이용자가 제공한 개인정보가 어떻게 수집되고 이용되며, 어떤 방식으로 보호되고 있는지 안내하기 위한 것입니다.\n\n'
+                      '이 방침은 2024년 9월 26일부터 적용됩니다.\n\n'
+                      '제1조(개인정보의 처리 목적)\n'
+                      '온더웨이는 다음의 목적을 위하여 개인정보를 처리합니다. 처리된 개인정보는 아래 목적 외의 용도로는 사용되지 않으며, 이용 목적이 변경되는 경우에는 별도의 동의를 받을 예정입니다.\n\n'
+                      '- 회원가입 및 관리: 회원 가입의사 확인, 서비스 제공에 따른 본인 식별·인증, 회원자격 유지 및 관리 등을 목적으로 개인정보를 처리합니다.\n'
+                      '- 결제 처리: 결제 서비스 이용을 위해 아임포트를 통한 KakaoPay, TossPay 등과 연동하여 결제 정보가 처리됩니다.\n'
+                      '- 알림 서비스: 주문 상태 및 도와주기 요청 등과 같은 알림 전송을 위해 개인정보를 처리합니다.\n'
+                      '- 위치 정보 제공: 도와주는 헬퍼의 위치 추적 및 안내를 위한 위치 정보를 처리합니다.\n\n'
+                      '제2조(개인정보의 처리 및 보유 기간)\n'
+                      '온더웨이는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 동의받은 개인정보 보유·이용기간 내에서 개인정보를 처리 및 보유합니다.\n\n'
+                      '- 회원가입 및 관리: 회원 탈퇴 시까지\n'
+                      '- 결제 정보: 결제 및 거래 관련 정보는 5년간 보유 (전자상거래 등에서의 소비자보호에 관한 법률에 근거)\n'
+                      '- 위치 정보: 위치 추적 종료 시 즉시 삭제\n\n'
+                      '제3조(처리하는 개인정보의 항목)\n'
+                      '온더웨이는 다음의 개인정보 항목을 처리하고 있습니다.\n\n'
+                      '- 필수 항목: 이메일, 위치 정보, 결제 정보, UID(파이어베이스 사용자 식별자)\n'
+                      '- 선택 항목: 프로필 사진, 학과 정보\n\n'
+                      '제4조(개인정보의 제3자 제공)\n'
+                      '온더웨이는 이용자의 동의, 법률의 특별한 규정 등 개인정보 보호법에 따라 개인정보를 제3자에게 제공할 수 있습니다. 온더웨이는 **아임포트(Iamport)**를 통해 KakaoPay 및 TossPay와 연동하여 결제 처리를 합니다. 해당 결제 서비스 제공업체에 결제 관련 정보를 제공할 수 있습니다.\n\n'
+                      '- 제공받는 자: KakaoPay, TossPay\n'
+                      '- 제공 목적: 결제 서비스 제공 및 처리\n'
+                      '- 제공 항목: 결제 정보, 이메일\n'
+                      '- 보유 및 이용 기간: 결제 후 5년간 보관\n\n'
+                      '제5조(개인정보 처리 업무의 위탁)\n'
+                      '온더웨이는 원활한 개인정보 업무 처리를 위하여 다음과 같이 개인정보 처리 업무를 외부에 위탁하고 있습니다.\n\n'
+                      '- 수탁자: Firebase (Google)\n'
+                      '- 위탁하는 업무의 내용: 데이터 보관 및 서비스 제공을 위한 클라우드 인프라\n\n'
+                      '제6조(개인정보의 파기 절차 및 파기방법)\n'
+                      '온더웨이는 개인정보 보유 기간의 경과, 처리 목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이 해당 개인정보를 파기합니다. 파기 절차 및 방법은 다음과 같습니다.\n\n'
+                      '- 파기 절차: 보유 기간이 경과한 개인정보는 내부 방침 및 관련 법령에 따라 파기합니다.\n'
+                      '- 파기 방법: 전자적 파일 형태로 저장된 개인정보는 기록을 복구할 수 없도록 기술적 방법을 사용하여 삭제합니다. 종이로 출력된 개인정보는 분쇄기로 파기합니다.\n\n'
+                      '제7조(정보주체와 법정대리인의 권리·의무 및 그 행사방법)\n'
+                      '정보주체는 언제든지 자신의 개인정보에 대한 열람, 정정, 삭제, 처리정지 등을 요구할 수 있습니다. 정보주체의 권리는 본인의 프로필 설정을 통해 확인 및 수정할 수 있으며, 이를 위한 절차는 다음과 같습니다.\n\n'
+                      '- 권리 행사 절차: 개인정보 보호책임자에게 전자우편(dwlwns52@naver.com)을 통해 열람 및 수정 요청\n\n'
+                      '제8조(개인정보의 안전성 확보조치)\n'
+                      '온더웨이는 개인정보의 안전성을 확보하기 위해 다음과 같은 조치를 취하고 있습니다.\n\n'
+                      '- 개인정보의 암호화: 사용자의 비밀번호는 암호화되어 저장 및 관리되며, 중요한 데이터는 암호화하여 보관하고 있습니다.\n'
+                      '- 접근 제한: 개인정보 처리 시스템에 대한 접근 권한을 부여하고 이를 철저히 관리합니다.\n'
+                      '- 보안 프로그램 설치: 해킹 등 외부 침입에 대비하여 보안 프로그램을 설치하고 주기적으로 점검 및 갱신합니다.\n\n'
+                      '제9조(개인정보 보호책임자에 관한 사항)\n'
+                      '온더웨이는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위해 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.\n\n'
+                      '- 개인정보 보호책임자: 이지준\n'
+                      '- 연락처: dlwlwns52@naver.com\n\n'
+                      '제10조(정보주체의 권익침해에 대한 구제방법)\n'
+                      '정보주체는 개인정보침해로 인한 구제를 받기 위해 아래 기관에 문의할 수 있습니다.\n\n'
+                      '- 개인정보침해신고센터 : (국번없이) 118 (privacy.kisa.or.kr)\n'
+                      '- 개인정보분쟁조정위원회 : (국번없이) 1833-6972 (www.kopico.go.kr)\n'
+                      '- 대검찰청 : (국번없이) 1301 (www.spo.go.kr)\n'
+                      '- 경찰청 : (국번없이) 182 (ecrm.cyber.go.kr)\n\n'
+                      '제11조(개인정보 처리방침의 변경)\n'
+                      '이 개인정보처리방침은 2024년 9월 26일부터 적용됩니다. 법령 및 내부 방침의 변경에 따라 내용의 추가, 삭제 및 수정이 있을 시에는 변경 사항의 시행 7일 전에 앱 내 공지사항을 통하여 고지할 것입니다.',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12, // 작은 글씨 크기 설정
+                    color: Colors.grey, // 회색으로 설정
+                  ),
+                ),
+
+
+
+                SizedBox(height: 40),
+                Divider(color: Colors.grey, height: 1,),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _isPrivacyPolicyChecked = false;
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF636666),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 1.0, // 구분선의 두께
+                      height: 60, // 구분선의 높이
+                      color: Colors.grey, // 구분선의 색상
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _isPrivacyPolicyChecked = true;
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '동의',
+                            style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: Color(0xFF1D4786)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        );
+      },
+    );
+  }
+
 
 
   void _onDomainSelected(String domain) {
@@ -1448,6 +1751,17 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         return false;
       }
 
+      if(_isEULAChecked == false || _isPrivacyPolicyChecked == false){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이용 약관 및 개인정보 처리방침에 동의해주세요.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 1),
+          ),
+        );
+        return false;
+      }
+
+
+
       if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
@@ -2386,10 +2700,120 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         ),
                                       ),
                                     ),
+                                  ],
+                                ),
+                              ),
+
+
+                              //eula 약관 동의
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 10, 2, 0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                      child: Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          '약관 동의',
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            height: 1,
+                                            letterSpacing: -0.4,
+                                            color: Color(0xFF424242),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap:(){
+                                        HapticFeedback.lightImpact();
+                                        _acceptTermsDialog();
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color:_isEULAChecked ? Color(0xFF1D4786):Color(0xFFF6F7F8)),
+                                          borderRadius: BorderRadius.circular(8),
+                                          color:_isEULAChecked ? Color(0xFF1D4786) : Color(0xFFF6F7F8),
+                                        ),
+                                        child: Container(
+                                          padding: EdgeInsets.fromLTRB(3.3, 15, 0, 15),
+                                          child:
+                                          Text(
+                                            _isEULAChecked ? '동의 완료' :'EULA(최종 사용자 사용권 계약) 동의',
+                                            style: TextStyle(
+                                              fontFamily: 'Pretendard',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              height: 1,
+                                              letterSpacing: -0.4,
+                                              color: _isEULAChecked ? Colors.white : Color(0xFF767676),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
 
                                   ],
                                 ),
                               ),
+
+
+                              //개인정보 처리방침
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 10, 2, 0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+
+                                    GestureDetector(
+                                      onTap:(){
+                                        HapticFeedback.lightImpact();
+                                        _isPrivacyPolicyCheckdialog();
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color:_isPrivacyPolicyChecked ? Color(0xFF1D4786):Color(0xFFF6F7F8)),
+                                          borderRadius: BorderRadius.circular(8),
+                                          color:_isPrivacyPolicyChecked ? Color(0xFF1D4786) : Color(0xFFF6F7F8),
+                                        ),
+                                        child: Container(
+                                          padding: EdgeInsets.fromLTRB(3.3, 15, 0, 15),
+                                          child:
+                                          Text(
+                                            _isPrivacyPolicyChecked ? '동의 완료' :'개인정보 처리방침 동의',
+                                            style: TextStyle(
+                                              fontFamily: 'Pretendard',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              height: 1,
+                                              letterSpacing: -0.4,
+                                              color: _isPrivacyPolicyChecked ? Colors.white : Color(0xFF767676),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+
+                                  ],
+                                ),
+                              ),
+
+
                             ],
                           ),
                         ),

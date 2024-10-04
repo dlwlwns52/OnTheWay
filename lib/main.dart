@@ -47,27 +47,19 @@ void setupLocalNotifications() async {
 }
 
 // 알림 권한 요청 함수
-Future<void> requestNotificationPermission(BuildContext context) async {
+Future<void> requestNotificationPermission() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
     sound: true,
   );
-
-  // 권한 결과에 따라 스낵바 표시
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('알림 권한이 허용되었습니다. 중요한 알림을 놓치지 않도록 하겠습니다.'))
-    );
+    print('User granted permission');
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('알림 권한이 거부되었습니다. 설정에서 권한을 변경할 수 있습니다.'))
-    );
+    print('User declined or has not accepted permission');
   }
 }
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
   await Firebase.initializeApp(); // Firebase 초기화를 기다림
@@ -81,7 +73,7 @@ void main() async {
   // 로컬 알림 채널 설정
   setupLocalNotifications();
   // 알림 권한 요청
-  // await requestNotificationPermission();
+  await requestNotificationPermission();
 
 
 
@@ -178,7 +170,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     autoLoginResult = _autoLogin();
-    requestNotificationPermission(context);
+
   }
 
 
@@ -216,7 +208,7 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 교차 축(수평 방향)의 정렬을 설정합니다.
