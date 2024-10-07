@@ -55,7 +55,7 @@ Future<void> requestNotificationPermission() async {
     sound: true,
   );
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('User granted permission');
+    // print('User granted permission');
   } else {
     print('User declined or has not accepted permission');
   }

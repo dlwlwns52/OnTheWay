@@ -18,7 +18,7 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,15 +51,34 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
                 ),
               ),
             ),
-            Text(
-              '비밀번호 재설정 메일이 발송되었습니다.',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                height: 1,
-                letterSpacing: -0.4,
-                color: Color(0xFF1D4786),
+
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text:'비밀번호 재설정 메일이 발송되었습니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        height: 1,
+                        letterSpacing: -0.4,
+                        color: Color(0xFF1D4786),
+                      ),
+                  ),
+                  TextSpan(
+                    text:'\n\n⚠️ 메일이 도착하지 않았다면, 스팸메일함을 한 번 확인해 주세요.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        height: 1,
+                        letterSpacing: -0.4,
+                        color: Color(0xFF1D4786),
+                      ),
+                  ),
+                ],
               ),
             ),
           ],

@@ -326,7 +326,6 @@ exports.sendPushNotificationToCnuStudents = functions.firestore
             .where('domain', '==', 'g.cnu.ac.kr')
             .get();
 
-        // 해당하는 사용자가 없으면 로그를 출력하고 함수를 종료합니다.
         if (userSnapshot.empty) {
             console.log('No matching users found.');
             return;
@@ -334,58 +333,61 @@ exports.sendPushNotificationToCnuStudents = functions.firestore
 
         const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
         const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+        const badgeCounts = [];  // 사용자별 새로운 배지 값을 저장할 배열
         
         // Firestore 트랜잭션 시작
         await admin.firestore().runTransaction(async (transaction) => {
-            // 쿼리 결과로 받은 사용자 문서들을 순회하며 푸시 토큰과 배지 업데이트를 처리
             userSnapshot.forEach(doc => {
                 const user = doc.data();
-                if (user.token && user.email != userEmail) { // 'token' 필드가 존재하면 배열에 추가합니다.
+                if (user.token && user.email != userEmail) { 
                     tokens.push(user.token);
                     
                     // Firestore에서 배지 카운트 가져오기
                     const currentBadgeCount = user.badgeCount || 0;
                     const newBadgeCount = currentBadgeCount + 1;
-
+                    badgeCounts.push(newBadgeCount);  // 새로운 배지 값 배열에 저장
+                    
                     // 배지 업데이트 트랜잭션 추가
                     badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
                         badgeCount: newBadgeCount
                     }));
                 }
             });
-            
-            // 트랜잭션 커밋
-            await Promise.all(badgeUpdates);
+
+            await Promise.all(badgeUpdates);  // 트랜잭션 커밋
         });
 
         // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
         if (tokens.length > 0) {
-            const message = {
-                notification: {
-                    title: `새로운 요청이 생성되었습니다! `,
-                    body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
-                },
-                data: {
-                  screen: 'SchoolBoard',
-                },
-                tokens: tokens, // 알림을 받을 토큰 배열
-                apns: {
-                    payload: {
-                        aps: {
-                            badge: newBadgeCount,  // iOS 배지 설정 (사용자마다 증가한 배지 값)
-                            sound: "default"
+            tokens.forEach((token, index) => {
+                const message = {
+                    notification: {
+                        title: `새로운 요청이 생성되었습니다! `,
+                        body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+                    },
+                    data: {
+                        screen: 'SchoolBoard',
+                    },
+                    token: token, // 개별 사용자 토큰
+                    apns: {
+                        payload: {
+                            aps: {
+                                badge: badgeCounts[index],  // 각 사용자에 맞는 배지 값
+                                sound: "default"
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            try {
-                const response = await admin.messaging().sendEachForMulticast(message);
-                console.log('Successfully sent message:', response);
-            } catch (error) {
-                // 알림 전송 중 에러가 발생하면 로그를 출력합니다.
-                console.log('Error sending message:', error);
-            }
+                // 메시지 전송
+                admin.messaging().send(message)
+                    .then((response) => {
+                        console.log('Successfully sent message:', response);
+                    })
+                    .catch((error) => {
+                        console.log('Error sending message:', error);
+                    });
+            });
         }
     });
 

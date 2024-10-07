@@ -285,6 +285,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       bool shouldUpload = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
@@ -310,8 +311,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: <Widget>[
             ElevatedButton.icon(
-              icon: Icon(Icons.send),
-              label: Text('보내기'),
+              icon: Icon(Icons.send, color: Colors.white,),
+              label: Text('보내기', style:TextStyle(color: Colors.white,)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF1D4786),
                 shape: RoundedRectangleBorder(
@@ -325,8 +326,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               },
             ),
             ElevatedButton.icon(
-              icon: Icon(Icons.cancel),
-              label: Text('취소'),
+              icon: Icon(Icons.cancel, color: Colors.white),
+              label: Text('취소', style:TextStyle(color: Colors.white,)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(

@@ -81,7 +81,7 @@ class _BoardPageState extends State<BoardPage> {
     botton_domain = botton_email.split('@').last.toLowerCase();
     collection_domain = botton_domain.replaceAll('.','_');
 
-
+  print(collection_domain);
 
     //닉네임 가져옴
     _nickname = getNickname(botton_email);
@@ -880,6 +880,7 @@ class _BoardPageState extends State<BoardPage> {
         child: AppBar(
           title: Text(
             getTitle(botton_domain),
+            // '한국대학교',
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontWeight: FontWeight.w600,

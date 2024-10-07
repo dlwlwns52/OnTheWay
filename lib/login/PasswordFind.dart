@@ -133,6 +133,7 @@ class _PassWordFindState extends State<PassWordFind> {
             }
           },
           child: Scaffold(
+            backgroundColor: Colors.white,
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
               child: AppBar(
