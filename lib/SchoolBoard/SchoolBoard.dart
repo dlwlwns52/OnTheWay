@@ -81,7 +81,7 @@ class _BoardPageState extends State<BoardPage> {
     botton_domain = botton_email.split('@').last.toLowerCase();
     collection_domain = botton_domain.replaceAll('.','_');
 
-  print(collection_domain);
+    print(collection_domain);
 
     //닉네임 가져옴
     _nickname = getNickname(botton_email);
