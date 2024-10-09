@@ -114,7 +114,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.inactive:
 
-        // 앱이 비활성화될 때 수행할 작업
+      // 앱이 비활성화될 때 수행할 작업
         break;
       case AppLifecycleState.paused:
 
@@ -132,11 +132,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
 
- //빈 칸이면 채팅 안보내짐
+  //빈 칸이면 채팅 안보내짐
   void _checkFieldsFilled() {
     setState(() {
       isFilled = _messageController.text.isNotEmpty;
     });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    }
   }
 
 // 채팅에 필요한 초기 세부 정보를 설정하는 함수
@@ -188,17 +191,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .doc(widget.documentName)
         .snapshots()
         .listen((snapshot) {
-          if (snapshot.exists) {
-            var data = snapshot.data();
-            setState(() {
-              _isUserDeleted = data?['isDeleted_${widget.receiverName}'] ?? false;
-            });
-          } else {
-            setState(() {
-              _isUserDeleted = false;
-            });
-          }
+      if (snapshot.exists) {
+        var data = snapshot.data();
+        setState(() {
+          _isUserDeleted = data?['isDeleted_${widget.receiverName}'] ?? false;
         });
+      } else {
+        setState(() {
+          _isUserDeleted = false;
+        });
+      }
+    });
   }
 
 
@@ -544,7 +547,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           .collection('messages')
           .doc(messageId)
           .update({
-            'isDeleted' : true
+        'isDeleted' : true
       });
     }
     catch(e){
@@ -629,29 +632,29 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           ),
                           padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
                           child: Center(
-                            child:
-                            Row(
-                              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
-                              children: [
-                                Icon(
-                                  Icons.copy, // 원하는 아이콘 설정
-                                  color: Color(0xFF222222), // 아이콘 색상
-                                  size: 20, // 아이콘 크기
-                                ),
-                                SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
-                                Text(
-                                  '복사',
-                                  style: TextStyle(
-                                    fontFamily: 'Pretendard',
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 17,
-                                    height: 1,
-                                    letterSpacing: -0.4,
-                                    color: Color(0xFF222222),
+                              child:
+                              Row(
+                                mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
+                                children: [
+                                  Icon(
+                                    Icons.copy, // 원하는 아이콘 설정
+                                    color: Color(0xFF222222), // 아이콘 색상
+                                    size: 20, // 아이콘 크기
                                   ),
-                                ),
-                              ],
-                            )
+                                  SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
+                                  Text(
+                                    '복사',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 17,
+                                      height: 1,
+                                      letterSpacing: -0.4,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ],
+                              )
 
                           ),
                         ),
@@ -679,29 +682,29 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           ),
                           padding: EdgeInsets.fromLTRB(1, 17, 0, 17),
                           child: Center(
-                            child:
-                            Row(
-                              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
-                              children: [
-                                Icon(
-                                  Icons.delete, // 원하는 아이콘 설정
-                                  color: Color(0xFF222222), // 아이콘 색상
-                                  size: 20, // 아이콘 크기
-                                ),
-                                SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
-                                Text(
-                                  '삭제',
-                                  style: TextStyle(
-                                    fontFamily: 'Pretendard',
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 17,
-                                    height: 1,
-                                    letterSpacing: -0.4,
-                                    color: Color(0xFF222222),
+                              child:
+                              Row(
+                                mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 크기에 맞추도록 설정
+                                children: [
+                                  Icon(
+                                    Icons.delete, // 원하는 아이콘 설정
+                                    color: Color(0xFF222222), // 아이콘 색상
+                                    size: 20, // 아이콘 크기
                                   ),
-                                ),
-                              ],
-                            )
+                                  SizedBox(width: 8), // 아이콘과 텍스트 사이의 간격 조정
+                                  Text(
+                                    '삭제',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 17,
+                                      height: 1,
+                                      letterSpacing: -0.4,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ],
+                              )
 
                           ),
                         ),
@@ -1469,39 +1472,39 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         }
                       },
                       child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
-                                  ? BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 1,
-                                offset: Offset(0, 1), // 그림자 위치 조정
-                              )
-                                  : BoxShadow(),
-                            ],
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF1D4786), Color(0xFF1D4786)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          child: CircleAvatar(
-                            radius: 20, // 반지름 설정 (32 / 2)
-                            backgroundColor: Colors.grey[200],
-                            child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
-                                ? null
-                                : Icon(
-                              Icons.account_circle,
-                              size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
-                              color: Color(0xFF1D4786),
-                            ),
-                            backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
-                                ? NetworkImage(widget.photoUrl!)
-                                : null,
-                          ),
+                          boxShadow: [
+                            (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                                ? BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 1,
+                              offset: Offset(0, 1), // 그림자 위치 조정
+                            )
+                                : BoxShadow(),
+                          ],
                         ),
+                        child: CircleAvatar(
+                          radius: 20, // 반지름 설정 (32 / 2)
+                          backgroundColor: Colors.grey[200],
+                          child: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
+                              ? null
+                              : Icon(
+                            Icons.account_circle,
+                            size: 40, // 원래 코드에서 width와 height가 32였으므로 여기에 맞춤
+                            color: Color(0xFF1D4786),
+                          ),
+                          backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                              ? NetworkImage(widget.photoUrl!)
+                              : null,
+                        ),
+                      ),
                     ),
                     SizedBox(width: 10.0),
                     Column(
@@ -1576,7 +1579,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
 
 
-              // 이미지 전송, 사용자가 삭제 안했을때
+            // 이미지 전송, 사용자가 삭제 안했을때
             if (snapshot['type'] == 'image' && snapshot['isDeleted'] == false) ...{
               GestureDetector(
                 onTap: () {
@@ -1721,7 +1724,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
 
 
-              // 이미지 전송 삭제!
+            // 이미지 전송 삭제!
             if (snapshot['type'] == 'image' && snapshot['isDeleted'] == true) ...{
               isSentByMe
                   ? Column(
@@ -2087,180 +2090,180 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Navigator.pop(context);
           }
         },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
-          child: AppBar(
-            title: Text(
-              '${widget.receiverName}',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontWeight: FontWeight.w600,
-                fontSize: 19,
-                height: 1.0,
-                // letterSpacing: -0.5,
-                color: Colors.white,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(50.0), // 원하는 높이로 설정
+            child: AppBar(
+              title: Text(
+                '${widget.receiverName}',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 19,
+                  height: 1.0,
+                  // letterSpacing: -0.5,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            centerTitle: true,
-            backgroundColor: Color(0xFF1D4786),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
-              color: Colors.white, // 아이콘 색상
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.pop(context); // 뒤로가기 기능
-              },
-            ),
-            actions: [
+              centerTitle: true,
+              backgroundColor: Color(0xFF1D4786),
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_outlined), // '<' 모양의 뒤로가기 버튼 아이콘
+                color: Colors.white, // 아이콘 색상
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.pop(context); // 뒤로가기 기능
+                },
+              ),
+              actions: [
 
-                    IconButton(
-                      icon:  nicknames != null && widget.senderName == nicknames!['ownerNickname']
-                     ? Container(
-                        margin: EdgeInsets.only(bottom: 5),
-                         child: SvgPicture.asset(
-                              'assets/pigma/map.svg',
-                              width: 27,
-                              height: 27,
-                            ),
-                          )
+                IconButton(
+                  icon:  nicknames != null && widget.senderName == nicknames!['ownerNickname']
+                      ? Container(
+                    margin: EdgeInsets.only(bottom: 5),
+                    child: SvgPicture.asset(
+                      'assets/pigma/map.svg',
+                      width: 27,
+                      height: 27,
+                    ),
+                  )
                       :Container(
-                        margin: EdgeInsets.only(bottom: 5),
-                        child: SvgPicture.asset(
-                        'assets/pigma/compass.svg',
-                            width: 27,
-                            height: 27,
+                    margin: EdgeInsets.only(bottom: 5),
+                    child: SvgPicture.asset(
+                      'assets/pigma/compass.svg',
+                      width: 27,
+                      height: 27,
+                    ),
+                  ),
+
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await _tmapDirections(); // 위치 데이터를 가져옵니다.
+
+                    // Firestore에서 success_trade 값 확인
+                    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+                        .collection('ChatActions')
+                        .doc(widget.documentName)
+                        .get();
+
+                    if (docSnapshot.exists) {
+                      final data = docSnapshot.data() as Map<String, dynamic>;
+                      bool successTrade = data['success_trade'] ?? false; // success_trade 필드가 없으면 기본값 false
+
+                      if (successTrade) {
+                        // 거래가 완료된 경우 스낵바 표시
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('거래가 완료된 건입니다.', textAlign: TextAlign.center),
+                            duration: Duration(seconds: 2),
                           ),
-                        ),
+                        );
+                        return; // 더 이상 진행하지 않고 종료
+                      }
 
-                      onPressed: () async {
-                        HapticFeedback.lightImpact();
-                        await _tmapDirections(); // 위치 데이터를 가져옵니다.
-
-                        // Firestore에서 success_trade 값 확인
-                        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-                            .collection('ChatActions')
-                            .doc(widget.documentName)
-                            .get();
-
-                        if (docSnapshot.exists) {
-                          final data = docSnapshot.data() as Map<String, dynamic>;
-                          bool successTrade = data['success_trade'] ?? false; // success_trade 필드가 없으면 기본값 false
-
-                          if (successTrade) {
-                            // 거래가 완료된 경우 스낵바 표시
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('거래가 완료된 건입니다.', textAlign: TextAlign.center),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                            return; // 더 이상 진행하지 않고 종료
-                          }
-
-                          if (nicknames!['helperNickname'] == widget.senderName) {
-                            if (tmapDirections.length >= 2) {
-                              // tmapDirections 리스트에서 위치 정보 사용
-                              String currentLocation = tmapDirections[0];
-                              String storeLocation = tmapDirections[1];
-                              // Navigator를 사용하여 새 페이지로 이동
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    HelperTMapView(
-                                      currentLocation: currentLocation,
-                                      storeLocation: storeLocation,
-                                    ),
-                              ));
-                            }
-                          }
-
-                          // 거래가 완료되지 않았을 때 OwnerTMapView로 이동
-                          else if (nicknames!['ownerNickname'] == widget.senderName) {
-                            if (tmapDirections.length >= 2) {
-                              String currentLocation = tmapDirections[0];
-                              String storeLocation = tmapDirections[1];
-                              String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
-
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => OwnerTMapView(
+                      if (nicknames!['helperNickname'] == widget.senderName) {
+                        if (tmapDirections.length >= 2) {
+                          // tmapDirections 리스트에서 위치 정보 사용
+                          String currentLocation = tmapDirections[0];
+                          String storeLocation = tmapDirections[1];
+                          // Navigator를 사용하여 새 페이지로 이동
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                HelperTMapView(
                                   currentLocation: currentLocation,
                                   storeLocation: storeLocation,
-                                  helperId: helperNickname,
-                                  documentName: widget.documentName,
                                 ),
-                              ));
-                            }
-                          }
+                          ));
                         }
-                      },
+                      }
+
+                      // 거래가 완료되지 않았을 때 OwnerTMapView로 이동
+                      else if (nicknames!['ownerNickname'] == widget.senderName) {
+                        if (tmapDirections.length >= 2) {
+                          String currentLocation = tmapDirections[0];
+                          String storeLocation = tmapDirections[1];
+                          String? helperNickname = nicknames!['helperNickname'] ?? 'defaultHelperId';
+
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => OwnerTMapView(
+                              currentLocation: currentLocation,
+                              storeLocation: storeLocation,
+                              helperId: helperNickname,
+                              documentName: widget.documentName,
+                            ),
+                          ));
+                        }
+                      }
+                    }
+                  },
+                ),
+
+
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 10, 5),
+                  child: GestureDetector(
+                    child: SvgPicture.asset(
+                      'assets/pigma/more_vert_white.svg',
+                      width: 27,
+                      height: 27,
                     ),
+                    onTap: () async{
+                      HapticFeedback.lightImpact();
+                      DocumentSnapshot senderSnapshot = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(widget.senderName)
+                          .get();
 
+                      DocumentSnapshot receiverSnapshot = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(widget.receiverName)
+                          .get();
 
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 10, 5),
-                      child: GestureDetector(
-                        child: SvgPicture.asset(
-                          'assets/pigma/more_vert_white.svg',
-                          width: 27,
-                          height: 27,
+                      String senderEmail = senderSnapshot['email'];
+                      String receiverEmail = receiverSnapshot['email'];
+
+                      _blockAndReportUserDialog(context, senderEmail,receiverEmail);
+
+                    },
+                  ),
+                ),
+
+              ],
+            ),
+          ),
+          body: Stack(
+            children:[
+              Column(
+                children: <Widget>[
+                  Divider(
+                    height: 2.0, // Divider의 높이 설정
+                    thickness: 3.0, // Divider의 두께 설정
+                    color: Colors.grey, // Divider의 색상 설정
+                  ),
+                  Expanded(
+                    child: _senderUid == null
+                        ? Container(
+                      child: CircularProgressIndicator(), // 로딩 표시
+                    )
+                        : Column(
+                      children: <Widget>[
+                        ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
+                        ChatInputWidget(), // 채팅 입력 위젯
+                        SizedBox(
+                          height: 10.0,
                         ),
-                        onTap: () async{
-                          HapticFeedback.lightImpact();
-                          DocumentSnapshot senderSnapshot = await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(widget.senderName)
-                              .get();
-
-                          DocumentSnapshot receiverSnapshot = await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(widget.receiverName)
-                              .get();
-
-                          String senderEmail = senderSnapshot['email'];
-                          String receiverEmail = receiverSnapshot['email'];
-
-                          _blockAndReportUserDialog(context, senderEmail,receiverEmail);
-
-                        },
-                      ),
+                      ],
                     ),
+                  ),
+                ],
+              ),
 
             ],
           ),
         ),
-          body: Stack(
-            children:[
-              Column(
-              children: <Widget>[
-                Divider(
-                  height: 2.0, // Divider의 높이 설정
-                  thickness: 3.0, // Divider의 두께 설정
-                  color: Colors.grey, // Divider의 색상 설정
-                ),
-                Expanded(
-                  child: _senderUid == null
-                      ? Container(
-                    child: CircularProgressIndicator(), // 로딩 표시
-                  )
-                      : Column(
-                    children: <Widget>[
-                      ChatMessagesListWidget(), // 채팅 메시지 목록 위젯
-                      ChatInputWidget(), // 채팅 입력 위젯
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-           ],
-          ),
-        ),
-    ),
+      ),
     );
   }
 
