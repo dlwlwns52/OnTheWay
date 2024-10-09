@@ -27,9 +27,30 @@ class _MapScreenState extends State<CurrentMapScreen> {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          '위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
+        content:
+        RichText(
           textAlign: TextAlign.center,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text:'위치데이터를 불러오는 중입니다.\n 잠시만 기다려 주세요.',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              TextSpan(
+                text: '\n\n⚠️위치 데이터가 불러오지 않으면, \n이전 화면으로 돌아갔다가 다시 시도해 주세요.',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                  fontSize: 12, // 작은 글씨 크기 설정
+
+                ),
+              ),
+            ],
+          ),
         ),
         duration: Duration(milliseconds: 900),
       ),

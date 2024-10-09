@@ -1264,7 +1264,6 @@ class _BoardPageState extends State<BoardPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => HanbatNewPostScreen()),
-
                       );
                     },
                     child: Icon(Icons.edit),
