@@ -1,18 +1,4 @@
 
-buildscript {                                // 1. 빌드 스크립트 설정 블록을 정의합니다. 플러그인과 관련 설정을 포함합니다.
-    ext.kotlin_version = '1.9.0'             // 2. Kotlin 버전 정보를 변수로 정의합니다. 여기서 '1.9.0'은 사용할 Kotlin의 버전입니다.
-
-    repositories {                           // 3. 빌드 스크립트에 필요한 플러그인 또는 라이브러리를 찾을 저장소를 정의합니다.
-        google()                             // 4. Google의 Maven 저장소를 추가합니다. 안드로이드 SDK 관련 라이브러리가 포함되어 있습니다.
-        mavenCentral()                       // 5. Maven Central 저장소를 추가합니다. 다양한 라이브러리를 다운로드할 수 있습니다.
-    }
-
-    dependencies {                           // 6. 빌드 스크립트에 필요한 플러그인 의존성을 추가합니다.
-        classpath 'com.android.tools.build:gradle:7.3.0'   // 7. 안드로이드 빌드 시스템을 위해 필요한 Gradle 플러그인 의존성입니다.
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"  // 8. Kotlin 코드 컴파일을 위한 Kotlin Gradle 플러그인입니다.
-        classpath 'com.google.gms:google-services:4.3.15'  // 9. Google 서비스와 통합하기 위한 플러그인입니다.
-    }
-}
 
 allprojects {                               // 10. 모든 프로젝트에 대해 공통 설정을 지정합니다.
     repositories {                          // 11. 모든 프로젝트에서 사용할 저장소를 정의합니다.

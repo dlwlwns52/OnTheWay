@@ -60,6 +60,7 @@ class _HelperTMapViewState extends State<HelperTMapView> {
           onPageFinished: (String url) {
             // 페이지 로딩이 완료되면 updateMap 메서드를 호출
             update(widget.currentLocation, widget.storeLocation);
+
           },
           onWebResourceError: (WebResourceError error) {
             print("Web resource error: ${error.description}");
@@ -136,7 +137,7 @@ class _HelperTMapViewState extends State<HelperTMapView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.0 : MediaQuery.of(context).size.width * 0.20,
+            height: Platform.isAndroid ? MediaQuery.of(context).size.width * 0.00 : MediaQuery.of(context).size.width * 0.20,
             child: ElevatedButton(
               onPressed: () {
                 HapticFeedback.lightImpact();

@@ -1,4 +1,4 @@
-package com.example.OnTheWay
+package com.ljj.OnTheWay
 
 import android.os.Bundle
 import android.webkit.WebSettings
@@ -18,6 +18,10 @@ class MainActivity: FlutterActivity() {
         // WebView 설정을 위한 코드
         val webView = WebView(this)
         val webSettings = webView.settings
-        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+//        webSettings.javaScriptEnabled = true  // JavaScript 활성화
+        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW  // 혼합 콘텐츠 허용
+
+        // 혼합 콘텐츠 설정 후, Flutter의 WebView와의 호환성 문제를 줄이기 위해 해당 설정 추가
+//        setContentView(webView)
     }
 }

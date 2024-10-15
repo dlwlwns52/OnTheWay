@@ -13,6 +13,8 @@ import 'DepartmentList.dart';
 import 'NicknameValidator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'ReferralCodeManager.dart';
+
 class CreateAccount extends StatefulWidget {
 
   @override
@@ -24,49 +26,61 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 // TextEditingControllers (입력 컨트롤러)
   TextEditingController _nicknameController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();  // 비밀번호 입력
-  TextEditingController _confirmPasswordController = TextEditingController();  // 비밀번호 확인
-  TextEditingController _emailUserController = TextEditingController();  // 이메일 입력
-  TextEditingController _accountNameController = TextEditingController();  // 계좌명 입력
-  TextEditingController _accountNumberController = TextEditingController();  // 계좌번호 입력
-  TextEditingController _searchController = TextEditingController();  // 검색 입력
-  TextEditingController _departmentSearchController = TextEditingController();  // 학과 검색 입력
+  TextEditingController _passwordController = TextEditingController(); // 비밀번호 입력
+  TextEditingController _confirmPasswordController = TextEditingController(); // 비밀번호 확인
+  TextEditingController _emailUserController = TextEditingController(); // 이메일 입력
+  TextEditingController _accountNameController = TextEditingController(); // 계좌명 입력
+  TextEditingController _accountNumberController = TextEditingController(); // 계좌번호 입력
+  TextEditingController _searchController = TextEditingController(); // 검색 입력
+  TextEditingController _departmentSearchController = TextEditingController(); // 학과 검색 입력
+  TextEditingController _phoneController = TextEditingController(); // 휴대폰 번호 입력
+  TextEditingController _codeController = TextEditingController(); // 인증 코드 입력
+  TextEditingController _referralCodeController = TextEditingController(); // 추천인 코드 입력
 
 // 상태 및 플래그 변수
-  bool _isNicknameAvailable = false;  // 닉네임 중복 확인 상태
-  bool _snackBarShown = false;  // 스낵바 표시 여부
-  bool _emailHasText = false;  // 이메일 입력 여부
-  bool _nicknameHasText = false;  // 닉네임 입력 여부
-  bool _passwordHasText = false;  // 비밀번호 입력 여부
-  bool _confirmPasswordHasText = false;  // 비밀번호 확인 입력 여부
-  bool _accountNumberHasText = false;  // 계좌번호 입력 여부
-  bool _obscureText1 = true;  // 비밀번호 가리기 (별표 처리)
-  bool _obscureText2 = true;  // 비밀번호 확인 가리기 (별표 처리)
-  bool isEmailVerified = false;  // 이메일 인증 여부
+  bool _isNicknameAvailable = false; // 닉네임 중복 확인 상태
+  bool _snackBarShown = false; // 스낵바 표시 여부
+  bool _emailHasText = false; // 이메일 입력 여부
+  bool _nicknameHasText = false; // 닉네임 입력 여부
+  bool _passwordHasText = false; // 비밀번호 입력 여부
+  bool _confirmPasswordHasText = false; // 비밀번호 확인 입력 여부
+  bool _accountNumberHasText = false; // 계좌번호 입력 여부
+  bool _obscureText1 = true; // 비밀번호 가리기 (별표 처리)
+  bool _obscureText2 = true; // 비밀번호 확인 가리기 (별표 처리)
+  bool isEmailVerified = false; // 이메일 인증 여부
   bool _isEULAChecked = false; // EULA 동의 여부
   bool _isPrivacyPolicyChecked = false; // 개인정보 처리방침 동의 여부
+  bool _phoneNumberHasText = false; // 휴대폰 번호 입력 여부
+  bool _successAuth = false; // 인증 성공 여부
+  bool _codeSentHasText = false; // 인증 코드 입력 여부
+  bool _codeSent = false; // 인증 코드 전송 여부
+  bool _referralCodeHasText = false; // 추천인 코드 입력 여부
+// 추천인 코드 인증 상태를 저장하는 변수
+  bool isReferralCodeVerified = false; // 초기값은 false로 설정
 
 
 // 버튼 관련 상태
-  String _buttonText = '중복확인';  // 버튼 텍스트
-
+  String _buttonText = '중복확인'; // 버튼 텍스트
 
 // 에러 메시지 상태
-  String? _usernicknameErrorText;  // 닉네임 에러 메시지
-  String? _userpasswordErrorText;  // 비밀번호 에러 메시지
-  String? _confirmPasswordErrorText;  // 비밀번호 확인 에러 메시지
-  String? _userEmailErrorText;  // 이메일 에러 메시지
-  String? _accountNameErrorText;  // 계좌명 에러 메시지
-  String? _accountNumberErrorText;  // 계좌번호 에러 메시지
+  String? _usernicknameErrorText; // 닉네임 에러 메시지
+  String? _userpasswordErrorText; // 비밀번호 에러 메시지
+  String? _confirmPasswordErrorText; // 비밀번호 확인 에러 메시지
+  String? _userEmailErrorText; // 이메일 에러 메시지
+  String? _accountNameErrorText; // 계좌명 에러 메시지
+  String? _accountNumberErrorText; // 계좌번호 에러 메시지
+  String? _phoneNumberErrorText; // 휴대폰 번호 에러 메시지
+  String? _codeSentErrorText; // 인증 코드 에러 메시지
+
 
 // Firebase 및 OAuth 관련
-  final FirebaseAuth _auth = FirebaseAuth.instance;  // Firebase Auth 인스턴스
-  final GoogleSignIn _googleSignIn = GoogleSignIn();  // Google Sign-In 인스턴스
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth 인스턴스
+  final GoogleSignIn _googleSignIn = GoogleSignIn(); // Google Sign-In 인스턴스
 
 // Dropdown 및 선택 관련 상태
-  String? _dropdownValue = null;  // 드롭다운 선택값
-  String? _bankName = null;  // 은행 이름
-  String? _selectedDepartment;  // 선택된 학과
+  String? _dropdownValue; // 드롭다운 선택값
+  String? _bankName; // 은행 이름
+  String? _selectedDepartment; // 선택된 학과
 
 // 도메인 데이터
   List<Map<String, String>> _domains = [
@@ -74,27 +88,19 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     {'name': '충남대학교', 'domain': 'g.cnu.ac.kr'},
     {'name': '서울대학교', 'domain': 'snu.ac.kr'},
     {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
-
-    // {'name': '테스트', 'domain': 'gmail.com'},
+    // {'name': 'test', 'domain': 'edu.hanbat.ac.kr'},
   ];
+  List<Map<String, String>> _filteredDomains = []; // 필터링된 도메인 목록
 
-  List<Map<String, String>> _filteredDomains = [];  // 필터링된 도메인 목록
-
-
-  //휴대폰 인증
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController();
-
+// 휴대폰 인증 관련
   String _verificationId = "";
-  bool _phoneNumberHasText = false;
-  bool _codeSentHasText = false;
-  bool _codeSent = false;
   Timer? _timer; // 타이머 객체
   int _remainingTime = 300; // 남은 시간 (초 단위)
-  String? _phoneNumberErrorText; // 계좌명 에러 메시지
-  String? _codeSentErrorText; // 계좌명 에러 메시지
 
-  bool _successAuth = false;
+// 추천인 코드 무작위 생성
+  final ReferralCodeManager _referralCodeManager = ReferralCodeManager();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -108,6 +114,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _accountNumberController.addListener(_onAccountNumberChanged);
     _phoneController.addListener(_onPhoneNumberChanged);
     _codeController.addListener(_onPhoneNumberChanged);
+
 
 
     _emailUserController.addListener(() {
@@ -151,6 +158,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _accountNumberHasText = _accountNumberController.text.isNotEmpty;
       });
     });
+
+
+    _referralCodeController.addListener(() {
+      setState(() {
+        _referralCodeHasText = _referralCodeController.text.isNotEmpty;
+      });
+    });
+
   }
 
   @override
@@ -163,10 +178,70 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _accountNumberController.dispose();
     _phoneController.dispose();
     _codeController.dispose();
+    _referralCodeController.dispose();
     _timer?.cancel(); // 타이머 해제
     super.dispose();
   }
 
+
+  //추천인 +1
+  Future<void> incrementReferralCount(String referralCode) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // 추천인 코드로 해당 사용자를 찾음
+    QuerySnapshot querySnapshot = await firestore
+        .collection('users')
+        .where('referralCode', isEqualTo: referralCode)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // 해당 추천 코드를 가진 사용자의 문서 ID 가져오기
+      DocumentReference userRef = querySnapshot.docs.first.reference;
+
+      // 현재 추천 카운트를 읽음
+      DocumentSnapshot snapshot = await userRef.get();
+
+      if (snapshot.exists) {
+        // snapshot.data()를 Map<String, dynamic>으로 변환하여 사용
+        Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+
+        if (data != null) {
+          // referralCount 필드가 있으면 값을 가져오고, 없으면 0으로 초기화
+          int currentCount = data['referralCount'] ?? 0;
+
+          // referralCount를 1 증가시키는 로직
+          await userRef.update({'referralCount': currentCount + 1});
+        }
+      }
+    }
+  }
+
+
+
+  //해당 추천인 코드를 가진 사용자가 있는지 확인
+  Future<bool> checkReferralCode(String referralCode) async {
+    final querySnapshot = await _firestore
+        .collection('users')
+        .where('referralCode', isEqualTo: referralCode)
+        .get();
+
+    // Firestore에서 같은 추천 코드가 없으면 중복되지 않은 것으로 간주
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+
+
+  // 사용자를 위한 추천 코드를 생성하고 저장하는 함수
+  Future<void> createAndAssignReferralCode(String userId) async {
+    // 고유한 추천 코드 생성
+    String referralCode = await _referralCodeManager.generateUniqueReferralCode();
+
+    // 추천 코드를 Firestore에 저장
+    await _referralCodeManager.saveReferralCodeToUser(userId, referralCode);
+
+    print('추천 코드가 성공적으로 생성되고 저장되었습니다: $referralCode');
+  }
 
 //스낵바 형식능
   void buildCustomHelpDialog() async {
@@ -793,6 +868,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             if(domain['name'] == '충남대학교' || domain['domain'] == 'g.cnu.ac.kr') {
                                               _onDomainSelected(domain['domain']!); // onSelected 함수 호출
                                             }
+                                            //
+                                            // if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
+                                            //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            // }
+
 
                                             else{
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1523,6 +1603,20 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               'phoneNumber' : _phoneController.text,
                             });
 
+                            await createAndAssignReferralCode(nickname);
+
+                            if(isReferralCodeVerified){
+                              print(isReferralCodeVerified);
+                              await incrementReferralCount(_referralCodeController.text);
+
+                            }
+
+                            else(isReferralCodeVerified){
+                              print(isReferralCodeVerified);
+
+                            };
+
+
                             // 다이어로그를 닫음
                             Navigator.pop(context);
 
@@ -1613,8 +1707,16 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   // 전화번호로 인증 요청
   Future<void> _verifyPhoneNumber() async {
     if(_phoneController.text.length == 11) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("인증번호를 전송하고 있습니다.",
+              textAlign: TextAlign.center),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
       String formattedPhoneNumber = formatPhoneNumber(_phoneController.text);
-      print(formattedPhoneNumber);
       await _auth.verifyPhoneNumber(
         phoneNumber: formattedPhoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -1664,7 +1766,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             SnackBar(
               content: Text("인증번호가 전송되었습니다!",
                   textAlign: TextAlign.center),
-              duration: Duration(seconds: 3),
+              duration: Duration(seconds: 2),
             ),
           );
           print('인증 코드 전송');
@@ -2470,7 +2572,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                               letterSpacing: -0.4,
                                               color: Color(0xFF767676),
                                             ),
-                                            contentPadding: EdgeInsets.symmetric(vertical: 11, horizontal: 12), // 내부 여백 조정
+                                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12), // 내부 여백 조정
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(10),
                                             ),
@@ -2631,6 +2733,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                 ),
                               ),
 
+
+                              //닉네임
+
                               Container(
                                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                                 child: Column(
@@ -2678,7 +2783,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                   _checkNicknameAvailabilityAndValidate();  // '다음'을 누르면 GestureDetector의 기능 실행
                                                 },
                                                 decoration: InputDecoration(
-                                                  contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 15), // 상단 컨테이너의 패딩과 일치시킴
+                                                  contentPadding: EdgeInsets.fromLTRB(15, 18, 15, 15), // 상단 컨테이너의 패딩과 일치시킴
                                                   hintText: '닉네임을 입력해주세요.',
                                                   hintStyle: TextStyle(
                                                     fontFamily: 'Pretendard',
@@ -2731,15 +2836,15 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             _checkNicknameAvailabilityAndValidate();
                                           },
                                           child: Container(
+                                            height: MediaQuery.of(context).size.height *0.065,
+                                            width : MediaQuery.of(context).size.width * 0.23,
                                             decoration: BoxDecoration(
                                                 border: Border.all(color: _nicknameController.text.isNotEmpty ? Color(0xFF1D4786): Color(0xFFE8EFF8)),
                                                 borderRadius: BorderRadius.circular(8),
                                                 color: _nicknameController.text.isNotEmpty ? Color(0xFF1D4786): Color(0xFFE8EFF8)
                                             ),
-                                            child: Container(
-                                              padding: EdgeInsets.fromLTRB(13.7, 15, 13.7, 15),
-                                              child:
-                                              Text(
+                                            child: Center(
+                                              child: Text(
                                                 _buttonText,
                                                 style: TextStyle(
                                                   fontFamily: 'Pretendard',
@@ -2758,6 +2863,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   ],
                                 ),
                               ),
+
+                              //비밀번호
                               Container(
                                 margin: EdgeInsets.fromLTRB(0, 2, 2, 20),
                                 child: Column(
@@ -3167,6 +3274,182 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                           },
                                         ),
                                       ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+
+
+                              //추천인
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                      child: Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          '추천인',
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            height: 1,
+                                            letterSpacing: -0.4,
+                                            color: Color(0xFF424242),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+
+
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            color: Color(0xFFFFFFFF),
+                                            margin: EdgeInsets.fromLTRB(0, 0, 10, 0), // 상단 컨테이너와 동일한 마진
+                                            child: Align(
+                                              alignment: Alignment.topLeft,
+                                              child: TextFormField(
+                                                cursorColor: Color(0xFF1D4786),
+                                                controller: _referralCodeController,
+                                                textInputAction: TextInputAction.done,
+                                                textCapitalization: TextCapitalization.characters,
+                                                keyboardType: TextInputType.visiblePassword,
+                                                onTap: () {
+                                                  HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
+                                                },
+                                                onChanged: (value) {
+                                                  _referralCodeController.value = _referralCodeController.value.copyWith(
+                                                    text: value.toUpperCase(), // 입력된 값을 대문자로 변환
+                                                    selection: TextSelection.fromPosition( // 커서 위치 유지
+                                                      TextPosition(offset: value.length),
+                                                    ),
+                                                  );
+                                                },
+                                                enabled : !isReferralCodeVerified,
+                                                decoration: InputDecoration(
+                                                  hintText: '추천인 코드를 입력해주세요.',
+                                                  hintStyle: TextStyle(
+                                                    fontFamily: 'Pretendard',
+                                                    fontWeight: FontWeight.w400, // 상단 텍스트 스타일과 동일하게 설정
+                                                    fontSize: 16, // 상단 텍스트 스타일과 동일하게 설정
+                                                    height: 1,
+                                                    letterSpacing: -0.4,
+                                                    color: Color(0xFF767676),
+
+                                                  ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8), // 동일한 테두리 반경
+                                                  ),
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: _referralCodeHasText ? Color(0xFF1D4786) : Color(0xFFD0D0D0),
+                                                    ), // 텍스트가 있으면 인디고, 없으면 회색
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  counterText: '', // 하단의 '0/10' 텍스트를 숨김
+                                                ),
+                                                maxLength: 6,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+
+                                        GestureDetector(
+                                          onTap: () async {
+                                            HapticFeedback.lightImpact();
+                                            if (_referralCodeController.text.isNotEmpty && _referralCodeController.text.length == 6 ) {
+                                              bool isCheck = await checkReferralCode(_referralCodeController.text);
+                                              if (isCheck) {
+                                                setState(() {
+                                                  isReferralCodeVerified = true;
+                                                });
+
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '추천인 코드가 확인되었습니다.',
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                    duration: Duration(seconds: 1),
+                                                  ),
+                                                );
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '입력하신 추천인을 찾을 수 없습니다.\n코드가 정확한지 다시 확인해 주세요.',
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                    duration: Duration(seconds: 1),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                            else if(_referralCodeController.text.isEmpty ){
+                                              HapticFeedback.lightImpact();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '추천인 코드를 입력해 주세요.',
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  duration: Duration(seconds: 1),
+                                                ),
+                                              );
+                                            }
+                                            else if( _referralCodeController.text.length < 6){
+                                              HapticFeedback.lightImpact();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '추천인 코드는 6자리로 입력해 주세요.',
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  duration: Duration(seconds: 1),
+                                                ),
+                                              );
+                                            }
+                                          },
+
+                                          child: Container(
+                                            height: MediaQuery.of(context).size.height *0.065,
+                                            width : MediaQuery.of(context).size.width * 0.2,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: _referralCodeController.text.isNotEmpty ? Color(0xFF1D4786): Color(0xFFE8EFF8)),
+                                                borderRadius: BorderRadius.circular(8),
+                                                color: _referralCodeController.text.isNotEmpty ? Color(0xFF1D4786): Color(0xFFE8EFF8)
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '확인',
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 16,
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFFFFFFFF),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,7 @@ class _PassWordFindState extends State<PassWordFind> {
   bool isEmailFilled = false;
   //텍스트 차있으면 보더 색상 관리하는 변수
   bool _emailHasText = false;
+  bool isEmailExists = false;
 
   @override
   void initState() {
@@ -64,52 +66,34 @@ class _PassWordFindState extends State<PassWordFind> {
       return;
     }
     try {
-      //구글 Authentication에 저장 안됨
-      // final email = emailController.text.trim();
-      // print(email);
-      // final signInMethods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-      // print(signInMethods);
-      // if (signInMethods.isEmpty){
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(
-      //       content: Container(
-      //         width: MediaQuery.of(context).size.width * 0.9,
-      //         height: MediaQuery.of(context).size.height * 0.065,
-      //         alignment: Alignment.center,
-      //         decoration: BoxDecoration(
-      //           color: Color(0xB2000000), // 반투명 검정 배경
-      //           borderRadius: BorderRadius.circular(8), // 둥근 모서리
-      //         ),
-      //         child: Text(
-      //           '등록되지 않은 이메일입니다.\n회원가입하신 이메일로 다시 시도해 주세요.',
-      //           textAlign: TextAlign.center,
-      //           style: TextStyle(
-      //             fontFamily: 'Pretendard',
-      //             fontWeight: FontWeight.w500,
-      //             fontSize: 14,
-      //             height: 1,
-      //             letterSpacing: -0.4,
-      //             color: Color(0xFFFFFFFF), // 흰색 텍스트
-      //           ),
-      //         ),
-      //       ),
-      //       duration: Duration(seconds: 2),
-      //       backgroundColor: Colors.transparent, // 배경을 투명하게 설정
-      //       elevation: 0, // 그림자 제거
-      //       behavior: SnackBarBehavior.floating, // 플로팅 스타일
-      //       margin: EdgeInsets.only(left: 10, right: 10, top: 8), // 화면 가장자리와의 여백 설정
-      //     ),
-      //   );
-      //   return;
-      // }
-      // 인증 성공
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PasswordResetConfirmationScreen(email : emailController.text.trim())),
-      );
-    } catch (e) {
+      // Firestore에서 users 컬렉션의 모든 문서를 조회하여 email 필드와 비교
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: emailController.text)
+          .get();
+
+      setState(() {
+        isEmailExists = querySnapshot.docs.isNotEmpty;
+      });
+      if(isEmailExists){
+        // 인증 성공
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PasswordResetConfirmationScreen(email : emailController.text.trim())),
+        );
+      }
+      else{
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('해당 계정으로 가입된 \n이메일이 존재하지 않습니다.', textAlign: TextAlign.center,),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+    }
+    catch (e) {
       //인증 실패
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('비밀번호 재설정 이메일 전송에 실패했습니다. \n다시 시도해 주세요.', textAlign: TextAlign.center,),

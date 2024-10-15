@@ -81,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+
     _shouldAutoScroll = true;
     _isUserDeleted = false;
     WidgetsBinding.instance.addObserver(this); // 생명주기 이벤트 옵저버 추가
@@ -113,7 +114,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         _updateUserStatusInChatRoom(true); // 앱이 다시 활성화될 때 업데이트
         break;
       case AppLifecycleState.inactive:
-
+        _updateUserStatusInChatRoom(false); // 앱이 백그라운드로 가거나 종료될 때 업데이트
       // 앱이 비활성화될 때 수행할 작업
         break;
       case AppLifecycleState.paused:
@@ -137,9 +138,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     setState(() {
       isFilled = _messageController.text.isNotEmpty;
     });
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    }
+    // if (_scrollController.hasClients) {
+    //   _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    // }
   }
 
 // 채팅에 필요한 초기 세부 정보를 설정하는 함수

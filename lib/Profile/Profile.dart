@@ -21,6 +21,7 @@ import '../Chat/FullScreenImage.dart';
 import '../Progress/PaymentScreen.dart';
 import '../Ranking/DepartmentRanking.dart';
 import '../SchoolBoard/SchoolBoard.dart';
+import 'EventScreen.dart';
 import 'ReportManagement.dart';
 import 'SuggestionToAdminScreen.dart';
 
@@ -607,6 +608,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return;
 
     try{
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '프로필 사진을 변경하고 있습니다. 잠시만 기다려주세요.',
+              textAlign: TextAlign.center,
+            ),
+            duration: Duration(seconds: 1),
+          )
+      );
       //파이어베이스 스토리지 업로드
       final storageRef = _storage.ref().child('profile_images/${nickname}.jpg');
       await storageRef.putFile(_image!);
@@ -1267,6 +1277,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       trailingIcon: 'assets/pigma/arrow.svg',
                     ),
                   ),
+
+                  _buildDivider(context),
+
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventScreen(
+                            nickname: nickname ?? '앱 종료 후 다시 시작해주세요.',
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildMenuItem(
+                      context,
+                      '이벤트',
+                      'assets/svgs/event.svg',
+                      trailingIcon: 'assets/pigma/arrow.svg',
+                    ),
+                  ),
+
+
                   _buildDivider(context),
 
                   GestureDetector(

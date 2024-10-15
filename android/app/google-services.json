@@ -49,6 +49,50 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:40009619030:android:8bf083f44bd7f099dc8df7",
+        "android_client_info": {
+          "package_name": "com.ljj.OnTheWay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "40009619030-kbom4aii2uti3dl8enp8snf7lbfl2ipu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ljj.OnTheWay",
+            "certificate_hash": "53323b304285fe4f2daaff82c9c6c9e1e2eece50"
+          }
+        },
+        {
+          "client_id": "40009619030-0tsjhi16drorgvqpr2gfv3qfq06vq5dr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_B7xJvnpvPcXqMit_rBQQPfIPsJqX9OM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "40009619030-0tsjhi16drorgvqpr2gfv3qfq06vq5dr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.onthewayNotebook"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

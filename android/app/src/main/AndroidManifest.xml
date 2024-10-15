@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.OnTheWay">
+    package="com.ljj.OnTheWay">
 
     <!-- 권한 지정 영역 -->
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 인터넷 사용 권한 -->
@@ -31,7 +31,7 @@
         android:usesCleartextTraffic="true" >
 
         <activity
-            android:name="com.example.OnTheWay.MainActivity"
+            android:name="com.ljj.OnTheWay.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/NormalTheme"
