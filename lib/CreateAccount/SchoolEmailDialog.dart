@@ -17,7 +17,7 @@ class _SchoolEmailDialogState extends State<SchoolEmailDialog> {
 
   List<Map<String, String>> _domains = [
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
-    {'name': '충남대학교', 'domain': 'g.cnu.ac.kr'},
+    {'name': '충남대학교', 'domain': 'o.cnu.ac.kr'},
     {'name': '한밭대학교', 'domain': 'edu.hanbat.ac.kr'},
     {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
     {'name': '테스트', 'domain': 'gmail.com'}

@@ -169,100 +169,6 @@ class _NotificationScreenState extends State<AlarmUi> {
 
 
 
-  //
-  Future<void> _HelperCount(String docId) async{
-    try {
-      DocumentSnapshot postId = await FirebaseFirestore.instance
-          .collection('helpActions')
-          .doc(docId)
-          .get();
-
-      if (!postId.exists) {
-        print("Document does not exist.");
-        return;
-      }
-
-      String helper_email = postId.get('helper_email');
-      String owner_email = postId.get('owner_email');
-
-      String? helperDepartment =  await _getDepartmentUser(helper_email);
-      String? ownerDepartment =  await _getDepartmentUser(owner_email);
-
-      String helperDomain = _extractDomain(helper_email);
-      String ownerDomain = _extractDomain(owner_email);
-
-
-      // // // 도메인별로 점수 증가
-      await _updateIndividualCount(helperDepartment!, helperDomain);
-      await _updateIndividualCount(ownerDepartment!, ownerDomain);
-
-
-    } catch (e) {
-      print("Error in _HelperCount: $e");
-    }
-  }
-
-
-  //개인 학과 가져오기
-  Future<String?> _getDepartmentUser(String email) async{
-    FirebaseFirestore db = FirebaseFirestore.instance;
-    QuerySnapshot nicknameSnapshot = await db
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .get();
-
-    if(nicknameSnapshot.docs.isNotEmpty){
-      DocumentSnapshot document = nicknameSnapshot.docs.first;
-      String? department = document.get('department');
-      return department;
-    }
-
-    else {
-      print("해당 이메일을 가진 사용자가 없습니다.");
-      return null;
-    }
-  }
-
-
-
-  // 도메인 추출
-  String _extractDomain(String email)  {
-    return email.split('@').last;
-  }
-
-
-  // 도메인 별로 카운트
-  Future<void> _updateIndividualCount(String userDepartment, String domain) async {
-    try {
-      DocumentReference schoolRef = FirebaseFirestore.instance
-          .collection('schoolScores')
-          .doc(domain);
-
-      DocumentSnapshot schoolSnapshot = await schoolRef.get();
-
-      if (!schoolSnapshot.exists) {
-        // 문서가 존재하지 않으면 새로 생성하고 초기값 설정
-        await schoolRef.set({
-          'departments': {userDepartment: 1}
-        });
-      } else {
-        // 문서가 존재하면 departments 객체에서 학과별 카운트를 업데이트
-        Map<String, dynamic> schoolData = schoolSnapshot.data() as Map<String, dynamic> ?? {};
-        Map<String, dynamic> departments = schoolData['departments'] ?? {};
-
-
-        int currentCount = departments[userDepartment] ?? 0;
-        departments[userDepartment] = currentCount + 1;
-
-        
-        await schoolRef.update({'departments': departments});
-      }
-    } catch (e) {
-      print("Error in _updateIndividualCount: $e");
-    }
-  }
-
-
   //주어진 닉네임(helperEmailNickname)에서 Firestore 일치하는 계정 학점 반환
   Future<String> getGradeByNickname(String helperEmailNickname) async{
     final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
@@ -686,7 +592,7 @@ class _NotificationScreenState extends State<AlarmUi> {
                           DateTime now = DateTime.now();
 
                           HapticFeedback.lightImpact();
-                          await _HelperCount(documentId);
+                          // await _HelperCount(documentId);
                           await _updateTime(documentId, now);
                           await _respondToActions(documentId,
                               'accepted'); // ChatActions : null -< accept

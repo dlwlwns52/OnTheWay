@@ -52,6 +52,7 @@ class _BoardPageState extends State<BoardPage> {
   String botton_email = ""; // 사용자의 이메일을 저장할 변수
   String botton_domain = ""; // 사용자의 도메인을 저장할 변수
   String collection_domain = "";
+
   //닉네임 가져오기
   late Future<String?> _nickname;
 
@@ -61,8 +62,6 @@ class _BoardPageState extends State<BoardPage> {
 
   // 초기 게시글 개수를 0으로 설정
   int postCount = 0;
-
-
 
 
 
@@ -78,11 +77,13 @@ class _BoardPageState extends State<BoardPage> {
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
+    // change_email = updateEmailDomain(botton_email);
     botton_domain = botton_email.split('@').last.toLowerCase();
     collection_domain = botton_domain.replaceAll('.','_');
-
-    print(collection_domain);
-
+    // print(change_email);
+    // print(botton_domain);
+    // print(collection_domain);
+    // print(_auth.currentUser?.email ?? "");
     //닉네임 가져옴
     _nickname = getNickname(botton_email);
 
@@ -96,10 +97,22 @@ class _BoardPageState extends State<BoardPage> {
       setState(() {}); // 상태를 갱신하여 FutureBuilder가 다시 빌드되도록 함
     });
 
-
-
     // _loadPostCount(); // 위젯 초기화 시 게시글 개수를 로드
   }
+
+
+
+  // String updateEmailDomain(String email)  {
+  //   String domain = email.split('@').last;
+  //
+  //   if (domain == 'edu.hanbat.ac.kr') {
+  //     // 도메인을 g.cnu.ac.kr로 변경
+  //     email = email.replaceAll('@edu.hanbat.ac.kr', '@g.cnu.ac.kr');
+  //   }
+  //
+  //   return email; // 변경된 email을 반환
+  // }
+  //
 
   Future<void> badge_zero() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -254,7 +267,7 @@ class _BoardPageState extends State<BoardPage> {
     switch (domain) {
       case 'naver.com':
         return '네이버대학교 게시판';
-      case 'g.cnu.ac.kr':
+      case 'o.cnu.ac.kr':
         return '충남대학교 게시판';
       case 'edu.hanbat.ac.kr':
         return '다음 게시판';

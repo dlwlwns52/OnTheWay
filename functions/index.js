@@ -312,7 +312,7 @@ exports.sendPushNotification = functions.firestore // Cloud Functions를 사용�
 
 // 5번째 함수 충남대 게시판에 게시물이 올라올때 충남대 학생일 경우 푸시알림 전달
 exports.sendPushNotificationToCnuStudents = functions.firestore
-    .document('g_cnu_ac_kr/{postId}')
+    .document('o_cnu_ac_kr/{postId}')
     .onCreate(async (snap, context) => {
         // 새 게시물의 데이터를 변수에 저장합니다.
         const newValue = snap.data();
@@ -321,9 +321,9 @@ exports.sendPushNotificationToCnuStudents = functions.firestore
         const cost = newValue.cost; // 게시물 심부름비
         const userEmail = newValue.user_email; // 게시물 작성자
         
-        // 'users' 컬렉션에서 'domain' 필드가 'g.cnu.ac.kr'인 사용자를 찾습니다.
+        // 'users' 컬렉션에서 'domain' 필드가 'o.cnu.ac.kr'인 사용자를 찾습니다.
         const userSnapshot = await admin.firestore().collection('users')
-            .where('domain', '==', 'g.cnu.ac.kr')
+            .where('domain', '==', 'o.cnu.ac.kr')
             .get();
 
         if (userSnapshot.empty) {

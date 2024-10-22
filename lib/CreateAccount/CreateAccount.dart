@@ -58,6 +58,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 // 추천인 코드 인증 상태를 저장하는 변수
   bool isReferralCodeVerified = false; // 초기값은 false로 설정
 
+  //이메일인증 관련
+  bool _emailIsNotGoogle = false; // 인증 코드 전송 여부
+  bool _emailCodeSent = false;
+  int _remainingVerificationTime = 300;
+  Timer? _verificationTimer;
+
 
 // 버튼 관련 상태
   String _buttonText = '중복확인'; // 버튼 텍스트
@@ -85,10 +91,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 // 도메인 데이터
   List<Map<String, String>> _domains = [
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
-    {'name': '충남대학교', 'domain': 'g.cnu.ac.kr'},
+    {'name': '충남대학교', 'domain': 'o.cnu.ac.kr'},
     {'name': '서울대학교', 'domain': 'snu.ac.kr'},
     {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
+    {'name': '충북대학교', 'domain': 'cberi.go.kr'},
+
     // {'name': 'test', 'domain': 'edu.hanbat.ac.kr'},
+    // {'name': 'test2', 'domain': 'o365.hanbat.ac.kr'},
+    // {'name': 'test3', 'domain': 'gmail.com'},
   ];
   List<Map<String, String>> _filteredDomains = []; // 필터링된 도메인 목록
 
@@ -96,7 +106,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String _verificationId = "";
   Timer? _timer; // 타이머 객체
   int _remainingTime = 300; // 남은 시간 (초 단위)
-
 // 추천인 코드 무작위 생성
   final ReferralCodeManager _referralCodeManager = ReferralCodeManager();
 
@@ -165,6 +174,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _referralCodeHasText = _referralCodeController.text.isNotEmpty;
       });
     });
+
 
   }
 
@@ -377,133 +387,137 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       context: context,
       builder: (BuildContext context) {
         return SingleChildScrollView(child:
-            Dialog(
+        Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           child: Container(
             padding: EdgeInsets.fromLTRB(15, 25, 15, 0),
-        child : Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
+            child : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
                   '최종 사용자 사용권 계약 (EULA)',
                   style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Color(0xFF222222),
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF222222),
+                  ),
                 ),
-              ),
-              SizedBox(height: 20,),
-              Text(
-                '본 계약은 귀하(이하 "사용자")와 온더웨이(이하 "회사") 간의 소프트웨어 사용에 대한 법적 계약을 정의합니다. 사용자는 온더웨이 앱을 설치하고 사용함으로써 본 계약의 모든 조항에 동의한 것으로 간주됩니다.\n\n'
-                    '1. 사용권 부여\n'
-                    '회사는 사용자가 온더웨이 애플리케이션(이하 "앱")을 비독점적이고 양도 불가한 방식으로 사용할 수 있는 권한을 부여합니다. '
-                    '본 앱은 사용자의 개인적인 용도로만 사용할 수 있으며, 상업적 목적이나 다른 사람에게 임대, 양도할 수 없습니다. '
-                    '사용자는 본 앱을 대한민국 내에서만 사용할 수 있습니다.\n\n'
-                    '2. 사용자의 의무\n'
-                    '사용자는 앱을 불법적 목적으로 사용하거나, 회사 또는 타인의 지적 재산권을 침해해서는 안 됩니다. '
-                    '사용자는 본 앱 내에서 타인의 개인정보를 무단으로 수집, 저장, 배포하는 행위를 해서는 안 됩니다. '
-                    '사용자는 온더웨이에서 제공하는 게시물, 채팅 등에서 **불법적이거나 부적절한 콘텐츠(예: 비속어, 음란물, 혐오 발언)**를 게시할 수 없습니다. '
-                    '사용자는 본 앱의 소스 코드 또는 소프트웨어를 역설계, 분해, 복제, 수정, 배포할 수 없습니다. 이러한 행위는 회사의 명시적 허가가 없는 한 금지됩니다.\n\n'
-                    '3. 지적 재산권\n'
-                    '본 앱에 포함된 모든 자료, 소스 코드, 상표, 디자인, 아이콘, 서비스 이름 등은 회사의 독점적 자산이며, 회사의 사전 서면 동의 없이 이를 복제, 수정, 배포, 상업적으로 이용할 수 없습니다. '
-                    '사용자 생성 콘텐츠(게시물, 리뷰 등)에 대한 저작권은 사용자에게 귀속되지만, 사용자는 해당 콘텐츠가 온더웨이 내에서 광고 및 홍보 목적으로 사용될 수 있음을 동의합니다.\n\n'
-                    '4. 책임 한계\n'
-                    '회사는 온더웨이 앱 사용 중 발생할 수 있는 직접적, 간접적 손해에 대해 법적 책임을 지지 않습니다. 이는 다음과 같은 경우를 포함하나 이에 국한되지 않습니다: '
-                    '사용자가 앱을 잘못 사용하여 발생한 손해, 제3자가 사용자 계정에 불법적으로 접근하여 발생한 손해, 네트워크 장애, 서버 오류, 또는 기타 기술적 문제로 인해 발생한 손해. '
-                    '회사는 앱의 기능이 모든 환경에서 완벽하게 작동한다는 보장을 하지 않습니다. 또한 앱 사용 중 발생할 수 있는 버그나 오류에 대한 책임은 회사에 있지 않습니다.\n\n'
-                    '5. 사용권 제한\n'
-                    '사용자가 본 계약의 조항을 위반할 경우, 회사는 사전 통지 없이 사용자의 앱 사용 권리를 제한하거나 계정을 삭제할 수 있습니다. '
-                    '사용자는 본 계약의 조항을 위반한 경우, 회사에 발생한 모든 손해에 대해 배상할 책임이 있습니다.\n\n'
-                    '6. 개인정보 보호\n'
-                    '회사는 사용자의 개인정보를 대한민국 개인정보 보호법에 따라 보호합니다. 사용자의 개인정보는 사용자가 동의한 목적과 범위 내에서만 사용되며, 사용자의 동의 없이 제3자에게 제공되지 않습니다. '
-                    '회사는 개인정보 처리방침에 따라 사용자의 정보를 보호하며, 해당 방침은 앱 내 설정 메뉴에서 확인할 수 있습니다.\n\n'
-                    '7. 라이선스의 종료\n'
-                    '사용자가 본 계약을 위반하거나, 회사의 서비스 이용 정책을 위반한 경우, 회사는 사용자의 라이선스를 즉시 종료할 수 있습니다. '
-                    '사용자는 언제든지 앱 사용을 중단할 수 있으며, 앱 삭제 시 사용자의 모든 권한은 즉시 종료됩니다.\n\n'
-                    '8. 서비스 중단 및 수정\n'
-                    '회사는 언제든지 사전 공지 없이 앱의 기능을 수정, 추가 또는 제거할 수 있습니다. '
-                    '회사는 사용자가 제공하는 서비스에 대해 보장을 하지 않으며, 필요에 따라 일시적으로 서비스를 중단할 수 있습니다. 이 경우 사용자에게 사전에 통지합니다.\n\n'
-                    '9. 준거법 및 분쟁 해결\n'
-                    '본 계약은 대한민국 법률에 따라 해석되며, 서비스와 관련된 모든 분쟁은 서울중앙지방법원을 전속 관할 법원으로 합니다.',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontWeight: FontWeight.normal,
-                  fontSize: 12, // 작은 글씨 크기 설정
-                  color: Colors.grey, // 회색으로 설정
+                SizedBox(height: 20,),
+                Text(
+                  '본 계약은 귀하(이하 "사용자")와 온더웨이(이하 "회사") 간의 소프트웨어 사용에 대한 법적 계약을 정의합니다. 사용자는 온더웨이 앱을 설치하고 사용함으로써 본 계약의 모든 조항에 동의한 것으로 간주됩니다.\n\n'
+                      '1. 사용권 부여\n'
+                      '회사는 사용자가 온더웨이 애플리케이션(이하 "앱")을 비독점적이고 양도 불가한 방식으로 사용할 수 있는 권한을 부여합니다. '
+                      '본 앱은 사용자의 개인적인 용도로만 사용할 수 있으며, 상업적 목적이나 다른 사람에게 임대, 양도할 수 없습니다. '
+                      '사용자는 본 앱을 대한민국 내에서만 사용할 수 있습니다.\n\n'
+                      '2. 사용자의 의무\n'
+                      '사용자는 앱을 불법적 목적으로 사용하거나, 회사 또는 타인의 지적 재산권을 침해해서는 안 됩니다. '
+                      '사용자는 본 앱 내에서 타인의 개인정보를 무단으로 수집, 저장, 배포하는 행위를 해서는 안 됩니다. '
+                      '사용자는 온더웨이에서 제공하는 게시물, 채팅 등에서 **불법적이거나 부적절한 콘텐츠(예: 비속어, 음란물, 혐오 발언)**를 게시할 수 없습니다. '
+                      '사용자는 본 앱의 소스 코드 또는 소프트웨어를 역설계, 분해, 복제, 수정, 배포할 수 없습니다. 이러한 행위는 회사의 명시적 허가가 없는 한 금지됩니다.\n\n'
+                      '3. 지적 재산권\n'
+                      '본 앱에 포함된 모든 자료, 소스 코드, 상표, 디자인, 아이콘, 서비스 이름 등은 회사의 독점적 자산이며, 회사의 사전 서면 동의 없이 이를 복제, 수정, 배포, 상업적으로 이용할 수 없습니다. '
+                      '사용자 생성 콘텐츠(게시물, 리뷰 등)에 대한 저작권은 사용자에게 귀속되지만, 사용자는 해당 콘텐츠가 온더웨이 내에서 광고 및 홍보 목적으로 사용될 수 있음을 동의합니다.\n\n'
+                      '4. 책임 한계\n'
+                      '회사는 온더웨이 앱 사용 중 발생할 수 있는 직접적, 간접적 손해에 대해 법적 책임을 지지 않습니다. 이는 다음과 같은 경우를 포함하나 이에 국한되지 않습니다: '
+                      '사용자가 앱을 잘못 사용하여 발생한 손해, 제3자가 사용자 계정에 불법적으로 접근하여 발생한 손해, 네트워크 장애, 서버 오류, 또는 기타 기술적 문제로 인해 발생한 손해. '
+                      '회사는 앱의 기능이 모든 환경에서 완벽하게 작동한다는 보장을 하지 않습니다. 또한 앱 사용 중 발생할 수 있는 버그나 오류에 대한 책임은 회사에 있지 않습니다.\n\n'
+                      '5. 사용권 제한\n'
+                      '사용자가 본 계약의 조항을 위반할 경우, 회사는 사전 통지 없이 사용자의 앱 사용 권리를 제한하거나 계정을 삭제할 수 있습니다. '
+                      '사용자는 본 계약의 조항을 위반한 경우, 회사에 발생한 모든 손해에 대해 배상할 책임이 있습니다.\n\n'
+                      '6. 개인정보 보호\n'
+                      '회사는 사용자의 개인정보를 대한민국 개인정보 보호법에 따라 보호합니다. 사용자의 개인정보는 사용자가 동의한 목적과 범위 내에서만 사용되며, 사용자의 동의 없이 제3자에게 제공되지 않습니다. '
+                      '회사는 개인정보 처리방침에 따라 사용자의 정보를 보호하며, 해당 방침은 앱 내 설정 메뉴에서 확인할 수 있습니다.\n\n'
+                      '7. 라이선스의 종료\n'
+                      '사용자가 본 계약을 위반하거나, 회사의 서비스 이용 정책을 위반한 경우, 회사는 사용자의 라이선스를 즉시 종료할 수 있습니다. '
+                      '사용자는 언제든지 앱 사용을 중단할 수 있으며, 앱 삭제 시 사용자의 모든 권한은 즉시 종료됩니다.\n\n'
+                      '8. 서비스 중단 및 수정\n'
+                      '회사는 언제든지 사전 공지 없이 앱의 기능을 수정, 추가 또는 제거할 수 있습니다. '
+                      '회사는 사용자가 제공하는 서비스에 대해 보장을 하지 않으며, 필요에 따라 일시적으로 서비스를 중단할 수 있습니다. 이 경우 사용자에게 사전에 통지합니다.\n\n'
+                      '9. 준거법 및 분쟁 해결\n'
+                      '본 계약은 대한민국 법률에 따라 해석되며, 서비스와 관련된 모든 분쟁은 서울중앙지방법원을 전속 관할 법원으로 합니다.',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12, // 작은 글씨 크기 설정
+                    color: Colors.grey, // 회색으로 설정
+                  ),
                 ),
-              ),
 
 
-              SizedBox(height: 40),
-              Divider(color: Colors.grey, height: 1,),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _isEULAChecked = false;
-                        });
-                        Navigator.pop(context);
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
-                      ),
-                      child: Center(
-                        child: Text(
-                          '취소',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xFF636666),
-                          ),
+                SizedBox(height: 40),
+                Divider(color: Colors.grey, height: 1,),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          // 다이얼로그가 닫히기 전에 포커스를 해제하여 키보드가 올라오지 않게 함
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _isEULAChecked = false;
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
                         ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 1.0, // 구분선의 두께
-                    height: 60, // 구분선의 높이
-                    color: Colors.grey, // 구분선의 색상
-                  ),
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _isEULAChecked = true;
-                        });
-                        Navigator.pop(context);
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
-                      ),
-                      child: Center(
-                        child: Text(
-                          '동의',
-                          style: TextStyle(
+                        child: Center(
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
                               fontFamily: 'Pretendard',
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
-                              color: Color(0xFF1D4786)
+                              color: Color(0xFF636666),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          ),
+                    Container(
+                      width: 1.0, // 구분선의 두께
+                      height: 60, // 구분선의 높이
+                      color: Colors.grey, // 구분선의 색상
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          // 다이얼로그가 닫히기 전에 포커스를 해제하여 키보드가 올라오지 않게 함
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _isEULAChecked = true;
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
+                        ),
+                        child: Center(
+                          child: Text(
+                            '동의',
+                            style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: Color(0xFF1D4786)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
+        ),
         );
       },
     );
@@ -608,6 +622,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       child: TextButton(
                         onPressed: () {
                           HapticFeedback.lightImpact();
+                          // 다이얼로그가 닫히기 전에 포커스를 해제하여 키보드가 올라오지 않게 함
+                          FocusScope.of(context).unfocus();
                           setState(() {
                             _isPrivacyPolicyChecked = false;
                           });
@@ -638,6 +654,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       child: TextButton(
                         onPressed: () {
                           HapticFeedback.lightImpact();
+                          // 다이얼로그가 닫히기 전에 포커스를 해제하여 키보드가 올라오지 않게 함
+                          FocusScope.of(context).unfocus();
                           setState(() {
                             _isPrivacyPolicyChecked = true;
                           });
@@ -673,9 +691,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
   void _onDomainSelected(String domain) {
+
     setState(() {
       _dropdownValue = domain;
     });
+    print(_emailIsNotGoogle);
   }
 
 
@@ -865,12 +885,35 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
                                             // 학교 추가하면 여기에 추가
-                                            if(domain['name'] == '충남대학교' || domain['domain'] == 'g.cnu.ac.kr') {
-                                              _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            // 학교 추가하면 여기에 추가
+                                            if (domain['name'] == '충남대학교' || domain['domain'] == 'o.cnu.ac.kr') {
+                                              _onDomainSelected(
+                                                  domain['domain']!); // onSelected 함수 호출
+                                              setState(() {
+                                                _emailIsNotGoogle = true;
+                                              });
                                             }
-                                            //
-                                            // if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
+                                            // else if (domain['name'] == 'test2' || domain['domain'] == 'o365.hanbat.ac.kr') {
+                                            //   _onDomainSelected(
+                                            //       domain['domain']!); // onSelected 함수 호출
+                                            //   setState(() {
+                                            //     _emailIsNotGoogle = true;
+                                            //   });
+                                            // }
+                                            // } else if (domain['name'] == 'test3' || domain['domain'] == 'gmail.com') {
                                             //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            //   setState(() {
+                                            //     _emailIsNotGoogle = true;
+                                            //   });
+                                            // }
+
+
+                                            // else if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
+                                            //   setState(() {
+                                            //     _emailIsNotGoogle = false;
+                                            //   });
+                                            //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            //
                                             // }
 
 
@@ -884,6 +927,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                   duration: Duration(seconds: 1),
                                                 ),
                                               );
+                                              setState(() {
+                                                _emailIsNotGoogle = false;
+                                              });
                                             }
 
                                             Navigator.pop(context);
@@ -1480,6 +1526,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       bool emailAvailable = await _checkEmailAvailability();
       if (!emailAvailable) return;
 
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
       final rootContext = context;
       showDialog(
         context: context,
@@ -1555,12 +1603,13 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                 Navigator.pop(context);
                                 setState(() {
                                   isEmailVerified = false;
+                                  _emailCodeSent = false;
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       '안전한 보안을 위해 이메일 인증이 한 번 더 필요합니다.\n\'이메일 인증\' 버튼을 눌러 다시 한 번 인증 부탁드립니다.',
-                                      textAlign: TextAlign.center,
+                                     textAlign: TextAlign.center,
                                     ),
                                     duration: Duration(seconds: 3),
                                   ),
@@ -1573,6 +1622,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               }
 
                             } else {
+                              print(123);
                               // Firebase Authentication에 이메일과 비밀번호로 새 사용자 생성
                               UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                                 email: email,
@@ -1704,6 +1754,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     return phoneNumber;
   }
 
+
   // 전화번호로 인증 요청
   Future<void> _verifyPhoneNumber() async {
     if(_phoneController.text.length == 11) {
@@ -1723,6 +1774,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           // 자동 인증 성공 시
           await _auth.signInWithCredential(credential);
           print('자동 인증 성공');
+          User? currentUser = FirebaseAuth.instance.currentUser;
         },
 
         verificationFailed: (FirebaseAuthException e) {
@@ -1817,25 +1869,45 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   // 사용자가 입력한 인증 코드로 로그인
   Future<void> _signInWithCode() async {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '인증번호 확인 중입니다! \n잠시만 기다려주세요.',
+          textAlign: TextAlign.center,
+        ),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
     if (_verificationId.isNotEmpty && _remainingTime > 0) { // 타이머가 유효할 때만 인증
       try {
+        User? currentUser = FirebaseAuth.instance.currentUser;
+
         PhoneAuthCredential credential = PhoneAuthProvider.credential(
           verificationId: _verificationId, // 저장된 verificationId 사용
           smsCode: _codeController.text,
         );
-        await _auth.signInWithCredential(credential);
-        print('인증 성공');
+
+        // 현재 사용자가 이메일 계정으로 로그인된 상태라면, 전화번호를 연동
+        if (currentUser != null && currentUser.email != null) {
+          // 이미 이메일로 로그인한 상태에서 전화번호 인증을 진행
+          await currentUser.updatePhoneNumber(credential); // 이메일 계정에 전화번호를 연동
+          print('전화번호와 이메일 계정이 성공적으로 연동되었습니다.');
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("인증이 완료되었습니다!",
                 textAlign: TextAlign.center),
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: 2),
           ),
         );
         setState(() {
           _successAuth= true;
         });
         _timer?.cancel();
+
       } on FirebaseAuthException catch (e) {
 
         if (e.code == 'invalid-verification-code') {
@@ -1846,10 +1918,25 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 '입력하신 인증번호가 올바르지 않습니다.\n다시 한 번 확인해 주세요.',
                 textAlign: TextAlign.center,
               ),
+              duration: Duration(seconds: 2),
 
             ),
           );
         }
+        else if (e.code == 'credential-already-in-use') {
+          // 인증 실패 시 스낵바 표시
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '해당 전화번호는 이미 사용 중입니다. \n다른 번호로 시도해 주세요.',
+                textAlign: TextAlign.center,
+              ),
+              duration: Duration(seconds: 2),
+
+            ),
+          );
+        }
+
 
         print('인증 실패: ${e.message}');
       }catch (e) {
@@ -1862,20 +1949,19 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
   _onNicknameChanged() {
-    RegExp onlyConsonants = new RegExp(r'^[ㄱ-ㅎ]+$');
-    RegExp onlyVowels = new RegExp(r'^[ㅏ-ㅣ]+$');
-    RegExp onlyNumbers = new RegExp(r'^[0-9]+$');
+    RegExp onlyConsonants = RegExp(r'^[ㄱ-ㅎ]+$');
+    RegExp onlyVowels = RegExp(r'^[ㅏ-ㅣ]+$');
     String pattern = r'^[a-zA-Zㄱ-ㅎ가-힣0-9]+$';
-    RegExp regex = new RegExp(pattern);
+    RegExp regex = RegExp(pattern);
     String value = _nicknameController.text;
     setState(() {
       if (value == null || value.trim().isEmpty) {
         _usernicknameErrorText = '닉네임을 입력해주세요.';
       } else if (!regex.hasMatch(value)) {
         _usernicknameErrorText = '닉네임은 영문, 한글, 숫자만 \n사용 가능합니다.';
-      } else if(onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)){
-        _usernicknameErrorText = '자음, 모음, 숫자 만으로는 \n구성될 수 없습니다.';
-      }else {
+      } else if(onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text)){
+        _usernicknameErrorText = '자음, 모음만으로는 \n구성될 수 없습니다.';
+      } else {
         _usernicknameErrorText = null;
         _isNicknameAvailable = false;
         _buttonText = '중복확인';
@@ -1979,10 +2065,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     }
   }
 
-  bool _nicknameValidateFields(){
+  bool _nicknameValidateFields() {
     RegExp onlyConsonants = RegExp(r'^[ㄱ-ㅎ]+$');
     RegExp onlyVowels = RegExp(r'^[ㅏ-ㅣ]+$');
-    RegExp onlyNumbers = RegExp(r'^[0-9]+$');
 
     if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1991,9 +2076,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         ),
       );
       return false;
-    } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text) || onlyNumbers.hasMatch(_nicknameController.text)) {
+    } else if (onlyConsonants.hasMatch(_nicknameController.text) || onlyVowels.hasMatch(_nicknameController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('자음, 모음, 숫자 만으로는 구성될 수 없습니다.', textAlign: TextAlign.center,),
+        SnackBar(content: Text('자음, 모음만으로는 구성될 수 없습니다.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
         ),
       );
@@ -2018,9 +2103,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       return false;
     }
 
-
     return true;
   }
+
 
 //닉네임 맥스 length
   void _checkMaxLength(TextEditingController controller, int maxLength) {
@@ -2050,73 +2135,74 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
   bool _validateFields() {
-      if(_isNicknameAvailable == false){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('중복확인을 진행해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
 
-      if (_emailUserController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
+    if(_isNicknameAvailable == false){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('중복확인을 진행해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
 
-      if (_phoneController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('전화번호를 입력해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
+    if (_emailUserController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이메일을 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
 
-      if (_codeController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('인증번호를 입력해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
+    if (_phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('전화번호를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
 
-
-      if(isEmailVerified == false){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일 인증을 완료해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
-
-      if(_successAuth == false){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('휴대전화 인증을 완료해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
-
-      if(_isEULAChecked == false || _isPrivacyPolicyChecked == false){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이용 약관 및 개인정보 처리방침에 동의해주세요.', textAlign: TextAlign.center,),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        return false;
-      }
+    if (_codeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('인증번호를 입력해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
 
 
+    if(isEmailVerified == false){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이메일 인증을 완료해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
 
-      if (_nicknameController.text.trim().isEmpty) {
+    if(_successAuth == false){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('휴대전화 인증을 완료해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+    if(_isEULAChecked == false || _isPrivacyPolicyChecked == false){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이용 약관 및 개인정보 처리방침에 동의해주세요.', textAlign: TextAlign.center,),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return false;
+    }
+
+
+
+    if (_nicknameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('닉네임을 입력해주세요.', textAlign: TextAlign.center,),
           duration: Duration(seconds: 1),
@@ -2196,7 +2282,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
 
-  //이메일 인증
+  //구글로그인 인증
   Future<void> _signInWithGoogle() async {
     try {
       // 이전에 로그인한 계정 로그아웃
@@ -2224,6 +2310,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         idToken: googleAuth.idToken,
       );
 
+
       UserCredential userCredential = await _auth.signInWithCredential(credential);
       User? user = userCredential.user;
 
@@ -2238,6 +2325,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             duration: Duration(seconds: 2),
           ),
         );
+
       } else {
         // 이메일이 일치하지 않으면 로그아웃
         await _auth.signOut();
@@ -2251,12 +2339,271 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           ),
         );
       }
+
     } catch (e) {
       // 로그인 오류 처리
       print(e);
     }
   }
 
+
+  //99이메일 인증
+// 이메일 인증
+  Future<void> _requestEmailVerification() async {
+    try {
+      String email = _emailUserController.text.trim();
+      String password = "T3mp0r@ryP@ssw0rd#2024!";
+
+      if (_dropdownValue == null) {
+        setState(() {
+          _userEmailErrorText = '학교 메일을 선택해 주세요';
+        });
+        return;
+      }
+
+      String fullEmail = '$email@$_dropdownValue';
+      print(fullEmail);
+
+      try {
+        // 이미 존재하는 계정에 로그인 시도
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: fullEmail,
+          password: password,
+        );
+
+        User? currentUser = userCredential.user;
+        if (currentUser != null) {
+          // 계정이 존재하고 이메일 인증이 안 된 경우
+
+          await currentUser.delete();
+
+          // 삭제 후 새 계정 생성 및 이메일 인증 전송
+          UserCredential newUserCredential = await _auth.createUserWithEmailAndPassword(
+            email: fullEmail,
+            password: password,
+          );
+
+          await newUserCredential.user!.sendEmailVerification();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+              // Text("이메일 인증 링크가 전송되었습니다!", textAlign: TextAlign.center),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text:'이메일 인증 링크가 전송되었습니다!',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                        fontSize: 12, // 작은 글씨 크기 설정
+
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+          setState(() {
+            _emailCodeSent = true;
+          });
+          _startEmailVerificationTimer();
+
+          return;
+        }
+      } on FirebaseAuthException catch (e) {
+        print(e.code);
+        print('----');
+        if (e.code == 'user-not-found') {
+          // 계정이 없으면 새 계정을 생성
+          UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+            email: fullEmail,
+            password: password,
+          );
+          await userCredential.user!.sendEmailVerification();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:             RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text:'이메일 인증 링크가 전송되었습니다!',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                        fontSize: 12, // 작은 글씨 크기 설정
+
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          setState(() {
+            _emailCodeSent = true;
+          });
+          _startEmailVerificationTimer();
+        }
+        else if (e.code == 'invalid-credential') {
+          // 계정이 없으면 새 계정을 생성
+          UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+            email: fullEmail,
+            password: password,
+          );
+          await userCredential.user!.sendEmailVerification();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:             RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text:'이메일 인증 링크가 전송되었습니다!',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                        fontSize: 12, // 작은 글씨 크기 설정
+
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          setState(() {
+            _emailCodeSent = true;
+          });
+          _startEmailVerificationTimer();
+        }
+        else if (e.code == 'too-many-requests') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("인증 요청이 많아 잠시 제한되었습니다. \n몇 분 후 다시 시도해 주세요.", textAlign: TextAlign.center),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        else {
+          // 기타 오류 처리
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('이메일 인증 요청에 실패했습니다. \n다시 시도해주세요.', textAlign: TextAlign.center),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          print(e);
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+      if (e.code == 'email-already-in-use') {
+        // 오류 코드가 제대로 들어오는지 확인하기 위해 로그 추가
+        print("오류 코드: email-already-in-use");
+        // 이미 존재하는 계정 처리
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이미 존재하는 계정입니다.", textAlign: TextAlign.center),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('이메일 인증 요청에 실패했습니다. \n다시 시도해주세요.', textAlign: TextAlign.center),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      print(e);
+    }
+  }
+
+
+  void _startEmailVerificationTimer() {
+    setState(() {
+      _remainingVerificationTime = 300; // 5분(300초) 설정
+    });
+
+    _verificationTimer?.cancel(); // 기존 타이머가 있으면 취소
+
+    _verificationTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_remainingVerificationTime > 0) {
+          _remainingVerificationTime--; // 남은 시간을 1초씩 감소
+        } else {
+          _verificationTimer?.cancel(); // 시간이 초과되면 타이머를 취소
+          _emailCodeSent = false; // 인증 요청을 다시 할 수 있도록 설정
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("인증 시간이 초과되었습니다. \n다시 시도해주세요.", textAlign: TextAlign.center),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+
+      });
+    });
+  }
+
+  Future<void> _confirmEmailVerification() async {
+    try {
+      await _auth.currentUser!.reload(); // 사용자 정보를 새로 고침하여 인증 상태 확인
+      if (_auth.currentUser!.emailVerified) {
+        setState(() {
+          isEmailVerified = true; // 이메일 인증 상태를 true로 변경
+          _verificationTimer?.cancel(); // 타이머를 취소
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이메일 인증이 완료되었습니다!", textAlign: TextAlign.center),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        // 인증이 완료되지 않은 경우
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("이메일 인증이 완료되지 않았습니다.", textAlign: TextAlign.center),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // 인증 확인 실패 예외 처리
+      print('이메일 인증 확인 실패: $e');
+    }
+  }
 
 
   @override
@@ -2333,17 +2680,35 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                                             child: Align(
                                               alignment: Alignment.topLeft,
-                                              child: Text(
-                                                '이메일',
-                                                style: TextStyle(
-                                                  fontFamily: 'Pretendard',
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 15,
-                                                  height: 1,
-                                                  letterSpacing: -0.4,
-                                                  color: Color(0xFF424242),
+                                              child: RichText(
+                                                text: TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: '이메일', // 원래 텍스트
+                                                      style: TextStyle(
+                                                        fontFamily: 'Pretendard',
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 15,
+                                                        height: 1,
+                                                        letterSpacing: -0.4,
+                                                        color: Color(0xFF424242),
+                                                      ),
+                                                    ),
+                                                    TextSpan(
+                                                      text: '  본인 학교 웹메일로 진행해주세요!', // 더 작고 옅은 텍스트
+                                                      style: TextStyle(
+                                                        fontFamily: 'Pretendard',
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 12, // 더 작은 크기
+                                                        height: 1.5,
+                                                        letterSpacing: -0.4,
+                                                        color: Color(0xFF767676), // 더 옅은 색상
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
+
                                             ),
                                           ),
                                           Row(
@@ -2479,10 +2844,60 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         ],
                                       ),
                                     ),
+
+
+                                    _emailIsNotGoogle && _emailCodeSent
+                                        ?
+                                        // 구글로그인이 아닐때
+                                    Column(
+
+                                      children: [
+                                        isEmailVerified
+                                            ? Container()
+                                            : Center(child : Text(
+                                          "남은 시간: $_remainingVerificationTime 초",
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                            height: 1,
+                                            letterSpacing: -0.4,
+                                            color: Color(0xFF1D4786),
+                                          ),
+                                        ),
+                                        ),
+                                        SizedBox(height: 5),
+                                      ],
+                                    )
+
+                                        : Container(),
+
                                     GestureDetector(
                                       onTap:(){
-                                        HapticFeedback.lightImpact();
-                                        _emailUserController.text.isNotEmpty ? _signInWithGoogle() : null;
+                                        // 이메일 인증
+                                        if(_emailIsNotGoogle){
+                                          HapticFeedback.lightImpact();
+
+                                          if(_emailCodeSent) { //이메일 전송
+                                            _emailUserController.text.isNotEmpty
+                                                ? _confirmEmailVerification()
+                                                : null;
+                                          }
+
+                                          else{ //이메일 전송 안됨
+                                            _emailUserController.text.isNotEmpty
+                                                ? _requestEmailVerification()
+                                                : null;
+                                          }
+                                        }
+
+                                        //구글 인증
+                                        else if(!_emailIsNotGoogle) {
+                                          HapticFeedback.lightImpact();
+                                          _emailUserController.text.isNotEmpty
+                                              ? _signInWithGoogle()
+                                              : null;
+                                        }
                                       },
                                       child: Container(
                                         width: double.infinity,
@@ -2494,6 +2909,21 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         child: Container(
                                           padding: EdgeInsets.fromLTRB(3.3, 15, 0, 15),
                                           child:
+                                          _emailCodeSent
+                                              ?
+                                          Text(
+                                            isEmailVerified ? '인증 완료' :'인증 하기',
+                                            style: TextStyle(
+                                              fontFamily: 'Pretendard',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              height: 1,
+                                              letterSpacing: -0.4,
+                                              color: _emailUserController.text.isNotEmpty ? Colors.white : Color(0xFF767676),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          )
+                                              :
                                           Text(
                                             isEmailVerified ? '인증 완료' :'이메일 인증',
                                             style: TextStyle(
@@ -2512,6 +2942,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   ],
                                 ),
                               ),
+
+
 
 
                               //휴대전화 인증
@@ -2550,11 +2982,23 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         alignment: Alignment.topLeft,
                                         child: TextFormField(
                                           onTap: () {
+                                            if(isEmailVerified == false){
+                                              HapticFeedback.lightImpact(); // 햅틱 피드백
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '이메일 인증을 먼저 완료해주세요.',
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
                                             if(!_successAuth) {
                                               HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
                                             }
                                           },
-                                          enabled: !_successAuth && !_codeSent,
+                                          enabled: !_successAuth && !_codeSent && isEmailVerified,
                                           controller: _phoneController,
                                           textInputAction: TextInputAction.done,
                                           cursorColor: Color(0xFF1D4786),
@@ -2563,7 +3007,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             HapticFeedback.lightImpact(); // 다음 필드로 이동할 때 햅틱 피드백
                                           },
                                           decoration: InputDecoration(
-                                            hintText: '전화번호를 입력해주세요.',
+                                            hintText: isEmailVerified ? '전화번호를 입력해주세요.' : '이메일 인증을 먼저 완료해주세요.',
                                             hintStyle: TextStyle(
                                               fontFamily: 'Pretendard',
                                               fontWeight: FontWeight.w500,
@@ -2834,6 +3278,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         GestureDetector(
                                           onTap : (){
                                             _checkNicknameAvailabilityAndValidate();
+                                            User? currentUser = FirebaseAuth.instance.currentUser;
+                                            print('중복확인---------');
+                                            print(currentUser);
+                                            print('중복확인---------');
                                           },
                                           child: Container(
                                             height: MediaQuery.of(context).size.height *0.065,

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DepartmentList {
   static List<String> getDepartmentsByDomain(String domain) {
     switch (domain) {
-      case 'g.cnu.ac.kr':
+      case 'o.cnu.ac.kr':
         return _cnuDepartments;
 
       default:
