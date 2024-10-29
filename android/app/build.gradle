@@ -34,7 +34,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 34
         versionCode 1
-        versionName "1.0.5"
+        versionName "1.0.9"
     }
 
 
@@ -66,4 +66,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'androidx.browser:browser:1.8.0'
+
 }

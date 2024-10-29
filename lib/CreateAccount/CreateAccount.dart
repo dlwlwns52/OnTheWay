@@ -96,9 +96,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     {'name': '부산대학교', 'domain': 'pusan.ac.kr'},
     {'name': '충북대학교', 'domain': 'cberi.go.kr'},
 
-    // {'name': 'test', 'domain': 'edu.hanbat.ac.kr'},
+    // {'name': 'test3', 'domain': 'edu.hanbat.ac.kr'},
     // {'name': 'test2', 'domain': 'o365.hanbat.ac.kr'},
-    // {'name': 'test3', 'domain': 'gmail.com'},
+    {'name': 'test', 'domain': 'gmail.com'},
   ];
   List<Map<String, String>> _filteredDomains = []; // 필터링된 도메인 목록
 
@@ -110,6 +110,11 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   final ReferralCodeManager _referralCodeManager = ReferralCodeManager();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // 전화번호 휴대폰 인증 한 번씩만
+  bool _isPhoneButtonEnabled = true;
+  bool _isEmailButtonEnabled = true;
+
 
   @override
   void initState() {
@@ -887,8 +892,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             // 학교 추가하면 여기에 추가
                                             // 학교 추가하면 여기에 추가
                                             if (domain['name'] == '충남대학교' || domain['domain'] == 'o.cnu.ac.kr') {
-                                              _onDomainSelected(
-                                                  domain['domain']!); // onSelected 함수 호출
+                                              _onDomainSelected(domain['domain']!); // onSelected 함수 호출
                                               setState(() {
                                                 _emailIsNotGoogle = true;
                                               });
@@ -900,12 +904,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             //     _emailIsNotGoogle = true;
                                             //   });
                                             // }
-                                            // } else if (domain['name'] == 'test3' || domain['domain'] == 'gmail.com') {
-                                            //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
-                                            //   setState(() {
-                                            //     _emailIsNotGoogle = true;
-                                            //   });
-                                            // }
+                                            else if (domain['name'] == 'test' || domain['domain'] == 'gmail.com') {
+                                              _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                              setState(() {
+                                                _emailIsNotGoogle = true;
+                                              });
+                                            }
 
 
                                             // else if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
@@ -927,6 +931,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                   duration: Duration(seconds: 1),
                                                 ),
                                               );
+                                              _onDomainSelected('출시 예정입니다.'); // onSelected 함수 호출
                                               setState(() {
                                                 _emailIsNotGoogle = false;
                                               });
@@ -1609,7 +1614,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   SnackBar(
                                     content: Text(
                                       '안전한 보안을 위해 이메일 인증이 한 번 더 필요합니다.\n\'이메일 인증\' 버튼을 눌러 다시 한 번 인증 부탁드립니다.',
-                                     textAlign: TextAlign.center,
+                                      textAlign: TextAlign.center,
                                     ),
                                     duration: Duration(seconds: 3),
                                   ),
@@ -1757,12 +1762,24 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   // 전화번호로 인증 요청
   Future<void> _verifyPhoneNumber() async {
-    if(_phoneController.text.length == 11) {
+    if (!_isPhoneButtonEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("잠시만 기다려 주세요!", textAlign: TextAlign.center),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return; // 버튼이 비활성화되어 있으면 아무것도 하지 않음
+    }
+
+    if (_phoneController.text.length == 11) {
+      setState(() {
+        _isPhoneButtonEnabled = false; // 버튼 비활성화
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("인증번호를 전송하고 있습니다.",
-              textAlign: TextAlign.center),
+          content: Text("인증번호를 전송하고 있습니다.", textAlign: TextAlign.center),
           duration: Duration(seconds: 1),
         ),
       );
@@ -1771,10 +1788,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       await _auth.verifyPhoneNumber(
         phoneNumber: formattedPhoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // 자동 인증 성공 시
           await _auth.signInWithCredential(credential);
           print('자동 인증 성공');
           User? currentUser = FirebaseAuth.instance.currentUser;
+          setState(() {
+            _isPhoneButtonEnabled = true; // 인증 성공 시 버튼 재활성화
+          });
         },
 
         verificationFailed: (FirebaseAuthException e) {
@@ -1785,7 +1804,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               errorMessage = '잘못된 전화번호 형식입니다. \n올바른 전화번호 형식으로 입력해주세요.';
               break;
             case 'too-many-requests':
-              errorMessage = '요청이 많아 처리가 지연되고 있습니다. \n잠시 후 다시 시도해 주세요!';
+              errorMessage = 'SMS 인증 한도(일일 5회)를 초과했습니다. \n다음 날에 다시 시도해주세요.';
               break;
             case 'quota-exceeded':
               errorMessage = 'SMS 인증 한도를 초과했습니다. \n나중에 다시 시도해주세요.';
@@ -1796,28 +1815,29 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             case 'operation-not-allowed':
               errorMessage = '전화번호 인증이 비활성화되어 있습니다. \n관리자에게 문의해 주세요.';
               break;
-            case 'Invalid format': // 'Invalid format'은 직접 설정한 오류 처리
+            case 'Invalid format':
               errorMessage = '잘못된 전화번호입니다. \n확인 후 다시 입력해주세요.';
               break;
             default:
-              errorMessage = '알 수 없는 오류가 발생했습니다. \n잠시 후 다시 시도해주세요.';
+              errorMessage = '${e.code}';
           }
 
-          // 스낵바로 오류 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage, textAlign: TextAlign.center),
               duration: Duration(seconds: 2),
             ),
           );
+
+          setState(() {
+            _isPhoneButtonEnabled = true; // 인증 실패 시 버튼 재활성화
+          });
         },
 
         codeSent: (String verificationId, int? resendToken) {
-          // 인증 코드가 성공적으로 전송됨
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("인증번호가 전송되었습니다!",
-                  textAlign: TextAlign.center),
+              content: Text("인증번호가 전송되었습니다!", textAlign: TextAlign.center),
               duration: Duration(seconds: 2),
             ),
           );
@@ -1827,15 +1847,20 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             _codeSent = true;
           });
 
-          // 타이머 시작 (5분)
           _startTimer();
+          setState(() {
+            _isPhoneButtonEnabled = true; // 인증 코드 전송 시 버튼 재활성화
+          });
         },
+
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
+          setState(() {
+            _isPhoneButtonEnabled = true; // 인증 시간 초과 시 버튼 재활성화
+          });
         },
       );
-    }
-    else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('잘못된 전화번호입니다. \n확인 후 다시 입력해주세요.', textAlign: TextAlign.center),
@@ -1844,6 +1869,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
     }
   }
+
 
   // 타이머 시작
   void _startTimer() {
@@ -1869,7 +1895,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
   // 사용자가 입력한 인증 코드로 로그인
   Future<void> _signInWithCode() async {
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -2347,16 +2372,30 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   }
 
 
-  //99이메일 인증
 // 이메일 인증
   Future<void> _requestEmailVerification() async {
+    if (!_isEmailButtonEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("잠시만 기다려 주세요!", textAlign: TextAlign.center),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return; // 버튼이 비활성화되어 있으면 아무것도 하지 않음
+    }
+
     try {
+      setState(() {
+        _isEmailButtonEnabled = false; // 버튼 비활성화
+      });
+
       String email = _emailUserController.text.trim();
       String password = "T3mp0r@ryP@ssw0rd#2024!";
 
       if (_dropdownValue == null) {
         setState(() {
           _userEmailErrorText = '학교 메일을 선택해 주세요';
+          _isEmailButtonEnabled = true; // 버튼 재활성화
         });
         return;
       }
@@ -2373,11 +2412,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
         User? currentUser = userCredential.user;
         if (currentUser != null) {
-          // 계정이 존재하고 이메일 인증이 안 된 경우
-
           await currentUser.delete();
 
-          // 삭제 후 새 계정 생성 및 이메일 인증 전송
           UserCredential newUserCredential = await _auth.createUserWithEmailAndPassword(
             email: fullEmail,
             password: password,
@@ -2386,27 +2422,22 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           await newUserCredential.user!.sendEmailVerification();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-              // Text("이메일 인증 링크가 전송되었습니다!", textAlign: TextAlign.center),
-              RichText(
+              content: RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text:'이메일 인증 링크가 전송되었습니다!',
+                      text: '이메일 인증 링크가 전송되었습니다!',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal,
                         fontSize: 16,
                       ),
                     ),
                     TextSpan(
-                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 인증 메일이 스팸메일함에 있을 수 있습니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
-                        fontSize: 12, // 작은 글씨 크기 설정
-
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -2415,18 +2446,17 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
               duration: Duration(seconds: 3),
             ),
           );
+
           setState(() {
             _emailCodeSent = true;
+            _isEmailButtonEnabled = true; // 버튼 재활성화
           });
           _startEmailVerificationTimer();
 
           return;
         }
       } on FirebaseAuthException catch (e) {
-        print(e.code);
-        print('----');
         if (e.code == 'user-not-found') {
-          // 계정이 없으면 새 계정을 생성
           UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
             email: fullEmail,
             password: password,
@@ -2434,25 +2464,22 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           await userCredential.user!.sendEmailVerification();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:             RichText(
+              content: RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text:'이메일 인증 링크가 전송되었습니다!',
+                      text: '이메일 인증 링크가 전송되었습니다!',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal,
                         fontSize: 16,
                       ),
                     ),
                     TextSpan(
-                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 인증 메일이 스팸메일함에 있을 수 있습니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
-                        fontSize: 12, // 작은 글씨 크기 설정
-
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -2463,89 +2490,31 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           );
           setState(() {
             _emailCodeSent = true;
+            _isEmailButtonEnabled = true; // 버튼 재활성화
           });
           _startEmailVerificationTimer();
-        }
-        else if (e.code == 'invalid-credential') {
-          // 계정이 없으면 새 계정을 생성
-          UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-            email: fullEmail,
-            password: password,
-          );
-          await userCredential.user!.sendEmailVerification();
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:             RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text:'이메일 인증 링크가 전송되었습니다!',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(
-                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
-                        fontSize: 12, // 작은 글씨 크기 설정
-
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              content: Text('이메일 인증 요청에 실패했습니다. 다시 시도해주세요.', textAlign: TextAlign.center),
               duration: Duration(seconds: 2),
             ),
           );
           setState(() {
-            _emailCodeSent = true;
+            _isEmailButtonEnabled = true; // 버튼 재활성화
           });
-          _startEmailVerificationTimer();
-        }
-        else if (e.code == 'too-many-requests') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("인증 요청이 많아 잠시 제한되었습니다. \n몇 분 후 다시 시도해 주세요.", textAlign: TextAlign.center),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-        else {
-          // 기타 오류 처리
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('이메일 인증 요청에 실패했습니다. \n다시 시도해주세요.', textAlign: TextAlign.center),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          print(e);
         }
       }
-    } on FirebaseAuthException catch (e) {
-      print(e.code);
-      if (e.code == 'email-already-in-use') {
-        // 오류 코드가 제대로 들어오는지 확인하기 위해 로그 추가
-        print("오류 코드: email-already-in-use");
-        // 이미 존재하는 계정 처리
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("이미 존재하는 계정입니다.", textAlign: TextAlign.center),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('이메일 인증 요청에 실패했습니다. \n다시 시도해주세요.', textAlign: TextAlign.center),
+          content: Text('이메일 인증 요청에 실패했습니다. 다시 시도해주세요.', textAlign: TextAlign.center),
           duration: Duration(seconds: 2),
         ),
       );
-      print(e);
+      setState(() {
+        _isEmailButtonEnabled = true; // 버튼 재활성화
+      });
     }
   }
 
@@ -2848,27 +2817,46 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
                                     _emailIsNotGoogle && _emailCodeSent
                                         ?
-                                        // 구글로그인이 아닐때
+                                    // 구글로그인이 아닐때
                                     Column(
-
                                       children: [
                                         isEmailVerified
                                             ? Container()
-                                            : Center(child : Text(
-                                          "남은 시간: $_remainingVerificationTime 초",
-                                          style: TextStyle(
-                                            fontFamily: 'Pretendard',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13,
-                                            height: 1,
-                                            letterSpacing: -0.4,
-                                            color: Color(0xFF1D4786),
-                                          ),
+                                            : Column(
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                "남은 시간: $_remainingVerificationTime 초",
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 13,
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFF1D4786),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Center(
+                                              child: Text(
+                                                "혹시 메일함에서 찾을 수 없으시다면, 스팸메일함도 한 번 확인해 주세요!",
+                                                style: TextStyle(
+                                                  fontFamily: 'Pretendard',
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 11,
+                                                  height: 1,
+                                                  letterSpacing: -0.4,
+                                                  color: Color(0xFF767676), // 더 옅은 색상
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                          ],
                                         ),
-                                        ),
-                                        SizedBox(height: 5),
                                       ],
                                     )
+
 
                                         : Container(),
 

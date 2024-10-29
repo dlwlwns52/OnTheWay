@@ -592,7 +592,6 @@ class _NotificationScreenState extends State<AlarmUi> {
                           DateTime now = DateTime.now();
 
                           HapticFeedback.lightImpact();
-                          // await _HelperCount(documentId);
                           await _updateTime(documentId, now);
                           await _respondToActions(documentId,
                               'accepted'); // ChatActions : null -< accept
