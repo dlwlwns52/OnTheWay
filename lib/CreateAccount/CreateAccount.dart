@@ -299,7 +299,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: _isNicknameAvailable ? '사용 가능한 이름입니다.\n이 닉네임을 사용하시겠습니까?':'다른 사용자가 사용하고 있는 이름입니다. \n다른 닉네임을 사용해 주시길 바랍니다.',
+                      text: _isNicknameAvailable
+                          ? '사용 가능한 이름입니다.\n이 닉네임을 사용하시겠습니까?'
+                          : '다른 사용자가 사용하고 있는 이름입니다.\n다른 닉네임을 사용해 주시길 바랍니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontWeight: FontWeight.bold,
@@ -308,12 +310,58 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       ),
                     ),
                     TextSpan(
-                      text: _isNicknameAvailable ? '\n\n⚠️ 닉네임은 한 번 설정하시면 변경이 \n불가하니 신중히 선택해 주세요. ' : '',
+                      text: _isNicknameAvailable
+                          ? '\n\n\n⚠️ 닉네임은 한 번 설정하시면 변경이 '
+                          : '',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
-                        fontSize: 12, // 작은 글씨 크기 설정
-                        color: Colors.grey, // 회색으로 설정
+                        fontWeight: FontWeight.normal,
+                        fontSize: 10,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    TextSpan(
+                      text: _isNicknameAvailable
+                          ? '불가'
+                          : '',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 10,
+                        color: Color(0xFF1D4786),
+                      ),
+                    ),
+                    TextSpan(
+                      text: _isNicknameAvailable
+                          ? '하니 신중히 선택해 주세요.\n⚠️ 다른 닉네임을 선택하려면, '
+                          : '',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 10,
+                        color: Colors.grey
+                      ),
+                    ),
+                    TextSpan(
+                      text: _isNicknameAvailable
+                          ? '취소'
+                          : '',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 10,
+                        color: Color(0xFF1D4786),
+                      ),
+                    ),
+                    TextSpan(
+                      text: _isNicknameAvailable
+                          ? ' 버튼을 눌러 주세요.'
+                          : '',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.normal,
+                        fontSize: 10,
+                        color: Colors.grey,
                       ),
                     ),
                   ],
@@ -327,7 +375,10 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     child: TextButton(
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        _isNicknameAvailable ? _nicknameController.text = nickname : _nicknameController.clear();
+                        setState(() {
+                          _isNicknameAvailable= false;
+                        });
+                        _nicknameController.clear();
                         Navigator.of(context).pop(); // 취소 버튼 클릭 시 다이얼로그 닫기
                       },
                       style: TextButton.styleFrom(
@@ -355,10 +406,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                     child: TextButton(
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        if(!_isNicknameAvailable) {
+                        if (_isNicknameAvailable) {
+                          _nicknameController.text = nickname;
+                        } else {
                           _nicknameController.clear();
+                          print('닉네임이 사용 중입니다.'); // 디버깅을 위한 메세지 추가
                         }
                         Navigator.of(context).pop();
+
                       },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero, // 여백을 제거하여 Divider와 붙도록 설정
@@ -904,12 +959,12 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             //     _emailIsNotGoogle = true;
                                             //   });
                                             // }
-                                            else if (domain['name'] == 'test' || domain['domain'] == 'gmail.com') {
-                                              _onDomainSelected(domain['domain']!); // onSelected 함수 호출
-                                              setState(() {
-                                                _emailIsNotGoogle = true;
-                                              });
-                                            }
+                                            // else if (domain['name'] == 'test' || domain['domain'] == 'gmail.com') {
+                                            //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
+                                            //   setState(() {
+                                            //     _emailIsNotGoogle = true;
+                                            //   });
+                                            // }
 
 
                                             // else if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
@@ -1627,7 +1682,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               }
 
                             } else {
-                              print(123);
+
                               // Firebase Authentication에 이메일과 비밀번호로 새 사용자 생성
                               UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                                 email: email,
@@ -1642,7 +1697,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             DateTime now = DateTime.now();
                             String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-
+                            print('develop');
 
                             final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
                             await usersCollection.doc(nickname).set({
@@ -1988,8 +2043,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
         _usernicknameErrorText = '자음, 모음만으로는 \n구성될 수 없습니다.';
       } else {
         _usernicknameErrorText = null;
-        _isNicknameAvailable = false;
-        _buttonText = '중복확인';
+        // _isNicknameAvailable = false;
+        // _buttonText = '중복확인';
       }
     });
   }
@@ -2434,7 +2489,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       ),
                     ),
                     TextSpan(
-                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 12,
@@ -2476,7 +2531,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                       ),
                     ),
                     TextSpan(
-                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 인증 메일이 스팸메일함에 있을 수 있습니다.',
+                      text: '\n\n⚠️구글을 통해 발송된 해외 메일이므로 \n인증 메일이 스팸메일함에 있을 수 있습니다.',
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 12,
@@ -2493,10 +2548,21 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
             _isEmailButtonEnabled = true; // 버튼 재활성화
           });
           _startEmailVerificationTimer();
-        } else {
+        }  else if (e.code == 'wrong-password') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('이메일 인증 요청에 실패했습니다. 다시 시도해주세요.', textAlign: TextAlign.center),
+              content: Text('이미 존재하는 계정입니다. \n다른 이메일을 사용해 주세요.', textAlign: TextAlign.center),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          setState(() {
+            _isEmailButtonEnabled = true; // 버튼 재활성화
+          });
+        }
+        else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('이메일 인증 요청에 실패했습니다. 다시 시도해주세요. \n${e.code}', textAlign: TextAlign.center),
               duration: Duration(seconds: 2),
             ),
           );
@@ -3208,6 +3274,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                                 cursorColor: Color(0xFF1D4786),
                                                 controller: _nicknameController,
                                                 textInputAction: TextInputAction.done,
+                                                enabled: !_isNicknameAvailable,
                                                 onTap: () {
                                                   HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
                                                 },
@@ -3266,10 +3333,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                         GestureDetector(
                                           onTap : (){
                                             _checkNicknameAvailabilityAndValidate();
-                                            User? currentUser = FirebaseAuth.instance.currentUser;
-                                            print('중복확인---------');
-                                            print(currentUser);
-                                            print('중복확인---------');
                                           },
                                           child: Container(
                                             height: MediaQuery.of(context).size.height *0.065,

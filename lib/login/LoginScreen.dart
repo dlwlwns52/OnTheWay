@@ -115,10 +115,14 @@ class _LoginScreenState extends State<LoginScreen> {
         password: passwordController.text,
 
       );
+
       // 로그인 성공
       if (userCredential.user != null) {
+
         await getTokenAndSave(userCredential.user!.email); // 사용자의 이메일을 인자로 넘겨 토큰 저장
+
         String email = userCredential.user!.email!;
+
         String domain = email.split('@').last; // 이메일에서 도메인 추출
 
 
@@ -146,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
             print('No user found with email: $email');
           }
         }
-        // 자동로그인 체크 안하면
+        // 인 체크 안하면
         else if(_isAutoLogin == false) {
           final FirebaseFirestore firestore = FirebaseFirestore.instance;
           QuerySnapshot querySnapshot = await firestore.collection('users')
@@ -208,6 +212,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
 
+          case "user-not-found":
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('등록되지 않은 계정입니다. \n회원가입을 진행해주세요.', textAlign: TextAlign.center),
+                duration: Duration(seconds: 2),
+              ),
+            );
+
+          case "wrong-password":
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('비밀번호가 일치하지 않습니다. 다시 시도해 주세요.', textAlign: TextAlign.center,),
+                duration: Duration(seconds: 2),
+              ),
+            );
+
           case "network-request-failed":
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('네트워크 오류가 발생했습니다. \n연결 상태를 확인 후 다시 시도해주세요.', textAlign: TextAlign.center,),
@@ -227,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('알 수 없는 오류가 발생했습니다. 잠시 뒤에 다시 시도해주세요.', textAlign: TextAlign.center,),
+          SnackBar(content: Text('${e}\n알 수 없는 오류가 발생했습니다. 잠시 뒤에 다시 시도해주세요.', textAlign: TextAlign.center,),
             duration: Duration(seconds: 1),
           ),
         );
@@ -246,6 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //토큰 저장
   Future<void> saveTokenToDatabase(String? token, String? email) async {
+    print(1);
     if (email == null) return; // 이메일이 null인 경우 함수 종료
 
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -255,17 +275,13 @@ class _LoginScreenState extends State<LoginScreen> {
         .where('email', isEqualTo: email)
         .get();
 
-    // User? currentUser = FirebaseAuth.instance.currentUser; //임시!!!!!!!!!
-    // String userUid = currentUser?.uid ?? ''; // 사용자 UID 얻기  //임시!!!!!!!
-
     if (querySnapshot.docs.isNotEmpty) {
       // 해당 이메일을 가진 사용자 문서가 존재하는 경우
       String userId = querySnapshot.docs.first.id;
-
       // 해당 사용자 문서에 토큰을 저장합니다.
       await firestore.collection('users').doc(userId).set({
-        // 'uid': userUid, //임시!!!!!!!!!!!
         'token': token,
+
       }, SetOptions(merge: true));
     } else {
       print('No user found with email: $email');
