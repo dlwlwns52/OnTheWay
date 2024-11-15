@@ -1697,7 +1697,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                             DateTime now = DateTime.now();
                             String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-                            print('develop');
 
                             final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
                             await usersCollection.doc(nickname).set({
