@@ -1739,7 +1739,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                   ScaffoldMessenger.of(rootContext).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        '축하합니다! \n회원가입이 완료되었습니다.',
+                                        '축하합니다!. \n회원가입이 완료되었습니다.',
                                         textAlign: TextAlign.center,
                                       ),
                                       duration: Duration(seconds: 1),
