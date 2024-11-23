@@ -119,10 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // 로그인 성공
       if (userCredential.user != null) {
 
-        await getTokenAndSave(userCredential.user!.email); // 사용자의 이메일을 인자로 넘겨 토큰 저장
+        // await getTokenAndSave(userCredential.user!.email); // 사용자의 이메일을 인자로 넘겨 토큰 저장
 
         String email = userCredential.user!.email!;
-
         String domain = email.split('@').last; // 이메일에서 도메인 추출
 
 

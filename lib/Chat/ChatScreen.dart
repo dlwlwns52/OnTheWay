@@ -77,6 +77,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _shouldAutoScroll = false; // 자동 스크롤을 제어하는 플래그
   int _previousMessageCount = 0;
 
+  //사진 전송 한번만
+  bool _isPhotoButtonEnabled = false;
 
   @override
   void initState() {
