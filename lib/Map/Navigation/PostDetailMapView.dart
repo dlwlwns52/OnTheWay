@@ -37,7 +37,7 @@ class _PostDetailMapView extends State<PostDetailMapView> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app'));
+      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app/tmap/'));
   }
 
   @override

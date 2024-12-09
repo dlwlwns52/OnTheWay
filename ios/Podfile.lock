@@ -1435,6 +1435,8 @@ PODS:
     - TOCropViewController (~> 2.6.1)
   - image_picker_ios (0.0.1):
     - Flutter
+  - kakao_flutter_sdk_common (1.9.6):
+    - Flutter
   - kakao_map_plugin (0.0.1):
     - Flutter
   - leveldb-library (1.22.5)
@@ -1486,6 +1488,7 @@ DEPENDENCIES:
   - iamport_webview_flutter (from `.symlinks/plugins/iamport_webview_flutter/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - kakao_flutter_sdk_common (from `.symlinks/plugins/kakao_flutter_sdk_common/ios`)
   - kakao_map_plugin (from `.symlinks/plugins/kakao_map_plugin/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -1566,6 +1569,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  kakao_flutter_sdk_common:
+    :path: ".symlinks/plugins/kakao_flutter_sdk_common/ios"
   kakao_map_plugin:
     :path: ".symlinks/plugins/kakao_map_plugin/ios"
   location:
@@ -1628,6 +1633,7 @@ SPEC CHECKSUMS:
   iamport_webview_flutter: 70dbc31045e4cf7a0c829b76c6f8319dc94b299e
   image_cropper: a3291c624a953049bc6a02e1f8c8ceb162a24b25
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
+  kakao_flutter_sdk_common: 4f10f98226da5d0f7cbdeeaed5cc21f144515209
   kakao_map_plugin: 232bc2486ea3ffb5d44c49eac1bcc6dde1a7f0ee
   leveldb-library: e8eadf9008a61f9e1dde3978c086d2b6d9b9dc28
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e

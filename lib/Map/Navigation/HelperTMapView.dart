@@ -70,7 +70,7 @@ class _HelperTMapViewState extends State<HelperTMapView> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app'));
+      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app/tmap/'));
 
     // 길찾기 기능 참고용 안내 알림을 초기화 후 보여줌
     // WidgetsBinding.instance.addPostFrameCallback

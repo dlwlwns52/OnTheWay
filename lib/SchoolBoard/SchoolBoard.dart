@@ -272,7 +272,12 @@ class _BoardPageState extends State<BoardPage> {
       case 'gmail.com':
         return '테스트 게시판';
       case 'edu.hanbat.ac.kr':
-        return 'test 게시판';
+        return '한밭대학교 게시판';
+      case 'm365.hnu.ac.kr':
+        return '한남대학교 게시판';
+      case 'jbnu.ac.kr':
+        return '전북대학교 게시판';
+
       default:
         return '기본 타이틀'; // 기본값 설정
     }

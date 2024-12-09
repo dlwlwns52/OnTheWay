@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">  
+<title>simpleMap</title>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM"></script>
+
+<style>
+  #map_div {
+    width: 100%;
+    height: 100vh;
+  }
+  
+</style>
+<script type="text/javascript">
+
+	var map;
+	var marker_s, marker_e, marker_p1, marker_p2;
+	var drawInfoArr = [];
+	var resultdrawArr = [];
+	var helperId; // 헬퍼위치
+
+	var currentLocationMarker; //현재위치 마커
+	var currentLat, currentLon; // 현재 위치 저장
+	var helperLocationMarker; //헬퍼 마커
+	var helperLatLng; // 헬퍼 위치
+
+
+
+	function initTmap() {
+		// 지도 초기화
+		map = new Tmapv2.Map("map_div", {
+			center : new Tmapv2.LatLng(37.5718, 126.9769),
+			width : "100%",
+			height : "100vh",
+			zoom : 17,
+			zoomControl : true,
+			scrollwheel : true
+		});
+	}
+
+
+// 현재 위치로 이동
+	function moveToCurrentLocation() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function (position) {
+				currentLat = position.coords.latitude;
+				currentLon = position.coords.longitude;
+
+				var currentPosition = new Tmapv2.LatLng(currentLat, currentLon);
+
+				// 현재 위치 마커가 이미 존재하면 위치만 업데이트, 아니면 새로 생성
+				if (currentLocationMarker) {
+					currentLocationMarker.setPosition(currentPosition);
+				} else {
+					currentLocationMarker = new Tmapv2.Marker({
+						position: currentPosition,
+						icon: "/resources/images/common/current_location_marker.png",
+						iconSize: new Tmapv2.Size(72, 72),
+						map: map
+					});
+				}
+
+				map.setCenter(currentPosition); // 현재 위치로 지도 중심 이동
+				map.setZoom(20); // 줌 레벨 설정
+			}, function (error) {
+				console.error("Error occurred. Error code: " + error.code);
+			}, {
+				enableHighAccuracy: true,
+				maximumAge: 30000,
+				timeout: 27000
+			});
+		} else {
+			alert("Geolocation is not supported by this browser.");
+		}
+	}
+
+
+	//헬퍼 위치
+	function updateHelperLocation(helperLat, helperLng){
+
+		var helperPosition = new Tmapv2.LatLng(helperLat, helperLng)
+
+		if (helperLocationMarker) {
+            helperLocationMarker.setPosition(helperPosition);
+        } else {
+            helperLocationMarker = new Tmapv2.Marker({
+                position: helperPosition,
+                icon: "/resources/images/common/helper_icon.png", // 아이콘 경로 변경
+                iconSize: new Tmapv2.Size(72, 72),
+                map: map
+            });
+        }
+		map.setCenter(helperPosition); // 헬퍼의 위치로 지도 중심 이동
+
+	}
+
+
+
+    // 2. 시작, 도착 심볼찍기(길찾기)
+    function update(startLat, startLng, endLat, endLng){
+
+        // 시작 마커 생성
+        marker_s = new Tmapv2.Marker({
+            position: new Tmapv2.LatLng(startLat, startLng), // 시작 위치 좌표
+            icon: "/resources/images/common/start_marker_transparent.png", // 시작 마커 아이콘 이미지 경로
+            iconSize: new Tmapv2.Size(140, 140), // 시작 마커 아이콘 크기
+            map: map // 마커가 표시될 지도 객체
+        });
+
+        // 도착 마커 생성
+        marker_e = new Tmapv2.Marker({
+            position: new Tmapv2.LatLng(endLat, endLng), // 도착 위치 좌표
+            icon: "/resources/images/common/destination_marker_white_bg.png", // 도착 마커 아이콘 이미지 경로
+            iconSize: new Tmapv2.Size(120, 120), // 도착 마커 아이콘 크기
+            map: map // 마커가 표시될 지도 객체
+        });
+        // LatLngBounds 객체 생성
+        var bounds = new Tmapv2.LatLngBounds(
+            new Tmapv2.LatLng(startLat, startLng),
+            new Tmapv2.LatLng(endLat, endLng)
+        );
+
+        // 두 마커를 포함하는 지도 영역으로 조정
+        map.fitBounds(bounds);
+
+		// 3. 경로탐색 API 사용요청
+		var headers = {}; 
+			headers["appKey"]="ZNBrF3RTfI6DtWPIa9AIs4yvkxDdCPWI3FZrXZsM";
+
+		$.ajax({
+				method : "POST",// 요청 방식을 POST로 설정합니다.
+				headers : headers, // 위에서 설정한 헤더를 요청에 포함시킵니다.
+				url : "https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&format=json&callback=result",// 요청을 보낼 서버의 URL입니다.
+                async: false, // 비동기 방식을 사용하지 않음을 명시합니다. (주의: 일반적으로 비동기 방식을 권장합니다)
+                data: { // 서버로 보낼 데이터입니다.
+                    "startX": startLng, // 출발지의 경도입니다.
+                    "startY": startLat, // 출발지의 위도입니다.
+                    "endX": endLng, // 도착지의 경도입니다.
+                    "endY": endLat, // 도착지의 위도입니다.
+                    "reqCoordType": "WGS84GEO", // 요청 좌표 타입입니다.
+                    "resCoordType": "EPSG3857", // 응답 받을 좌표 타입입니다.
+                    "startName": "출발지", // 출발지 이름입니다.
+                    "endName": "도착지" // 도착지 이름입니다.
+                },
+
+                success: function(response) { // 요청이 성공적으로 완료되었을 때 실행될 함수입니다.
+                    var resultData = response.features; // 응답에서 경로 정보를 담고 있는 부분을 추출합니다.
+
+					//결과 출력
+					var tDistance = "총 거리 : "
+							+ ((resultData[0].properties.totalDistance) / 1000)
+									.toFixed(1) + "km,";
+					var tTime = " 총 시간 : "
+							+ ((resultData[0].properties.totalTime) / 60)
+									.toFixed(0) + "분";
+
+			
+					// Flutter로 데이터 전송 -> 아직까지는 안됨
+					// if (window.flutter_inappwebview) {
+					// 	window.flutter_inappwebview.callHandler('sendDataToFlutter', JSON.stringify({ distance: tDistance, time: tTime }));
+					// }
+
+					//기존 그려진 라인 & 마커가 있다면 초기화
+					if (resultdrawArr.length > 0) {
+						for ( var i in resultdrawArr) {
+							resultdrawArr[i]
+									.setMap(null);
+						}
+						resultdrawArr = [];
+					}
+					
+					drawInfoArr = [];  // 경로를 그리는 데 사용될 정보를 담을 배열을 초기화합니다.
+
+					for ( var i in resultData) { //for문 [S]
+						var geometry = resultData[i].geometry;
+						var properties = resultData[i].properties;
+						var polyline_;
+
+
+						if (geometry.type == "LineString") {
+							for ( var j in geometry.coordinates) {
+								// 경로들의 결과값(구간)들을 포인트 객체로 변환 
+								var latlng = new Tmapv2.Point(
+										geometry.coordinates[j][0],
+										geometry.coordinates[j][1]);
+								// 포인트 객체를 받아 좌표값으로 변환
+								var convertPoint = new Tmapv2.Projection.convertEPSG3857ToWGS84GEO(
+										latlng);
+								// 포인트객체의 정보로 좌표값 변환 객체로 저장
+								var convertChange = new Tmapv2.LatLng(
+										convertPoint._lat,
+										convertPoint._lng);
+								// 배열에 담기
+								drawInfoArr.push(convertChange);
+							}
+						} else {
+							var markerImg = "";
+							var pType = "";
+							var size;
+
+							if (properties.pointType == "S") { //출발지 마커
+								markerImg = "/resources/images/common/start_marker_transparent.png";
+								pType = "S";
+								size = new Tmapv2.Size(24, 38);
+							} else if (properties.pointType == "E") { //도착지 마커
+								markerImg = "/resources/images/common/destination_marker_white_bg.png";
+								pType = "E";
+								size = new Tmapv2.Size(24, 38);
+							} else { //각 포인트 마커
+								markerImg = "https://topopen.tmap.co.kr/imgs/point.png";
+								pType = "P";
+								size = new Tmapv2.Size(8, 8);
+							}
+
+							// 경로들의 결과값들을 포인트 객체로 변환 
+							var latlon = new Tmapv2.Point(
+									geometry.coordinates[0],
+									geometry.coordinates[1]);
+
+							// 포인트 객체를 받아 좌표값으로 다시 변환
+							var convertPoint = new Tmapv2.Projection.convertEPSG3857ToWGS84GEO(
+									latlon);
+
+							var routeInfoObj = {
+								markerImage : markerImg,
+								lng : convertPoint._lng,
+								lat : convertPoint._lat,
+								pointType : pType
+							};
+
+							// Marker 추가
+							marker_p = new Tmapv2.Marker(
+									{
+										position : new Tmapv2.LatLng(
+												routeInfoObj.lat,
+												routeInfoObj.lng),
+										icon : routeInfoObj.markerImage,
+										iconSize : size,
+										map : map
+									});
+						}
+					}//for문 [E]
+					drawLine(drawInfoArr);
+				},
+				error : function(request, status, error) {
+					console.log("code:" + request.status + "\n"
+							+ "message:" + request.responseText + "\n"
+							+ "error:" + error);
+				}
+			});
+
+        }
+
+	function addComma(num) {
+		var regexp = /\B(?=(\d{3})+(?!\d))/g;
+		return num.toString().replace(regexp, ',');
+	}
+	
+	function drawLine(arrPoint) {
+		var polyline_;
+
+		polyline_ = new Tmapv2.Polyline({
+			path : arrPoint,
+			// strokeColor : "#DD0000",
+            strokeColor : "#FF5500",
+			strokeWeight : 10,
+			map : map
+		});
+		resultdrawArr.push(polyline_);
+	}
+</script>
+</head>
+<body onload="initTmap();">
+	
+		<!-- 190430 기존 지도를 모두 이미지 처리 위해 주석 처리 S -->
+		<div id="map_wrap" class="map_wrap3">
+			<div id="map_div"></div>
+		</div>
+		<div class="map_act_btn_wrap clear_box"></div>
+		<br />
+
+</body>
+</html>
+		

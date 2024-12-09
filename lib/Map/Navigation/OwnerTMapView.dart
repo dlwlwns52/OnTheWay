@@ -113,7 +113,7 @@ class _OwnerTMapViewState extends State<OwnerTMapView> with WidgetsBindingObserv
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app'));
+      ..loadRequest(Uri.parse('https://ontheway-b2bdf.web.app/tmap/'));
 
     // Firestore 리스너 추가 -> helper_location 변할때마다 호출
     FirebaseFirestore.instance

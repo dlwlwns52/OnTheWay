@@ -1175,6 +1175,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                     ),
                                   ),
                                 ),
+
                                 Container(
                                   width: MediaQuery.of(context).size.width*0.9,
                                   // height: MediaQuery.of(context).size.width*0.2,
@@ -1240,6 +1241,17 @@ class _HelpScreenState extends State<HelpScreen> {
                                     ),
                                   ),
                                 ),
+
+                                Platform.isAndroid ? Container(
+                                  child: Text('⚠️거래 매칭 시, 안전한 거래를 위해 거래 기간 동안 사용자의 위치 정보가 백그라운드에서 일시적으로 활용될 수 있습니다. 위치 정보는 거래가 완료되거나 앱이 종료될 시 자동으로 삭제됩니다!\n',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.normal, // 작은 글씨는 일반적인 가중치로 설정
+                                      fontSize: 12, // 작은 글씨 크기 설정
+                                      color: Colors.grey, // 회색으로 설정
+                                    ),),
+                                ): Container(),
+
                                 Listener(
                                   // behavior: HitTestBehavior.translucent,  // 이 속성을 추가합니다.
                                   onPointerDown: (_) {
@@ -1272,6 +1284,8 @@ class _HelpScreenState extends State<HelpScreen> {
                               ],
                             ),
                           ),
+
+
                         ],
                       ),
                     ),

@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:OnTheWay/SocialLogin/KakaoLogin.dart';
+import 'package:OnTheWay/SocialLogin/KakaoViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
@@ -12,10 +14,16 @@ import '../login/LoginScreen.dart';
 import 'DepartmentList.dart';
 import 'NicknameValidator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'ReferralCodeManager.dart';
 
 class CreateAccount extends StatefulWidget {
+  final String? kakao_nickname;
+  final String? kakao_email;
+
+  CreateAccount({
+    required this.kakao_nickname,
+    required this.kakao_email,
+  });
 
   @override
   _CreateAccountState createState() => _CreateAccountState();
@@ -33,8 +41,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   TextEditingController _accountNumberController = TextEditingController(); // 계좌번호 입력
   TextEditingController _searchController = TextEditingController(); // 검색 입력
   TextEditingController _departmentSearchController = TextEditingController(); // 학과 검색 입력
-  TextEditingController _phoneController = TextEditingController(); // 휴대폰 번호 입력
-  TextEditingController _codeController = TextEditingController(); // 인증 코드 입력
   TextEditingController _referralCodeController = TextEditingController(); // 추천인 코드 입력
 
 // 상태 및 플래그 변수
@@ -50,10 +56,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   bool isEmailVerified = false; // 이메일 인증 여부
   bool _isEULAChecked = false; // EULA 동의 여부
   bool _isPrivacyPolicyChecked = false; // 개인정보 처리방침 동의 여부
-  bool _phoneNumberHasText = false; // 휴대폰 번호 입력 여부
-  bool _successAuth = false; // 인증 성공 여부
-  bool _codeSentHasText = false; // 인증 코드 입력 여부
-  bool _codeSent = false; // 인증 코드 전송 여부
   bool _referralCodeHasText = false; // 추천인 코드 입력 여부
 // 추천인 코드 인증 상태를 저장하는 변수
   bool isReferralCodeVerified = false; // 초기값은 false로 설정
@@ -75,8 +77,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String? _userEmailErrorText; // 이메일 에러 메시지
   String? _accountNameErrorText; // 계좌명 에러 메시지
   String? _accountNumberErrorText; // 계좌번호 에러 메시지
-  String? _phoneNumberErrorText; // 휴대폰 번호 에러 메시지
-  String? _codeSentErrorText; // 인증 코드 에러 메시지
 
 
 // Firebase 및 OAuth 관련
@@ -88,6 +88,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   String? _bankName; // 은행 이름
   String? _selectedDepartment; // 선택된 학과
 
+  final viewMode = MainViewModel(KakaoLogin());
 // 도메인 데이터
   List<Map<String, String>> _domains = [
     {'name': '전북대학교', 'domain': 'jbnu.ac.kr'},
@@ -103,17 +104,14 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
   ];
   List<Map<String, String>> _filteredDomains = []; // 필터링된 도메인 목록
 
-// 휴대폰 인증 관련
-  String _verificationId = "";
-  Timer? _timer; // 타이머 객체
-  int _remainingTime = 300; // 남은 시간 (초 단위)
+
 // 추천인 코드 무작위 생성
   final ReferralCodeManager _referralCodeManager = ReferralCodeManager();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // 전화번호 휴대폰 인증 한 번씩만
-  bool _isPhoneButtonEnabled = true;
+
   bool _isEmailButtonEnabled = true;
 
 
@@ -127,9 +125,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _emailUserController.addListener(_onEmaildChanged);
     _accountNameController.addListener(_onAccountNameChanged);
     _accountNumberController.addListener(_onAccountNumberChanged);
-    // _phoneController.addListener(_onPhoneNumberChanged);
-    // _codeController.addListener(_onPhoneNumberChanged);
-
 
 
     _emailUserController.addListener(() {
@@ -138,17 +133,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       });
     });
 
-    _phoneController.addListener(() {
-      setState(() {
-        _phoneNumberHasText = _phoneController.text.isNotEmpty;
-      });
-    });
-
-    _codeController.addListener(() {
-      setState(() {
-        _codeSentHasText = _codeController.text.isNotEmpty;
-      });
-    });
 
     _nicknameController.addListener(() {
       setState(() {
@@ -192,10 +176,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
     _emailUserController.dispose();
     _accountNameController.dispose();
     _accountNumberController.dispose();
-    _phoneController.dispose();
-    _codeController.dispose();
     _referralCodeController.dispose();
-    _timer?.cancel(); // 타이머 해제
     super.dispose();
   }
 
@@ -258,6 +239,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
     print('추천 코드가 성공적으로 생성되고 저장되었습니다: $referralCode');
   }
+
 
 //스낵바 형식능
   void buildCustomHelpDialog() async {
@@ -974,9 +956,9 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                             }
 
 
-                                            // else if(domain['name'] == 'test' || domain['domain'] == 'edu.hanbat.ac.kr') {
+                                            // else if(domain['name'] == 'test' || domain['domain'] == 'gmail.com') {
                                             //   setState(() {
-                                            //     _emailIsNotGoogle = false;
+                                            //     _emailIsNotGoogle = true;
                                             //   });
                                             //   _onDomainSelected(domain['domain']!); // onSelected 함수 호출
                                             //
@@ -1593,7 +1575,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       bool emailAvailable = await _checkEmailAvailability();
       if (!emailAvailable) return;
 
-      User? currentUser = FirebaseAuth.instance.currentUser;
+      auth.User? currentUser = FirebaseAuth.instance.currentUser;
 
       final rootContext = context;
       showDialog(
@@ -1661,7 +1643,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                           String password = _passwordController.text;
                           try {
 
-                            User? currentUser = FirebaseAuth.instance.currentUser;
+                            auth.User? currentUser = FirebaseAuth.instance.currentUser;
 
                             // 비밀번호 추가하기
                             if (currentUser != null) {
@@ -1716,7 +1698,8 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               'department' : _selectedDepartment,
                               'accountNumber' : accountNumber,
                               'profilePhotoURL' : '',
-                              'phoneNumber' : _phoneController.text,
+                              'kakaoEmail' : widget.kakao_email,
+                              'kakaoName' : widget.kakao_nickname,
                             });
 
                             await createAndAssignReferralCode(nickname);
@@ -1798,240 +1781,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       );
     }
   }
-
-  //휴대전화 인증
-  // _onPhoneNumberChanged() {
-  //   String value = _phoneController.text;
-  //   setState(() {
-  //     if (value == null || value.trim().isEmpty) {
-  //       _phoneNumberErrorText = '전화번호를 입력해주세요.';
-  //     } else {
-  //       _phoneNumberErrorText = null;
-  //     }
-  //   });
-  // }
-  //
-  // String formatPhoneNumber(String phoneNumber) {
-  //   // 만약 010으로 시작하면 +82로 변경
-  //   if (phoneNumber.startsWith('010')) {
-  //     return phoneNumber.replaceFirst('010', '+8210');
-  //   }
-  //   // 그 외에는 그대로 반환
-  //   return phoneNumber;
-  // }
-  //
-  //
-  // // 전화번호로 인증 요청
-  // Future<void> _verifyPhoneNumber() async {
-  //   if (!_isPhoneButtonEnabled) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text("잠시만 기다려 주세요!", textAlign: TextAlign.center),
-  //         duration: Duration(seconds: 1),
-  //       ),
-  //     );
-  //     return; // 버튼이 비활성화되어 있으면 아무것도 하지 않음
-  //   }
-  //
-  //   if (_phoneController.text.length == 11) {
-  //     setState(() {
-  //       _isPhoneButtonEnabled = false; // 버튼 비활성화
-  //     });
-  //
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text("인증번호를 전송하고 있습니다.", textAlign: TextAlign.center),
-  //         duration: Duration(seconds: 1),
-  //       ),
-  //     );
-  //
-  //     String formattedPhoneNumber = formatPhoneNumber(_phoneController.text);
-  //     await _auth.verifyPhoneNumber(
-  //       phoneNumber: formattedPhoneNumber,
-  //       verificationCompleted: (PhoneAuthCredential credential) async {
-  //         await _auth.signInWithCredential(credential);
-  //         print('자동 인증 성공');
-  //         User? currentUser = FirebaseAuth.instance.currentUser;
-  //         setState(() {
-  //           _isPhoneButtonEnabled = true; // 인증 성공 시 버튼 재활성화
-  //         });
-  //       },
-  //
-  //       verificationFailed: (FirebaseAuthException e) {
-  //         print('인증 실패: ${e.message}');
-  //         String errorMessage = '';
-  //         switch (e.code) {
-  //           case 'invalid-phone-number':
-  //             errorMessage = '잘못된 전화번호 형식입니다. \n올바른 전화번호 형식으로 입력해주세요.';
-  //             break;
-  //           case 'too-many-requests':
-  //             errorMessage = 'SMS 인증 한도(일일 5회)를 초과했습니다. \n다음 날에 다시 시도해주세요.';
-  //             break;
-  //           case 'quota-exceeded':
-  //             errorMessage = 'SMS 인증 한도를 초과했습니다. \n나중에 다시 시도해주세요.';
-  //             break;
-  //           case 'missing-phone-number':
-  //             errorMessage = '전화번호를 입력해주세요.';
-  //             break;
-  //           case 'operation-not-allowed':
-  //             errorMessage = '전화번호 인증이 비활성화되어 있습니다. \n관리자에게 문의해 주세요.';
-  //             break;
-  //           case 'Invalid format':
-  //             errorMessage = '잘못된 전화번호입니다. \n확인 후 다시 입력해주세요.';
-  //             break;
-  //           default:
-  //             errorMessage = '${e.code}';
-  //         }
-  //
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text(errorMessage, textAlign: TextAlign.center),
-  //             duration: Duration(seconds: 2),
-  //           ),
-  //         );
-  //
-  //         setState(() {
-  //           _isPhoneButtonEnabled = true; // 인증 실패 시 버튼 재활성화
-  //         });
-  //       },
-  //
-  //       codeSent: (String verificationId, int? resendToken) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text("인증번호가 전송되었습니다!", textAlign: TextAlign.center),
-  //             duration: Duration(seconds: 2),
-  //           ),
-  //         );
-  //         print('인증 코드 전송');
-  //         setState(() {
-  //           _verificationId = verificationId;
-  //           _codeSent = true;
-  //         });
-  //
-  //         _startTimer();
-  //         setState(() {
-  //           _isPhoneButtonEnabled = true; // 인증 코드 전송 시 버튼 재활성화
-  //         });
-  //       },
-  //
-  //       codeAutoRetrievalTimeout: (String verificationId) {
-  //         _verificationId = verificationId;
-  //         setState(() {
-  //           _isPhoneButtonEnabled = true; // 인증 시간 초과 시 버튼 재활성화
-  //         });
-  //       },
-  //     );
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('잘못된 전화번호입니다. \n확인 후 다시 입력해주세요.', textAlign: TextAlign.center),
-  //         duration: Duration(seconds: 2),
-  //       ),
-  //     );
-  //   }
-  // }
-  //
-  //
-  // // 타이머 시작
-  // void _startTimer() {
-  //   setState(() {
-  //     _remainingTime = 300; // 5분(300초) 설정
-  //   });
-  //
-  //   _timer?.cancel(); // 기존 타이머가 있으면 취소
-  //
-  //   _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-  //     setState(() {
-  //       if (_remainingTime > 0) {
-  //         _remainingTime--;
-  //       } else {
-  //         _timer?.cancel();
-  //         _codeSent = false; // 시간이 초과되면 코드 입력을 막고 재요청
-  //         _verificationId = ""; // 기존 verificationId 무효화
-  //         print("인증 시간이 초과되었습니다. 다시 시도해주세요.");
-  //       }
-  //     });
-  //   });
-  // }
-  //
-  // // 사용자가 입력한 인증 코드로 로그인
-  // Future<void> _signInWithCode() async {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text(
-  //         '인증번호 확인 중입니다! \n잠시만 기다려주세요.',
-  //         textAlign: TextAlign.center,
-  //       ),
-  //       duration: Duration(seconds: 2),
-  //     ),
-  //   );
-  //
-  //   if (_verificationId.isNotEmpty && _remainingTime > 0) { // 타이머가 유효할 때만 인증
-  //     try {
-  //       User? currentUser = FirebaseAuth.instance.currentUser;
-  //
-  //       PhoneAuthCredential credential = PhoneAuthProvider.credential(
-  //         verificationId: _verificationId, // 저장된 verificationId 사용
-  //         smsCode: _codeController.text,
-  //       );
-  //
-  //       // 현재 사용자가 이메일 계정으로 로그인된 상태라면, 전화번호를 연동
-  //       if (currentUser != null && currentUser.email != null) {
-  //         // 이미 이메일로 로그인한 상태에서 전화번호 인증을 진행
-  //         await currentUser.updatePhoneNumber(credential); // 이메일 계정에 전화번호를 연동
-  //         print('전화번호와 이메일 계정이 성공적으로 연동되었습니다.');
-  //       }
-  //
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text("인증이 완료되었습니다!",
-  //               textAlign: TextAlign.center),
-  //           duration: Duration(seconds: 2),
-  //         ),
-  //       );
-  //       setState(() {
-  //         _successAuth= true;
-  //       });
-  //       _timer?.cancel();
-  //
-  //     } on FirebaseAuthException catch (e) {
-  //
-  //       if (e.code == 'invalid-verification-code') {
-  //         // 인증 실패 시 스낵바 표시
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text(
-  //               '입력하신 인증번호가 올바르지 않습니다.\n다시 한 번 확인해 주세요.',
-  //               textAlign: TextAlign.center,
-  //             ),
-  //             duration: Duration(seconds: 2),
-  //
-  //           ),
-  //         );
-  //       }
-  //       else if (e.code == 'credential-already-in-use') {
-  //         // 인증 실패 시 스낵바 표시
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text(
-  //               '해당 전화번호는 이미 사용 중입니다. \n다른 번호로 시도해 주세요.',
-  //               textAlign: TextAlign.center,
-  //             ),
-  //             duration: Duration(seconds: 2),
-  //
-  //           ),
-  //         );
-  //       }
-  //
-  //
-  //       print('인증 실패: ${e.message}');
-  //     }catch (e) {
-  //       print('인증 실패: $e');
-  //     }
-  //   } else {
-  //     print('verificationId가 비어있거나 시간이 초과되었습니다.');
-  //   }
-  // }
 
 
   _onNicknameChanged() {
@@ -2240,24 +1989,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       return false;
     }
 
-    if (_phoneController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('전화번호를 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-
-    if (_codeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('인증번호를 입력해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
-
 
     if(isEmailVerified == false){
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2268,14 +1999,6 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
       return false;
     }
 
-    if(_successAuth == false){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('휴대전화 인증을 완료해주세요.', textAlign: TextAlign.center,),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return false;
-    }
 
     if(_isEULAChecked == false || _isPrivacyPolicyChecked == false){
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2398,7 +2121,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
 
 
       UserCredential userCredential = await _auth.signInWithCredential(credential);
-      User? user = userCredential.user;
+      auth.User? user = userCredential.user;
 
       // 성공적으로 로그인
       if (user != null && user.email == fullEmail) {
@@ -2471,7 +2194,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
           password: password,
         );
 
-        User? currentUser = userCredential.user;
+        auth.User? currentUser = userCredential.user;
         if (currentUser != null) {
           await currentUser.delete();
 
@@ -3004,242 +2727,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                               ),
 
 
-
-
-                              //휴대전화 인증
-                              // Container(
-                              //   margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                              //   child: Column(
-                              //     mainAxisAlignment: MainAxisAlignment.start,
-                              //     crossAxisAlignment: CrossAxisAlignment.start,
-                              //     children: [
-                              //       Container(
-                              //         margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              //         child: Align(
-                              //           alignment: Alignment.topLeft,
-                              //           child: Text(
-                              //             '휴대폰 인증',
-                              //             style: TextStyle(
-                              //               fontFamily: 'Pretendard',
-                              //               fontWeight: FontWeight.w600,
-                              //               fontSize: 15,
-                              //               height: 1,
-                              //               letterSpacing: -0.4,
-                              //               color: Color(0xFF424242),
-                              //             ),
-                              //           ),
-                              //         ),
-                              //       ),
-                              //
-                              //
-                              //       Container(
-                              //         width: double.infinity,
-                              //         margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              //         decoration: BoxDecoration(
-                              //           color: Color(0xFFFFFFFF),
-                              //         ),
-                              //         child: Align(
-                              //           alignment: Alignment.topLeft,
-                              //           child: TextFormField(
-                              //             onTap: () {
-                              //               if(isEmailVerified == false){
-                              //                 HapticFeedback.lightImpact(); // 햅틱 피드백
-                              //                 ScaffoldMessenger.of(context).showSnackBar(
-                              //                   SnackBar(
-                              //                     content: Text(
-                              //                       '이메일 인증을 먼저 완료해주세요.',
-                              //                       textAlign: TextAlign.center,
-                              //                     ),
-                              //                     duration: Duration(seconds: 2),
-                              //                   ),
-                              //                 );
-                              //               }
-                              //               if(!_successAuth) {
-                              //                 HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
-                              //               }
-                              //             },
-                              //             enabled: !_successAuth && !_codeSent && isEmailVerified,
-                              //             controller: _phoneController,
-                              //             textInputAction: TextInputAction.done,
-                              //             cursorColor: Color(0xFF1D4786),
-                              //             keyboardType: TextInputType.phone, // 숫자 입력 전용 키보드 설정
-                              //             onFieldSubmitted: (value) {
-                              //               HapticFeedback.lightImpact(); // 다음 필드로 이동할 때 햅틱 피드백
-                              //             },
-                              //             decoration: InputDecoration(
-                              //               hintText: isEmailVerified ? '전화번호를 입력해주세요.' : '이메일 인증을 먼저 완료해주세요.',
-                              //               hintStyle: TextStyle(
-                              //                 fontFamily: 'Pretendard',
-                              //                 fontWeight: FontWeight.w500,
-                              //                 fontSize: 16,
-                              //                 height: 1,
-                              //                 letterSpacing: -0.4,
-                              //                 color: Color(0xFF767676),
-                              //               ),
-                              //               contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12), // 내부 여백 조정
-                              //               border: OutlineInputBorder(
-                              //                 borderRadius: BorderRadius.circular(10),
-                              //               ),
-                              //               enabledBorder: OutlineInputBorder(
-                              //                 borderSide: BorderSide(
-                              //                   color: _phoneNumberHasText ?  Color(0xFF1D4786): Color(0xFFD0D0D0),
-                              //                 ), // 텍스트가 있으면 인디고, 없으면 회색
-                              //                 borderRadius: BorderRadius.circular(8),
-                              //               ),
-                              //               focusedBorder: OutlineInputBorder(
-                              //                 borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
-                              //                 borderRadius: BorderRadius.circular(8),
-                              //               ),
-                              //               errorText: _phoneNumberErrorText,
-                              //             ),
-                              //             validator: (value) {
-                              //               if (value == null || value.trim().isEmpty) {
-                              //                 return '전화번호를 입력해주세요.';
-                              //               }
-                              //               return null;
-                              //             },
-                              //           ),
-                              //         ),
-                              //       ),
-                              //
-                              //       _codeSent
-                              //           ? Column(
-                              //         children: [
-                              //           Container(
-                              //             width: double.infinity,
-                              //             margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              //             decoration: BoxDecoration(
-                              //               color: Color(0xFFFFFFFF),
-                              //             ),
-                              //             child: Align(
-                              //               alignment: Alignment.topLeft,
-                              //               child: TextFormField(
-                              //                 onTap: () {
-                              //                   if(!_successAuth) {
-                              //                     HapticFeedback.lightImpact(); // 텍스트 필드를 터치할 때 햅틱 피드백
-                              //                   }
-                              //                 },
-                              //                 enabled: !_successAuth,
-                              //                 controller: _codeController,
-                              //                 textInputAction: TextInputAction.done,
-                              //                 cursorColor: Color(0xFF1D4786),
-                              //                 keyboardType: TextInputType.phone, // 숫자 입력 전용 키보드 설정
-                              //                 onFieldSubmitted: (value) {
-                              //                   HapticFeedback.lightImpact(); // 다음 필드로 이동할 때 햅틱 피드백
-                              //                 },
-                              //                 decoration: InputDecoration(
-                              //                   hintText: '인증번호를 입력해주세요.',
-                              //                   hintStyle: TextStyle(
-                              //                     fontFamily: 'Pretendard',
-                              //                     fontWeight: FontWeight.w500,
-                              //                     fontSize: 16,
-                              //                     height: 1,
-                              //                     letterSpacing: -0.4,
-                              //                     color: Color(0xFF767676),
-                              //                   ),
-                              //                   contentPadding: EdgeInsets.symmetric(vertical: 11, horizontal: 12), // 내부 여백 조정
-                              //                   border: OutlineInputBorder(
-                              //                     borderRadius: BorderRadius.circular(10),
-                              //                   ),
-                              //                   enabledBorder: OutlineInputBorder(
-                              //                     borderSide: BorderSide(
-                              //                       color: _codeSentHasText ?  Color(0xFF1D4786): Color(0xFFD0D0D0),
-                              //                     ), // 텍스트가 있으면 인디고, 없으면 회색
-                              //                     borderRadius: BorderRadius.circular(8),
-                              //                   ),
-                              //                   focusedBorder: OutlineInputBorder(
-                              //                     borderSide: BorderSide(color: Color(0xFF1D4786)), // 포커스 시 색상 변경
-                              //                     borderRadius: BorderRadius.circular(8),
-                              //                   ),
-                              //                   errorText: _codeSentErrorText,
-                              //                 ),
-                              //                 validator: (value) {
-                              //                   if (value == null || value.trim().isEmpty) {
-                              //                     return '인증번호를 입력해주세요.';
-                              //                   }
-                              //                   return null;
-                              //                 },
-                              //               ),
-                              //             ),
-                              //           ),
-                              //           _successAuth ? Container()
-                              //               : Text("남은 시간: $_remainingTime 초",   style: TextStyle(
-                              //             fontFamily: 'Pretendard',
-                              //             fontWeight: FontWeight.w600,
-                              //             fontSize: 13,
-                              //             height: 1,
-                              //             letterSpacing: -0.4,
-                              //             color: Color(0xFF1D4786),
-                              //           )
-                              //           ),
-                              //           SizedBox(height: 5),
-                              //         ],
-                              //       )
-                              //           : Container(),
-                              //
-                              //       GestureDetector(
-                              //         onTap:(){
-                              //           if(_phoneController.text.isNotEmpty && !_successAuth) {
-                              //             HapticFeedback.lightImpact();
-                              //             _codeSent ? _signInWithCode() : _verifyPhoneNumber();
-                              //           }
-                              //           if(_successAuth){
-                              //             HapticFeedback.lightImpact();
-                              //             ScaffoldMessenger.of(context).showSnackBar(
-                              //               SnackBar(
-                              //                 content: Text("인증이 완료되었습니다!",
-                              //                     textAlign: TextAlign.center),
-                              //                 duration: Duration(seconds: 3),
-                              //               ),
-                              //             );
-                              //           }
-                              //         },
-                              //         child: Container(
-                              //           width: double.infinity,
-                              //           decoration: BoxDecoration(
-                              //             border: Border.all(color: _phoneController.text.isNotEmpty ? Color(0xFF1D4786):Color(0xFFF6F7F8)),
-                              //             borderRadius: BorderRadius.circular(8),
-                              //             color: _phoneController.text.isNotEmpty ? Color(0xFF1D4786) : Color(0xFFF6F7F8),
-                              //           ),
-                              //           child: Container(
-                              //             padding: EdgeInsets.fromLTRB(3.3, 15, 0, 15),
-                              //             child:
-                              //             _successAuth ?
-                              //             Text(
-                              //               '인증 완료',
-                              //               style: TextStyle(
-                              //                 fontFamily: 'Pretendard',
-                              //                 fontWeight: FontWeight.w500,
-                              //                 fontSize: 16,
-                              //                 height: 1,
-                              //                 letterSpacing: -0.4,
-                              //                 color: _phoneController.text.isNotEmpty ? Colors.white : Color(0xFF767676),
-                              //               ),
-                              //               textAlign: TextAlign.center,
-                              //             )
-                              //                 :
-                              //             Text(
-                              //               _codeSent ? "인증 하기" : "인증 요청",
-                              //               style: TextStyle(
-                              //                 fontFamily: 'Pretendard',
-                              //                 fontWeight: FontWeight.w500,
-                              //                 fontSize: 16,
-                              //                 height: 1,
-                              //                 letterSpacing: -0.4,
-                              //                 color: _phoneController.text.isNotEmpty ? Colors.white : Color(0xFF767676),
-                              //               ),
-                              //               textAlign: TextAlign.center,
-                              //             ),
-                              //           ),
-                              //         ),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-
-
                               //닉네임
-
                               Container(
                                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                                 child: Column(
@@ -3798,7 +3286,7 @@ class _CreateAccountState extends State<CreateAccount> with WidgetsBindingObserv
                                       child: Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          '추천인',
+                                          '추천인 (선택)',
                                           style: TextStyle(
                                             fontFamily: 'Pretendard',
                                             fontWeight: FontWeight.w600,

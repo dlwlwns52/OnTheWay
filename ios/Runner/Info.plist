@@ -35,17 +35,37 @@
 				<string>com.googleusercontent.apps.40009619030-c8bqfi539ohu78m0g3uapkcfnhc608o1</string>
 			</array>
 		</dict>
+        <!-- 카카오 로그인 URL 스킴 추가 -->
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>kakao69a96da745eed8af5198d8de5d72a2eb</string> <!-- 올바른 형식 -->
+            </array>
+        </dict>
+
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>KAKAO_APP_KEY</key>
 	<string>69a96da745eed8af5198d8de5d72a2eb</string>
 	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>kakaotalk</string>
-		<string>supertoss</string>
-		<string>naversearchthirdlogin</string>
-	</array>
+    <array>
+      <!-- 카카오톡으로 로그인 -->
+      <string>kakaotalk</string>
+      <string>kakaokompassauth</string>
+
+      <!-- 카카오톡으로 공유 -->
+      <string>kakaolink</string>
+
+      <!-- 토스 -->
+      <string>supertoss</string>
+
+      <!-- 네이버 로그인 -->
+      <string>naversearchthirdlogin</string>
+    </array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

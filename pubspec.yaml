@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none'
 
-version: 1.1.1+15
+version: 1.1.0+1
 
 environment:
   sdk: '>=3.0.5 <4.0.0'
@@ -12,6 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  #카카오 로그인
+  kakao_flutter_sdk: ^1.9.6
+  kakao_flutter_sdk_user: ^1.9.6
 
  #맵관련
   kakao_map_plugin: ^0.3.1
@@ -114,7 +117,8 @@ flutter:
     - assets/images/FindPassword.png
     - assets/images/RateStar.png
     - assets/images/cnuCoffeeEvent.jpg
-
+    - assets/images/kakao_login_medium_narrow.png
+    - assets/images/kakao_login_large_narrow.png
 
 
 #    pigma 디자인 투입

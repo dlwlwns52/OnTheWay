@@ -1,3 +1,4 @@
+
 {
   "functions": [
     {
@@ -22,6 +23,14 @@
       {
         "source": "/privacy_policy_on_the_way",
         "destination": "/privacy_policy_on_the_way.html"
+      },
+      {
+        "source": "/__/auth/**",
+        "function": "authHandler"
+      },
+      {
+        "source": "/tmap/**",
+        "destination": "/tmap/index.html"
       },
       {
         "source": "**",

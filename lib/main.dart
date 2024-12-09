@@ -11,6 +11,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_badge/flutter_app_badge.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk_auth.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -64,7 +65,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
   await Firebase.initializeApp(); // Firebase 초기화를 기다림
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler); // 백그라운드 메시지 핸들러 등록
-  AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100'); // 인증 리포지토리 초기화
+  // Kakao Map SDK 초기화
+  AuthRepository.initialize(appKey: 'd6e6f6cbd79272654032b63d9da30100');
+  //카카오로그인
+  KakaoSdk.init(
+    nativeAppKey: '69a96da745eed8af5198d8de5d72a2eb', // Kakao Developers에서 발급받은 앱 키
+  );
 
   FlutterAppBadge.count(0); // 실질적으로 배지 0 설정
   await badge_zero(); // 배지 파이어스토어 0으로 업데이트

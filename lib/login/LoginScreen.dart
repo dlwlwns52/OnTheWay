@@ -6,6 +6,7 @@ import 'package:OnTheWay/CreateAccount/CreateAccount.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../CreateAccount/KakaoAuthention.dart';
 import '../SchoolBoard/SchoolBoard.dart';
 import 'PasswordFind.dart';
 
@@ -680,7 +681,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         HapticFeedback.lightImpact();
                                         Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => CreateAccount()),
+                                            MaterialPageRoute(builder: (context) => KakaoLoginScreen()),
 
                                         );
                                       },

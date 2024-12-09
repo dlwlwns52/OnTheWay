@@ -33,8 +33,11 @@ android {
         applicationId "com.ljj.OnTheWay"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 15
+        versionCode 16
         versionName "1.1.0"
+        manifestPlaceholders = [
+                kakaoAppKey: "69a96da745eed8af5198d8de5d72a2eb"
+        ]
     }
 
 
