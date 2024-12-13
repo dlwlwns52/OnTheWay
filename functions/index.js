@@ -653,7 +653,256 @@ exports.notifyDeliveryCompletion = functions.firestore
 
 
 
-  // 10번째 함수 x테스트 네이버 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
+   // 10번째 함수 한밭대 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
+exports.sendPushNotificationToHbnuStudents = functions.firestore
+.document('edu_hanbat_ac_kr/{postId}')
+.onCreate(async (snap, context) => {
+    // 새 게시물의 데이터를 변수에 저장합니다.
+    const newValue = snap.data();
+    const currentLocation = newValue.my_location; // 게시물 현재위치
+    const storeLocation = newValue.store; // 게시물 가격위치
+    const cost = newValue.cost; // 게시물 심부름비
+    const userEmail = newValue.user_email; // 게시물 작성자
+    
+    // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
+    const userSnapshot = await admin.firestore().collection('users')
+        .where('domain', '==', 'edu.hanbat.ac.kr')
+        .get();
+
+    if (userSnapshot.empty) {
+        console.log('No matching users found.');
+        return;
+    }
+
+    const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+    const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+    const badgeCounts = [];  // 사용자별 새로운 배지 값을 저장할 배열
+    
+    // Firestore 트랜잭션 시작
+    await admin.firestore().runTransaction(async (transaction) => {
+        userSnapshot.forEach(doc => {
+            const user = doc.data();
+            if (user.token && user.email != userEmail) { 
+                tokens.push(user.token);
+                
+                // Firestore에서 배지 카운트 가져오기
+                const currentBadgeCount = user.badgeCount || 0;
+                const newBadgeCount = currentBadgeCount + 1;
+                badgeCounts.push(newBadgeCount);  // 새로운 배지 값 배열에 저장
+                
+                // 배지 업데이트 트랜잭션 추가
+                badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
+                    badgeCount: newBadgeCount
+                }));
+            }
+        });
+
+        await Promise.all(badgeUpdates);  // 트랜잭션 커밋
+    });
+
+    // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
+    if (tokens.length > 0) {
+        tokens.forEach((token, index) => {
+            const message = {
+                notification: {
+                    title: `새로운 요청이 생성되었습니다! `,
+                    body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+                },
+                data: {
+                    screen: 'SchoolBoard',
+                },
+                token: token, // 개별 사용자 토큰
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: badgeCounts[index],  // 각 사용자에 맞는 배지 값
+                            sound: "default"
+                        }
+                    }
+                }
+            };
+
+            // 메시지 전송
+            admin.messaging().send(message)
+                .then((response) => {
+                    console.log('Successfully sent message:', response);
+                })
+                .catch((error) => {
+                    console.log('Error sending message:', error);
+                });
+        });
+    }
+});
+
+
+
+ // 12번째 함수 전북대 게시판에 게시물이 올라올때 전북대 학생일 경우 푸시알림 전달
+ exports.sendPushNotificationToJbnuStudents = functions.firestore
+ .document('jbnu_ac_kr/{postId}')
+ .onCreate(async (snap, context) => {
+     // 새 게시물의 데이터를 변수에 저장합니다.
+     const newValue = snap.data();
+     const currentLocation = newValue.my_location; // 게시물 현재위치
+     const storeLocation = newValue.store; // 게시물 가격위치
+     const cost = newValue.cost; // 게시물 심부름비
+     const userEmail = newValue.user_email; // 게시물 작성자
+     
+     // 'users' 컬렉션에서 'domain' 필드가 'jbnu.ac.kr'인 사용자를 찾습니다.
+     const userSnapshot = await admin.firestore().collection('users')
+         .where('domain', '==', 'jbnu.ac.kr')
+         .get();
+
+     if (userSnapshot.empty) {
+         console.log('No matching users found.');
+         return;
+     }
+
+     const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+     const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+     const badgeCounts = [];  // 사용자별 새로운 배지 값을 저장할 배열
+     
+     // Firestore 트랜잭션 시작
+     await admin.firestore().runTransaction(async (transaction) => {
+         userSnapshot.forEach(doc => {
+             const user = doc.data();
+             if (user.token && user.email != userEmail) { 
+                 tokens.push(user.token);
+                 
+                 // Firestore에서 배지 카운트 가져오기
+                 const currentBadgeCount = user.badgeCount || 0;
+                 const newBadgeCount = currentBadgeCount + 1;
+                 badgeCounts.push(newBadgeCount);  // 새로운 배지 값 배열에 저장
+                 
+                 // 배지 업데이트 트랜잭션 추가
+                 badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
+                     badgeCount: newBadgeCount
+                 }));
+             }
+         });
+
+         await Promise.all(badgeUpdates);  // 트랜잭션 커밋
+     });
+
+     // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
+     if (tokens.length > 0) {
+         tokens.forEach((token, index) => {
+             const message = {
+                 notification: {
+                     title: `새로운 요청이 생성되었습니다! `,
+                     body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+                 },
+                 data: {
+                     screen: 'SchoolBoard',
+                 },
+                 token: token, // 개별 사용자 토큰
+                 apns: {
+                     payload: {
+                         aps: {
+                             badge: badgeCounts[index],  // 각 사용자에 맞는 배지 값
+                             sound: "default"
+                         }
+                     }
+                 }
+             };
+
+             // 메시지 전송
+             admin.messaging().send(message)
+                 .then((response) => {
+                     console.log('Successfully sent message:', response);
+                 })
+                 .catch((error) => {
+                     console.log('Error sending message:', error);
+                 });
+         });
+     }
+ });
+
+
+
+  // 13번째 함수 한남대 게시판에 게시물이 올라올때 한남대 학생일 경우 푸시알림 전달
+exports.sendPushNotificationToHnuStudents = functions.firestore
+.document('m365_hnu_ac_kr/{postId}')
+.onCreate(async (snap, context) => {
+    // 새 게시물의 데이터를 변수에 저장합니다.
+    const newValue = snap.data();
+    const currentLocation = newValue.my_location; // 게시물 현재위치
+    const storeLocation = newValue.store; // 게시물 가격위치
+    const cost = newValue.cost; // 게시물 심부름비
+    const userEmail = newValue.user_email; // 게시물 작성자
+    
+    // 'users' 컬렉션에서 'domain' 필드가 'naver.com'인 사용자를 찾습니다.
+    const userSnapshot = await admin.firestore().collection('users')
+        .where('domain', '==', 'm365.hnu.ac.kr')
+        .get();
+
+    if (userSnapshot.empty) {
+        console.log('No matching users found.');
+        return;
+    }
+
+    const tokens = []; // 푸시 알림을 받을 사용자들의 토큰을 저장할 배열입니다.
+    const badgeUpdates = []; // 배지 업데이트 트랜잭션 배열
+    const badgeCounts = [];  // 사용자별 새로운 배지 값을 저장할 배열
+    
+    // Firestore 트랜잭션 시작
+    await admin.firestore().runTransaction(async (transaction) => {
+        userSnapshot.forEach(doc => {
+            const user = doc.data();
+            if (user.token && user.email != userEmail) { 
+                tokens.push(user.token);
+                
+                // Firestore에서 배지 카운트 가져오기
+                const currentBadgeCount = user.badgeCount || 0;
+                const newBadgeCount = currentBadgeCount + 1;
+                badgeCounts.push(newBadgeCount);  // 새로운 배지 값 배열에 저장
+                
+                // 배지 업데이트 트랜잭션 추가
+                badgeUpdates.push(transaction.update(admin.firestore().collection('users').doc(doc.id), {
+                    badgeCount: newBadgeCount
+                }));
+            }
+        });
+
+        await Promise.all(badgeUpdates);  // 트랜잭션 커밋
+    });
+
+    // 푸시 토큰이 있는 경우 푸시 알림을 전송합니다.
+    if (tokens.length > 0) {
+        tokens.forEach((token, index) => {
+            const message = {
+                notification: {
+                    title: `새로운 요청이 생성되었습니다! `,
+                    body: `위치: ${storeLocation} → ${currentLocation}\n금액: ${cost} \n상세 내용을 확인하고 신청하세요!`
+                },
+                data: {
+                    screen: 'SchoolBoard',
+                },
+                token: token, // 개별 사용자 토큰
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: badgeCounts[index],  // 각 사용자에 맞는 배지 값
+                            sound: "default"
+                        }
+                    }
+                }
+            };
+
+            // 메시지 전송
+            admin.messaging().send(message)
+                .then((response) => {
+                    console.log('Successfully sent message:', response);
+                })
+                .catch((error) => {
+                    console.log('Error sending message:', error);
+                });
+        });
+    }
+});
+
+
+
+  // 0번째 함수 x테스트 네이버 게시판에 게시물이 올라올때 한밭대 학생일 경우 푸시알림 전달
 exports.sendPushNotificationToTestStudents = functions.firestore
     .document('naver_com/{postId}')
     .onCreate(async (snap, context) => {

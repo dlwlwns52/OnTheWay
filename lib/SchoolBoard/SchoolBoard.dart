@@ -63,8 +63,6 @@ class _BoardPageState extends State<BoardPage> {
   // 초기 게시글 개수를 0으로 설정
   int postCount = 0;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -77,15 +75,13 @@ class _BoardPageState extends State<BoardPage> {
     // 로그인 시 설정된 이메일 및 도메인 가져오기 -> 바텀 네비게이션 이용시 사용
     final FirebaseAuth _auth = FirebaseAuth.instance;
     botton_email = _auth.currentUser?.email ?? "";
-    // change_email = updateEmailDomain(botton_email);
     botton_domain = botton_email.split('@').last.toLowerCase();
     collection_domain = botton_domain.replaceAll('.','_');
-    // print(change_email);
-    // print(botton_domain);
-    // print(collection_domain);
-    // print(_auth.currentUser?.email ?? "");
-    //닉네임 가져옴
     _nickname = getNickname(botton_email);
+
+    if(Platform.isAndroid) {
+      _initializeAsyncTasks();
+    }
 
 
     // 각 이메일에 대해 프로필 사진 URL을 미리 로드 (학교 바뀌면 컬렉션 변환)
@@ -98,6 +94,197 @@ class _BoardPageState extends State<BoardPage> {
     });
 
     // _loadPostCount(); // 위젯 초기화 시 게시글 개수를 로드
+  }
+
+  Future<void> _initializeAsyncTasks() async {
+    String currentEmail = FirebaseAuth.instance.currentUser?.email ?? "";
+
+    // 비동기 작업 실행
+    bool isLocationAllowed = await checkLocationPermission(currentEmail);
+    if (!isLocationAllowed) {
+      showLocationPermissionDialog(context);
+    }
+  }
+
+
+  Future<bool> checkLocationPermission(String email) async {
+    if (email != null) {
+      QuerySnapshot querySnapshot = await firestore.collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+
+        // allowLocation 필드값 가져오기 (기본값 처리)
+        final data = userDoc.data() as Map<String, dynamic>?;
+        bool allowLocation = data?['allowLocation'] as bool? ?? false;
+
+        if (!allowLocation) {
+          // 필드가 없으면 기본값 추가
+          await firestore.collection('users').doc(userDoc.id).update({
+            'allowLocation': false,
+          });
+          return false;
+        }
+        return true;
+      } else {
+        // 사용자를 찾을 수 없을 경우
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '사용자 정보를 찾을 수 없습니다. \n다시 로그인 해주세요!',
+              textAlign: TextAlign.center,
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return false;
+      }
+    } else {
+      // 이메일이 null인 경우
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '사용자 정보를 찾을 수 없습니다. \n다시 로그인 해주세요!',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return false;
+    }
+  }
+
+
+  Future<void> location_true() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+    String? email = user?.email;
+    if(email != null){
+      QuerySnapshot querySnapshot = await firestore.collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+
+        await firestore.collection('users').doc(userDoc.id).update({'allowLocation': true});
+
+      }
+    }
+  }
+
+  void showLocationPermissionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 20),
+              Container(
+                margin: EdgeInsets.fromLTRB(10, 0, 10,0),
+                child:
+                Text(
+                  '위치 정보 사용 안내',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Color(0xFF222222),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                margin: EdgeInsets.fromLTRB(10, 0, 10,0),
+                child:
+              Text(
+                '⚠ 온더웨이 앱은 안전한 거래를 위해 거래가 진행 중일 때만 헬퍼의 위치 정보를 오더에게 제공합니다.\n\n '
+                    '⚠ 위치 정보는 거래 종료 또는 앱 종료 시 즉시 차단되며, 다른 목적으로는 사용되지 않습니다.\n\n '
+                    '⚠ 거래 진행 중에는 앱이 백그라운드에 있을 때도 위치 정보가 일시적으로 활용됩니다.',
+                // textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  // fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Color(0xFF222222),
+                ),
+              ),
+              ),
+              SizedBox(height: 40),
+              Divider(color: Colors.grey, height: 1),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("위치 권한이 허락되어야 거래를 진행할 수 있습니다.", textAlign: TextAlign.center,),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                        Navigator.of(context).pop(); // 다이얼로그 닫기
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '거부',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF636666),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1.0,
+                    height: 60,
+                    color: Colors.grey,
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () async {
+                        await location_true();
+                        Navigator.of(context).pop(); // 확인 버튼 동작
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '동의',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFF1D4786),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
 
