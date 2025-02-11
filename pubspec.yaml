@@ -12,6 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+
+  #상태관리
+  provider: ^6.1.2
+
   #카카오 로그인
   kakao_flutter_sdk: ^1.9.6
   kakao_flutter_sdk_user: ^1.9.6

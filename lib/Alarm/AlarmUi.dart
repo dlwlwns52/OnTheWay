@@ -118,7 +118,7 @@ class _NotificationScreenState extends State<AlarmUi> {
   }
 
 
-  // 수락시 게시글 삭제
+  // 락시 게시글 삭제
   Future<void> _deletePost(String docId) async{
     DocumentSnapshot postId = await FirebaseFirestore.instance
         .collection('helpActions')

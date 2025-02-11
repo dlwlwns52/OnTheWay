@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:OnTheWay/Chat/chat_room/chat_room_viewmodel.dart';
 import 'package:OnTheWay/login/LoginScreen.dart';
 
 
@@ -16,6 +17,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'SchoolBoard/SchoolBoard.dart';
@@ -108,8 +110,16 @@ void main() async {
   });
 
 
-  runApp(MyApp()); // 앱 실행
-}
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ChatRoomViewModel()),
+        ],
+        child: MyApp(),
+      ),
+    );
+  }
 
 Future<void> badge_zero() async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
